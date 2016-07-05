@@ -8,7 +8,7 @@
 
 A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for Ozone for 2011-2013. These scripts reproduce the 2015 analysis presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
 
-This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [air quality monitoring data](http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data) from the Ministry of Enviornment.
+This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the Ministry of Enviornment.
 
 ### Usage
 
@@ -57,4 +57,4 @@ Please note that this project is released with a [Contributor Code of Conduct](C
     See the License for the specific language governing permissions and
     limitations under the License.
 
-This repository is maintained by [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/). Click [here](https://github.com/bcgov/EnvReportBC-RepoList) for a complete list of our repositories on GitHub.
+This repository is maintained by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B). Click [here](https://github.com/bcgov/EnvReportBC-RepoList) for a complete list of our repositories on GitHub.
