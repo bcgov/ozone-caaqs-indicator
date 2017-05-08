@@ -27,7 +27,7 @@ unzip(file.path(path,ozone_zip), exdir = path)
 ## Load stations from file
 stations <- read.csv(file.path(path, stn_file), stringsAsFactors = FALSE)
 
-ozone <- read_csv(file.path(path, "O3_hourly.csv"), col_types = "ccccidc")
+ozone <- read_csv(file.path(path, "O3_hourly.csv"), col_types = "cccccidc")
 
 dir.create("tmp", showWarnings = FALSE)
 save(ozone, stations, file = "tmp/ozone_raw.RData")
