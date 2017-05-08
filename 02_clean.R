@@ -10,23 +10,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library("magrittr")
-library("dplyr")
-library("lubridate")
-library("rcaaqs")
+#library("magrittr")
+library("dplyr") # data munging
+library("lubridate") # for format_date()
+library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
-# if (!exists("ozone")) load("tmp/ozone_raw.RData")
+if (!exists("ozone")) load("tmp/ozone_raw.RData")
 
 ## Set constants
-min_year <- 2011
-max_year <- 2013
+min_year <- 2013
+max_year <- 2015
 
-ozone <- ozone[ozone$year >= min_year & ozone$year <= max_year,]
+ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 
 # Format date column
 ozone$date_time <- format_date(ozone$date_time)
 
-## Deal with negative values
+## Deal with negative values using rcaaqs::clean_neg()
 ozone$value <- clean_neg(ozone$value, "ozone")
 
 ## Fill in missing hourly readings with NA, create y, m, d columns
