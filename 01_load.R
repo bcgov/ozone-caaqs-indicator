@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 library(readr)
-## Download the ozone and station data from DataBC:
+## Download the ozone and station data from BC Data Catalogue:
 ## http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-raw-hourly-data-and-station-data
 databc_ozone <- "http://pub.data.gov.bc.ca/datasets/77eeadf4-0c19-48bf-a47a-fa9eef01f409/O3_hourly.zip"
 databc_stations <- "http://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409/resource/b833311d-4126-4dad-b57e-c9ce2c1133c2/download/bcairmonitoringstations.csv"
@@ -24,11 +24,12 @@ download.file(databc_ozone, destfile = file.path(path,ozone_zip))
 download.file(databc_stations, destfile = file.path(path, stn_file))
 unzip(file.path(path,ozone_zip), exdir = path)
 
-## Load stations from file
+## Load stations and data from files
 stations <- read.csv(file.path(path, stn_file), stringsAsFactors = FALSE)
 
 ozone_all <- read_csv(file.path(path, "O3_hourly.csv"), col_types = "cccccidc")
 
+## store data in local repository
 dir.create("tmp", showWarnings = FALSE)
 save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 
