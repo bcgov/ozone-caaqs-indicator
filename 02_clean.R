@@ -21,7 +21,9 @@ if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
 min_year <- 2013
 max_year <- 2015
 
+## Select years and removed Chetwynd SW BCOGC MAML data
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
+ozone <- filter(ozone, ems_id != "E299970")
 
 # Format date column
 #ozone$date_time <- format_date(ozone$date_time)
@@ -54,26 +56,27 @@ site_summary <- ozone %>%
 names(stations) <- tolower(names(stations))
 
 ## Subset ems_sites for just sites analyzed
-ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
+ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,] 
+#removes "Chetwynd SW BCOGC MAML" from ozone data frame
+#station not in stations, only 3 weeks of data from 2014
 
-## Remove duplicates and clean up
-typos <- c("Central Saanich Stellys CrossRoad", "Victoria Royal Roads", 
-           "Agassiz Municiapl Hall", "Langford Lakewood School", 
-           "Langford Lakewood  School")
+
+## Remove duplicates
+ typos <- c("Chilliwack Airport_", "Elk Falls Dogwood OLD", "Pitt Meadows Meadowlands School_")
 
 ozone_sites <- ozone_sites %>% 
-  mutate(stationname = gsub("(\\s+|_)(\\d+|Met|BAM)", "", stationname), 
-         owner = gsub("[Ss]hared - ", "Shared ", owner)) %>% 
-  select(ems_id, stationname, latitude, longitude, display_name) %>% 
-  filter(!stationname %in% typos) %>% 
-  group_by(stationname) %>% 
+  mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM)", "", station_name), 
+         station_owner = gsub("[Ss]hared - ", "Shared ", station_owner)) %>% 
+  select(ems_id, station_name, latitude, longitude) %>% 
+  filter(!station_name %in% typos) %>% 
+  group_by(station_name) %>% 
   slice(which.max(latitude))
 
 ## Merge site attributes into ozone_sites
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
 
 ## Subset to only use those with data up to at least 2012
-ozone_sites <- ozone_sites[ozone_sites$max_date >= as.POSIXct("2012-01-01"), ]
+#ozone_sites <- ozone_sites[ozone_sites$max_date >= as.POSIXct("2012-01-01"), ]
 
 ## Subset ozone so only analyze the pertinent sites:
 ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
