@@ -35,33 +35,56 @@ save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 
 #####################################################
 # ## Some sanity checks
-
-# library("ggplot2")
-
+# 
+# library("ggplot2") # plotting
+# library("dplyr") #filter()
+# library("bcmaps") # quickly plot bc air zones
+# library("sp") #plot lat-longs in stations file
+# 
+# ## Set constants
+# min_year <- 2013
+# max_year <- 2015
+# 
+# ## subset for 3-year period of focus
+# ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
+# 
 # ## check precision
 # precis <- function(x) nchar(gsub("(.*\\.)|([0]*$)", "", as.character(x)))
-# table(precis(ozone$value)) # Some with 10 digits!
+# table(precis(ozone$value)) # all 0 to 2 digits
 # 
 # summary(ozone)
 # 
 # head(ozone, 50)
 # tail(ozone, 50)
 # 
+# ## look at the values
 # ggplot(ozone, aes(x = value)) + facet_wrap(~ site) + geom_histogram()
 # 
 # ## Which sites in ozone dataset don't have a corresponding site in ems locations
-# missing_sites <- unique(ozone$site)[!unique(ozone$ems_id) %in% ems_sites$MNTRNGLCTN]
+# missing_sites <- unique(ozone$site)[!unique(ozone$ems_id) %in% stations$ems_id]
+# missing_sites
 # 
-# find_site <- function(re) {
-#   i <- grep(re, ems_sites$MNTRNGLCT1[ems_sites$LCTNTPCD == "01"], 
-#             ignore.case = TRUE)
-#   ems_sites[i,]
-# }
+# #some of the ozone$ems_id's start with 0, which are missing in the statsions$ems-id versions
 # 
-# sapply(missing_sites, find_site, USE.NAMES = TRUE, simplify = FALSE)
-# ## Most okay to be missing except for Port Moody Rocky Point Park
+# ## look at the station locations
+# station_points <- filter(stations, stations$Latitude != "NA", stations$ems_id != "E269223") #filter out NAs & error in ems_id == E269223
+# coordinates(station_points) <- c("Longitude", "Latitude") #use sp to tell R the lat/lon columns
+# proj4string(station_points) <- "+init=epsg:4269" # projection of lat/longs
+# station_points <- spTransform(station_points, CRSobj = proj4string(airzones)) #match projection to bcmap layers
 # 
-# find_site("moody")
+# ## plot stations and airzones
+# plot(airzones) #from bcmaps
+# plot(station_points, add=TRUE)
 # 
-# plot(airzones)
-# plot(ems_sites)
+# 
+# # find_site <- function(re) {
+# #    i <- grep(re, ems_sites$MNTRNGLCT1[ems_sites$LCTNTPCD == "01"],
+# #              ignore.case = TRUE)
+# #    ems_sites[i,]
+# #  }
+# # 
+# # sapply(missing_sites, find_site, USE.NAMES = TRUE, simplify = FALSE)
+# # ## Most okay to be missing except for Port Moody Rocky Point Park
+# # 
+# # find_site("moody")
+
