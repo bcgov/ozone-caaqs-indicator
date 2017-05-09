@@ -15,7 +15,7 @@ library("dplyr") # data munging
 library("lubridate") # for format_date()
 library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
-if (!exists("ozone")) load("tmp/ozone_raw.RData")
+if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
 
 ## Set constants
 min_year <- 2013
@@ -24,7 +24,8 @@ max_year <- 2015
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 
 # Format date column
-ozone$date_time <- format_date(ozone$date_time)
+#ozone$date_time <- format_date(ozone$date_time)
+ozone$date_time <- as.POSIXct(format_date(ozone$date_time))
 
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone$value <- clean_neg(ozone$value, "ozone")
