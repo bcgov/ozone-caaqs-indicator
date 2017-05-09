@@ -10,14 +10,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library("openair")
-library("rcaaqs")
-library("dplyr")
-library("lubridate")
-library("magrittr")
-library("sp")
-library("rgdal")
-library("bcmaps")
+#library("openair")
+library("rcaaqs") # caaqs functions
+#library("dplyr")
+#library("lubridate")
+#library("magrittr")
+#library("sp")
+#library("rgdal")
+#library("bcmaps")
 
 # Load the tmp file if ozone doesn't exist (need inherits = FALSE as "ozone" 
 # exists in 'maps' package on which 'openair' depends)
@@ -26,68 +26,30 @@ if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
 ## Set constants
 o3_standard <- 63
 
-## Calculate 8 hr rolling average, right-justified, with at least 
-## 6/8 valid observations (data.thresh = 75)
-ozone_8hr_roll <- ozone %>%
-  rename(date = date_time) %>% 
-  group_by(ems_id, site) %>% 
-  do(rollingMean(., pollutant = "value", width = 8, data.thresh = 75, 
-                 new.name = "rolling8", align = "right"))
 
-## Calculate the daily maximum 8hr rolling average, plus data completeness stuff
-daily_8hr_roll_max <- ozone_8hr_roll %>%
-  group_by(ems_id, site, year, 
-           date = as.Date(date, tz = attr(ozone$date, "tz"))) %>%
-  summarise(nReadings = length(na.omit(rolling8)), 
-            max8hr = max(rolling8, na.rm = TRUE), 
-            exceed = max8hr > o3_standard, # 63 ppb is the CAAQ standard
-            valid = nReadings >= 18, # 75% (18) valid 8-hr rolling averages per day
-            flag = exceed & !valid) # Flag for data incomplete, but used
+## Compute the daily rolling 8 hour average
+rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "site"))
+glimpse(rolling_avg)
 
-## Calculate the annual 4th highest daily maximum 8hr rolling average
-annual_4th_daily_max <- daily_8hr_roll_max %>%
-  filter(valid | flag) %>% # Use valid 8hr max OR those flagged
-  group_by(ems_id, site, year) %>%
-  mutate(rank = rank(max8hr, na.last = FALSE)) %>%
-  arrange(year, desc(rank)) %>% # sort by decreasing rank
-  slice(4L) %>%  # choose 4th highest reading
-  select(-rank)
+# Compute the daily maximum
+daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "site"))
+glimpse(daily_max_o3)
 
-## Determine valid site-year combos to use in 3yr average calculation
-## (from CAAQs rules: pg 16))
-site_year_check <- daily_8hr_roll_max %>%
-  group_by(ems_id, site, year) %>%
-  filter(quarter(date) %in% c(2,3)) %>% #Get only dates in Q2 & Q3
-  summarise(poss_days_q2_3 = 182, # 182 days in Q2 + Q3
-            n_valid_q2_3 = length(which((valid | flag) & !is.na(max8hr))), 
-            percent_valid_q2_3 = n_valid_q2_3 / poss_days_q2_3) %>%
-  ungroup()
+# Compute the 4th highest daily maximum
+ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "site"))
+glimpse(ann_4th_highest)
 
-## Use only annual 4th highest max hr rolling average where the 
-## site-year combo is valid (i.e., enough readings in a year)
-annual_4th_daily_max <- merge(annual_4th_daily_max, site_year_check[,-2], 
-                              by = c("ems_id", "year")) %>%
-  filter(percent_valid_q2_3 >= .75 | exceed)
+# Compute the rolling three year average
+three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "site"))
+glimpse(three_yr_avg)
 
-## Calculate 3 yr average
-three_yr_avg <- annual_4th_daily_max %>%
-  group_by(ems_id, site) %>%
-  summarise(caaq_year_min = min(year), 
-            caaq_year_max = max(year), 
-            caaq_nYears = n(), 
-            based_on_incomplete = any(percent_valid_q2_3 < 0.75 | flag),
-            caaq_metric = ifelse(caaq_nYears < 2, NA_real_, round(mean(max8hr)))) %>%
-  ungroup() %>%
-  mutate(caaq_status = ifelse(caaq_metric <= o3_standard, "Achieved", "Not Achieved"), 
-         caaq_level = cut_management(caaq_metric, "o3", output = "labels", drop_na = TRUE), 
-         caaq_category_html = cut_management(caaq_metric, "o3", output = "breaks_h", drop_na = TRUE),
-         caaq_category_u = cut_management(caaq_metric, "o3", output = "breaks_u", drop_na = TRUE))
 
 ## Add three year average values to ozone sites
 ozone_sites <- three_yr_avg %>% 
   select(-site) %>%
   filter(!is.na(caaq_metric)) %>% 
   merge(ozone_sites, ., by = "ems_id")
+
 
 ## Do mapping
 ## Convert ozone_sites to SpatialPointsDataFrame and put in the same projection
