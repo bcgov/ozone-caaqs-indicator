@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-#library("magrittr")
+
 library("dplyr") # data munging
 library("lubridate") # for format_date()
 library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
@@ -25,7 +25,7 @@ max_year <- 2015
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 ozone <- filter(ozone, ems_id != "E299970")
 
-# Format date column
+# Format date column using rcaaqs::format_date()
 #ozone$date_time <- format_date(ozone$date_time)
 ozone$date_time <- as.POSIXct(format_date(ozone$date_time))
 
@@ -76,8 +76,6 @@ ozone_sites <- ozone_sites %>%
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
 ozone_sites <- select(ozone_sites, -site)
 
-## Subset to only use those with data up to at least 2012
-#ozone_sites <- ozone_sites[ozone_sites$max_date >= as.POSIXct("2012-01-01"), ]
 
 ## Subset ozone so only analyze the pertinent sites:
 ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
