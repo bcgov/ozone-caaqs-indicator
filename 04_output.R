@@ -12,53 +12,54 @@
 
 ## @knitr pre
 
-library("dplyr")
-library("sp")
-library("rgdal")
-library("rgeos")
-library("ggplot2")
-library("grid")
-library("scales")
-library("rcaaqs")
-library("geojsonio")
-library("envreportutils")
-library("bcmaps")
+# library("dplyr")
+# library("sp")
+# library("rgdal")
+# library("rgeos")
+library("ggplot2") # for plotting
+# library("grid")
+# library("scales")
+# library("rcaaqs")
+# library("geojsonio")
+library("envreportutils") # for theme_soe()
+# library("bcmaps")
 
 ## Load data
-# if (!exists("three_yr_avg")) load("tmp/analysed.RData")
+if (!exists("three_yr_avg")) load("tmp/analysed.RData")
 
 ## Set constants
-min_year <- max_year - 2
-maxdate <- as.Date(paste0(max_year, "-12-31"))
-mindate <- as.Date(paste0(min_year, "-01-01"))
-outCRS <- CRS("+init=epsg:4326")
+# min_year <- max_year - 2
+# maxdate <- as.Date(paste0(max_year, "-12-31"))
+# mindate <- as.Date(paste0(min_year, "-01-01"))
+# outCRS <- CRS("+init=epsg:4326")
 dir.create("out", showWarnings = FALSE)
+o3_standard <- 63
+
 
 ## Subset ozone sites to use only those that have a calculated CAAQS metric
-ozone_sites <- ozone_sites[!is.na(ozone_sites$caaq_metric),]
+#ozone_sites <- ozone_sites[!is.na(ozone_sites$caaq_metric),]
 
 # Summary graph of airzones -----------------------------
 
 ## @knitr summary_plot
 
-sum_dat <- ozone_sites@data
+sum_dat <- ozone_caaqs_sdf@data
 sum_dat$Airzone <- reorder(sum_dat$Airzone, sum_dat$caaq_metric, max, order = TRUE)
 sum_dat$Airzone <- factor(sum_dat$Airzone, levels = rev(levels(sum_dat$Airzone)))
 
 summary_plot <- ggplot(sum_dat, 
                        aes(x = caaq_metric, 
-                           y = reorder(display_name, caaq_metric, sum))) + 
+                           y = reorder(station_name, caaq_metric, sum))) + 
   facet_grid(Airzone~., scales = "free_y", space = "free_y", drop=TRUE, 
              labeller = label_wrap_gen(15)) + 
   geom_point(size = 4, colour = "#377eb8") + 
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
   labs(x = "CAAQS Metric", y = "Ozone Monitoring Station") + 
-  theme_soe_facet(use_sizes=FALSE) + 
+  theme_soe_facet() + 
   theme(axis.title.y = element_text(size=rel(1.2)), 
         axis.text.y = element_text(size = rel(0.8)), 
         axis.line.x = element_blank(), 
         strip.text = element_text(size = rel(0.8)))
-
 plot(summary_plot)
 
 # Individual monitoring station plots -------------------------------------
@@ -257,7 +258,7 @@ plot(mgmt_chart)
 
 ## Summary bar chart
 png(filename = paste0("out/airzone_summary_barchart.png"), 
-    width = 836, height = 400, units = "px", res = 80) # Match dimensions to invasive species
+    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
 plot(summary_plot)
 dev.off()
 
