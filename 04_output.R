@@ -18,19 +18,19 @@
 # library("rgeos")
 library("ggplot2") # for plotting
 # library("grid")
-# library("scales")
+library("scales") # for date_breaks()
 # library("rcaaqs")
 # library("geojsonio")
-library("envreportutils") # for theme_soe()
+library("envreportutils") # for theme_facet_soe()
 # library("bcmaps")
 
 ## Load data
-if (!exists("three_yr_avg")) load("tmp/analysed.RData")
+# if (!exists("three_yr_avg")) load("tmp/analysed.RData")
 
 ## Set constants
-# min_year <- max_year - 2
-# maxdate <- as.Date(paste0(max_year, "-12-31"))
-# mindate <- as.Date(paste0(min_year, "-01-01"))
+min_year <- max_year - 2
+maxdate <- as.Date(paste0(max_year, "-12-31"))
+mindate <- as.Date(paste0(min_year, "-01-01"))
 # outCRS <- CRS("+init=epsg:4326")
 dir.create("out", showWarnings = FALSE)
 o3_standard <- 63
@@ -64,21 +64,22 @@ plot(summary_plot)
 
 # Individual monitoring station plots -------------------------------------
 
-ems_ids <- ozone_sites@data$ems_id
-stn_plots <- vector("list", length(ozone_sites@data$ems_id))
+ems_ids <- ozone_caaqs_sdf@data$ems_id
+stn_plots <- vector("list", length(ozone_caaqs_sdf@data$ems_id))
 names(stn_plots) <- ems_ids
 
 plot_exceedances <- FALSE
 
 for (emsid in ems_ids) {
-  dailydata <- daily_8hr_roll_max[daily_8hr_roll_max$ems_id == emsid &
-                                    daily_8hr_roll_max$date <= maxdate,]
+  dailydata <- daily_max_o3[daily_max_o3$ems_id == emsid &
+                              daily_max_o3$date <= maxdate,]
   
   if (nrow(dailydata) == 0) next
   
   site <- dailydata$site[1]
   
-  caaq_data <- three_yr_avg[three_yr_avg$ems_id == emsid,]
+ caaq_data <- ozone_caaqs_df[ozone_caaqs_df$ems_id == emsid,]
+
   
   lineplot <- ggplot(dailydata, size = 1) + 
     scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate), 
@@ -117,7 +118,7 @@ for (emsid in ems_ids) {
                                                  levels = c("Achieved", "Not Achieved"))), 
                    size = 1.5) + 
       annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")), 
-               y = 73, label = "2011-2013 Ozone Metric", size = 3.5, hjust=0, 
+               y = 73, label = "2013-2015 Ozone Metric", size = 3.5, hjust=0, 
                colour = "grey50") + 
       geom_segment(data = caaq_data, colour = "grey60",
                    aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69, 
@@ -277,7 +278,7 @@ dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 for (i in seq_along(stn_plots)) {
   obj <- stn_plots[i]
   name <- names(obj)
-  cat("savinging plot for", name, "\n")
+  cat("saving plot for", name, "\n")
   png(filename = paste0(line_dir, name, "_lineplot.png"), 
       width = 778, height = 254, units = "px", res = 90)
   plot(obj[[1]])
