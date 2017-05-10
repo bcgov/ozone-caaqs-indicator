@@ -12,20 +12,14 @@
 
 #library("openair")
 library("rcaaqs") # caaqs functions
-#library("dplyr")
 #library("lubridate")
-#library("magrittr")
 library("sp") # converting to spatial dataframe
-#library("rgdal")
 library("bcmaps") #air zone map
 library("dplyr") # for glimpse()
 
 # Load the tmp file if ozone doesn't exist (need inherits = FALSE as "ozone" 
 # exists in 'maps' package on which 'openair' depends)
 if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
-
-## Set constants
-#o3_standard <- 63
 
 ## Compute the daily rolling 8 hour average
 rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id"))
