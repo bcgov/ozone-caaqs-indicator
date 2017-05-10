@@ -74,6 +74,7 @@ ozone_sites <- ozone_sites %>%
 
 ## Merge site attributes into ozone_sites
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
+ozone_sites <- select(ozone_sites, -site)
 
 ## Subset to only use those with data up to at least 2012
 #ozone_sites <- ozone_sites[ozone_sites$max_date >= as.POSIXct("2012-01-01"), ]
