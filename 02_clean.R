@@ -55,14 +55,14 @@ site_summary <- ozone %>%
 ## Convert stations column names to lowercase:
 names(stations) <- tolower(names(stations))
 
-## Subset ems_sites for just sites analyzed
+## Subset station file list of ems_sites for just sites analyzed
 ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,] 
 #removes "Chetwynd SW BCOGC MAML" from ozone data frame
-#station not in stations, only 3 weeks of data from 2014
+#"Chetwynd SW BCOGC MAML" station not in stations, only 3 weeks of data from 2014
 
 
 ## Remove duplicates
- typos <- c("Chilliwack Airport_", "Elk Falls Dogwood OLD", "Pitt Meadows Meadowlands School_")
+typos <- c("Chilliwack Airport_", "Elk Falls Dogwood OLD", "Pitt Meadows Meadowlands School_")
 
 ozone_sites <- ozone_sites %>% 
   mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM)", "", station_name), 
@@ -76,8 +76,7 @@ ozone_sites <- ozone_sites %>%
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
 ozone_sites <- select(ozone_sites, -site)
 
-
-## Subset ozone so only analyze the pertinent sites:
-ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
+## Subset ozone data file so only analyze the pertinent sites:
+#ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
 
 save(ozone, ozone_sites, min_year, max_year, file = "tmp/ozone_clean.RData")
