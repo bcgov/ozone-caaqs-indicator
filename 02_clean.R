@@ -26,8 +26,7 @@ ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 ozone <- filter(ozone, ems_id != "E299970")
 
 # Format date column using rcaaqs::format_date()
-#ozone$date_time <- format_date(ozone$date_time)
-ozone$date_time <- as.POSIXct(format_date(ozone$date_time))
+ozone$date_time <- format_date(ozone$date_time)
 
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone$value <- clean_neg(ozone$value, "ozone")
