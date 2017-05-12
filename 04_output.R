@@ -13,8 +13,8 @@
 ## @knitr pre
 
 # library("dplyr")
-# library("sp")
-# library("rgdal")
+#library("sp")
+#library("rgdal")
 # library("rgeos")
 library("ggplot2") # for plotting
 # library("grid")
@@ -22,10 +22,11 @@ library("scales") # for date_breaks()
 # library("rcaaqs")
 # library("geojsonio")
 library("envreportutils") # for theme_facet_soe()
-# library("bcmaps")
+library("forcats") # tweak factor levels
 
 ## Load data
-# if (!exists("three_yr_avg")) load("tmp/analysed.RData")
+if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
+
 
 ## Set constants
 min_year <- max_year - 2
@@ -39,13 +40,17 @@ o3_standard <- 63
 ## Subset ozone sites to use only those that have a calculated CAAQS metric
 #ozone_sites <- ozone_sites[!is.na(ozone_sites$caaq_metric),]
 
-# Summary graph of airzones -----------------------------
+# Summary graph of ambient CAAQ metrics by station and airzones (print version only)
 
-## @knitr summary_plot
+## @knitr summary_plot 
 
-sum_dat <- ozone_caaqs_sdf@data
+sum_dat <- ozone_caaqs_map@data
 sum_dat$Airzone <- reorder(sum_dat$Airzone, sum_dat$caaq_metric, max, order = TRUE)
 sum_dat$Airzone <- factor(sum_dat$Airzone, levels = rev(levels(sum_dat$Airzone)))
+
+ann_text <- data.frame(station_name = "Victoria Topaz", caaq_metric = 62.5,
+                       Airzone = factor("Georgia Strait",
+                                        levels = levels(sum_dat$Airzone)))
 
 summary_plot <- ggplot(sum_dat, 
                        aes(x = caaq_metric, 
@@ -54,6 +59,8 @@ summary_plot <- ggplot(sum_dat,
              labeller = label_wrap_gen(15)) + 
   geom_point(size = 4, colour = "#377eb8") + 
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
+  geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 4, 
+            hjust = 1, colour = "#e41a1c") + 
   labs(x = "CAAQS Metric", y = "Ozone Monitoring Station") + 
   theme_soe_facet() + 
   theme(axis.title.y = element_text(size=rel(1.2)), 
@@ -62,10 +69,12 @@ summary_plot <- ggplot(sum_dat,
         strip.text = element_text(size = rel(0.8)))
 plot(summary_plot)
 
-# Individual monitoring station plots -------------------------------------
 
-ems_ids <- ozone_caaqs_sdf@data$ems_id
-stn_plots <- vector("list", length(ozone_caaqs_sdf@data$ems_id))
+
+# Individual monitoring station plots with daily maximum data and ambient CAAQS metric
+
+ems_ids <- sum_dat$ems_id
+stn_plots <- vector("list", length(sum_dat$ems_id))
 names(stn_plots) <- ems_ids
 
 plot_exceedances <- FALSE
@@ -78,7 +87,7 @@ for (emsid in ems_ids) {
   
   site <- dailydata$site[1]
   
- caaq_data <- ozone_caaqs_df[ozone_caaqs_df$ems_id == emsid,]
+ caaq_data <- sum_dat[sum_dat$ems_id == emsid,]
 
   
   lineplot <- ggplot(dailydata, size = 1) + 
@@ -141,34 +150,40 @@ for (emsid in ems_ids) {
 
 # Plot maps ---------------------------------------------------------------
 
-## @knitr achievement_map
+## @knitr ambient CAAQS achievement_map (print version only)
 
-airzones.points <- fortify(airzone_map, region = "Airzone") %>%
-  left_join(airzone_map@data, by = c("id" = "Airzone"))
+airzones <- fortify(ambient_airzone_map, region = "Airzone") %>% 
+ left_join(ambient_airzone_map@data, by = c("id" = "Airzone"))
 
-stations.points <- as.data.frame(ozone_sites)
+station.points <- as.data.frame(ozone_caaqs_map)
 
-achievement_map <- ggplot(airzones.points, aes(long, lat)) + 
+caaqs_achievement_map <- ggplot(airzones, aes(long, lat)) + 
   geom_polygon(aes(group=group, fill = caaq_status)) + 
   coord_fixed() + 
   scale_fill_manual(values = c("Achieved" = "#377eb8", "Not Achieved" = "#e41a1c", 
                                "Insufficient Data" ="grey80"), drop = FALSE, 
-                    name = "Airzones:\n2011-2013 CAAQS achievement status", 
-                    guide = guide_legend(order = 1)) + 
+                    name = "Airzones:\nOzone Air Quality Standard", 
+                    guide = guide_legend(order = 1, title.position = "top")) + 
   geom_path(aes(group=group), colour = "white") + 
-  geom_point(data = stations.points, aes(x = longitude, y = latitude, 
-                                         colour = caaq_metric)) +
+  geom_point(data = station.points, aes(x = longitude, y = latitude, 
+                                         colour = caaq_metric), size = 4) +
   scale_colour_gradient(high = "#252525", low = "#f0f0f0", 
-                        name = "Monitoring Stations:\n2011-2013 average ozone concentration", 
-                        guide = guide_colourbar(order = 2)) + 
+                        name = "Monitoring Stations:\nOzone Metric (ppb)", 
+                        guide = guide_colourbar(order = 2, title.position = "top",
+                                                barwidth = 10)) + 
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         axis.ticks = element_blank(), panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.just = "left")
+plot(caaqs_achievement_map)
 
-plot(achievement_map)
 
+##  AQMS Management Levels map 
 ## @knitr mgmt_map
+
+
+ml_airzones <- fortify(ml_airzone_map, region = "Airzone") %>% 
+  left_join(ml_airzone_map@data, by = c("id" = "Airzone"))
 
 colrs <- c("Insufficient Data" = "grey80", 
            "Actions for Keeping Clean Areas Clean" = "#A6D96A", 
@@ -176,8 +191,8 @@ colrs <- c("Insufficient Data" = "grey80",
            "Actions for Preventing CAAQS Exceedance" = "#F46D43", 
            "Actions for Achieving Air Zone CAAQS" = "#A50026")
 
-mgmt_map <- ggplot(airzones.points, aes(long, lat)) +   
-  geom_polygon(aes(group=group, fill = caaq_level)) + 
+mgmt_map <- ggplot(ml_airzones, aes(long, lat)) +   
+  geom_polygon(aes(group=group, fill = caaq_mngt_level)) + 
   coord_fixed() + 
   geom_path(aes(group=group), colour = "white") + 
   theme_minimal() + 
@@ -208,9 +223,13 @@ mgmt_map <- ggplot(airzones.points, aes(long, lat)) +
 
 plot(mgmt_map)
 
-# Management bar chart----------------------------------------------------
+# AQMS Management Levels by station bar chart---------------
 
 ## @knitr mgmt_chart
+
+ml_station.points <- as.data.frame(ml_ozone_caaqs_map)
+ml_station.points$caaq_mgmt_cat <- fct_drop(ml_station.points$caaq_mgmt_cat,
+                                            only = "Insufficient Data")
 
 chart_colrs <- colrs[-1]
 
@@ -219,17 +238,17 @@ mlevels <- c("Actions for Keeping Clean Areas Clean (\u226450 ppb)",
              "Actions for Preventing CAAQS Exceedance (>56 & \u226463 ppb)", 
              "Actions for Achieving Air Zone CAAQS (>63 ppb)")
 
-mgmt_chart <- ggplot(data=stations.points,
-                              aes(x = Airzone, fill = caaq_level)) + 
-  geom_bar(stat = "bin", alpha = 1) +
+mgmt_chart <- ggplot(data=ml_station.points,
+                              aes(x = Airzone, fill = caaq_mgmt_cat)) + 
+  geom_bar(stat = "count", alpha = 1) +
   xlab ("") + ylab ("Number of Reporting Stations") +
-  scale_y_continuous(limits = c(0,20), breaks=seq(0, 20, 4),
+  scale_y_continuous(limits = c(0,25), breaks=seq(0, 25, 5),
                      expand=c(0,0)) +
-  scale_fill_manual(values = chart_colrs, 
-                    drop = FALSE, 
-                    name = "Air Zone Management Levels", 
+  scale_fill_manual(values = chart_colrs,
+                    drop = FALSE,
+                    name = "Air Zone Management Levels",
                     guide = guide_legend(reverse = TRUE),
-                    labels = mlevels) + 
+                    labels = mlevels) +
   theme_soe() +
   theme(panel.grid.major.y = (element_blank()),
         axis.text = element_text(size = 12),
@@ -238,40 +257,32 @@ mgmt_chart <- ggplot(data=stations.points,
         legend.box.just = "left",
         legend.title = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.margin = unit(15,"mm"),
-        plot.margin = unit(c(10,0,0,0),"mm")) +
+   #     legend.margin = unit(15,"mm"),
+        plot.margin = unit(c(0,10,0,0),"mm")) +
   coord_flip()
-
 plot(mgmt_chart)
 
 ## @knitr stop
 
-## Trying with ggvis ... not bad!
-# ggvis_map <- airzones.points %>% 
-#   group_by(group) %>% 
-#   ggvis(~long, ~lat, fill = ~caaq_status) %>% 
-#   layer_paths() %>%
-#   layer_points(~coords.x1, ~coords.x2, stroke = ~caaq_metric, 
-#                data = stations.points)
 
 
 # Save plots --------------------------------------------------------------
 
-## Summary bar chart
-png(filename = paste0("out/airzone_summary_barchart.png"), 
+## Summary ozone CAAQS achivement by station and air zone chart
+png(filename = paste0("out/ozone_station_summary_chart.png"), 
     width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
 plot(summary_plot)
 dev.off()
 
-## Airzone achievement map
-ggsave("out/airzone_map.pdf", achievement_map, width = 8, height = 10, units = "in", scale = 1)
+## Airzone CAAQS ambient achievement map
+ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
 
 ## Combined Management map and barchart with multiplot
 png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
 
-## Line plots
+## CAAQS metrics and raw data station line plots
 line_dir <- "out/station_plots/"
 dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -286,37 +297,45 @@ for (i in seq_along(stn_plots)) {
 }
 graphics.off() # Kill any hanging graphics processes
 
+
+
 # Ouput csv files ---------------------------------------------------------
 
-daily_8hr_roll_max$max8hr <- round(daily_8hr_roll_max$max8hr, 1)
-write.csv(daily_8hr_roll_max, "out/daily_8r_roll_max.csv", row.names = FALSE)
+daily_max_o3$max8hr <- round(daily_max_o3$max8hr, 1)
+write.csv(daily_max_o3, "out/daily_max_03.csv", row.names = FALSE)
 
-annual_4th_daily_max$max8hr <- round(annual_4th_daily_max$max8hr, 1)
-write.csv(annual_4th_daily_max, "out/annual_4th_daily_max.csv", row.names = FALSE)
+ann_4th_highest$max8hr <- round(ann_4th_highest$max8hr, 1)
+write.csv(ann_4th_highest, "out/annual_4th_highest.csv", row.names = FALSE)
 
-write.csv(as.data.frame(airzone_map), "out/caaq_airzone_metrics.csv", 
+write.csv(as.data.frame(ozone_caaqs_map), "out/ozone_caaq_metrics.csv", 
+          row.names = FALSE)
+
+write.csv(as.data.frame(ambient_airzone_map), "out/ozone_caaq_airzone_metrics.csv", 
+          row.names = FALSE)
+
+write.csv(as.data.frame(ml_airzone_map), "out/ozone_aqms_airzone_mgmt_levels.csv", 
           row.names = FALSE)
 
 ## Output ozone_sites as csv - format for open data catalogue
-ozone_sites %>%
-  spTransform(CRSobj = outCRS) %>%
-  as.data.frame() %>%
-  select(ems_id, station_name = display_name, longitude, latitude, Airzone, 
-         regional_district, caaq_year_min, caaq_year_max, caaq_nYears, 
-         based_on_incomplete, caaq_metric, caaq_status, 
-         caaq_mgmt_level = caaq_level) %>% 
-  write.csv("out/ozone_site_summary.csv", row.names = FALSE)
-
-# Outpus spatial files as geojson: ----------------------------------------
-
-airzone_map %>%
-  spTransform(CRSobj = outCRS) %>%
-  geojson_write(file = "out/airzones.geojson")
-
-ozone_sites %>%
-  spTransform(CRSobj = outCRS) %>%
-  geojson_write(file = "out/ozone_sites.geojson")
-
-regional_districts_disp %>% 
-  spTransform(outCRS) %>% 
-  geojson_write(file = "out/regional_districts.geojson", precision = 4)
+# ozone_sites %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   as.data.frame() %>%
+#   select(ems_id, station_name = display_name, longitude, latitude, Airzone, 
+#          regional_district, caaq_year_min, caaq_year_max, caaq_nYears, 
+#          based_on_incomplete, caaq_metric, caaq_status, 
+#          caaq_mgmt_level = caaq_level) %>% 
+#   write.csv("out/ozone_site_summary.csv", row.names = FALSE)
+# 
+# # Outpus spatial files as geojson: ----------------------------------------
+# 
+# airzone_map %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   geojson_write(file = "out/airzones.geojson")
+# 
+# ozone_sites %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   geojson_write(file = "out/ozone_sites.geojson")
+# 
+# regional_districts_disp %>% 
+#   spTransform(outCRS) %>% 
+#   geojson_write(file = "out/regional_districts.geojson", precision = 4)
