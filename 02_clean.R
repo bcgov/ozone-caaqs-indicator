@@ -78,4 +78,15 @@ ozone_sites <- select(ozone_sites, -site)
 ## Subset ozone data file so only analyze the pertinent sites:
 #ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
 
+## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe
+## for determining AQMS Air Zone Management Levels
+## Two days in 2016 were flagged as exceptional events: 
+## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
+## These days are removed -- as a result of suspected wildfire influence --
+## for determining AQMS Air Zone Management Levels
+
+exclusions_2013_2015  <- data.frame(ems_id = "E293810", site = "Agassiz Municipal Hall",
+                      start = as.Date("2015-07-08"), end = as.Date("2015-07-09"))
+
+
 save(ozone, ozone_sites, min_year, max_year, file = "tmp/ozone_clean.RData")
