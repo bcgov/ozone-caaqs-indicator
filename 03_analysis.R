@@ -24,7 +24,7 @@ if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
 #########################################################################
 
 ## Compute the daily rolling 8 hour average
-rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id"))
+rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "site"))
 glimpse(rolling_avg)
 
 # Compute the daily maximum
