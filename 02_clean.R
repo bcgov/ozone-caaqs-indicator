@@ -86,6 +86,6 @@ ozone_sites <- select(ozone_sites, -site)
 ## for determining AQMS Air Zone Management Levels
 
 ee.tf.exclusions  <- data.frame(ems_id = "E293810", site = "Agassiz Municipal Hall",
-                      start = as.Date("2015-07-08"), end = as.Date("2015-07-09"))
+                      start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
 
 save(ozone, ozone_sites, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
