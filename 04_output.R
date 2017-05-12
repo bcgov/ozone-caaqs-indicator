@@ -37,9 +37,6 @@ dir.create("out", showWarnings = FALSE)
 o3_standard <- 63
 
 
-## Subset ozone sites to use only those that have a calculated CAAQS metric
-#ozone_sites <- ozone_sites[!is.na(ozone_sites$caaq_metric),]
-
 # Summary graph of ambient CAAQ metrics by station and airzones (print version only)
 
 ## @knitr summary_plot 
@@ -135,12 +132,7 @@ for (emsid in ems_ids) {
                        yend = caaq_metric + 1)) +
       scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2011-2013 Ozone Metric", 
                           name = element_blank(), guide = "none") #+ 
-#     theme(legend.direction = "horizontal", 
-#           legend.key.width = unit(2, "lines"), 
-#           legend.position = c(0.02,0.77), 
-#           legend.justification = c(0,0), legend.title = element_text(size = 9), 
-#           legend.margin = unit(0, "lines"), legend.background = element_rect(fill = "transparent"),
-#           legend.key = element_rect(colour="grey80"))
+
   }
   
   stn_plots[[emsid]] <- lineplot
@@ -316,17 +308,17 @@ write.csv(as.data.frame(ambient_airzone_map), "out/ozone_caaq_airzone_metrics.cs
 write.csv(as.data.frame(ml_airzone_map), "out/ozone_aqms_airzone_mgmt_levels.csv", 
           row.names = FALSE)
 
-## Output ozone_sites as csv - format for open data catalogue
-# ozone_sites %>%
+# Output ozone_caaqs_sites as csv - format for the BC Data Catalogue
+# ozone_caaqs_map %>%
 #   spTransform(CRSobj = outCRS) %>%
 #   as.data.frame() %>%
-#   select(ems_id, station_name = display_name, longitude, latitude, Airzone, 
-#          regional_district, caaq_year_min, caaq_year_max, caaq_nYears, 
-#          based_on_incomplete, caaq_metric, caaq_status, 
-#          caaq_mgmt_level = caaq_level) %>% 
+#   select(ems_id, station_name, longitude, latitude, Airzone,
+#          caaq_year_min, caaq_year_max, caaq_nYears,
+#          based_on_incomplete, caaq_metric, caaq_status,
+#          caaq_mgmt_level = caaq_level) %>%
 #   write.csv("out/ozone_site_summary.csv", row.names = FALSE)
-# 
-# # Outpus spatial files as geojson: ----------------------------------------
+
+# # Outputs spatial files as geojson: ----------------------------------------
 # 
 # airzone_map %>%
 #   spTransform(CRSobj = outCRS) %>%
