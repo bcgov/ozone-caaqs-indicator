@@ -85,8 +85,7 @@ ozone_sites <- select(ozone_sites, -site)
 ## These days are removed -- as a result of suspected wildfire influence --
 ## for determining AQMS Air Zone Management Levels
 
-exclusions_2013_2015  <- data.frame(ems_id = "E293810", site = "Agassiz Municipal Hall",
+ee.tf.exclusions  <- data.frame(ems_id = "E293810", site = "Agassiz Municipal Hall",
                       start = as.Date("2015-07-08"), end = as.Date("2015-07-09"))
 
-
-save(ozone, ozone_sites, min_year, max_year, file = "tmp/ozone_clean.RData")
+save(ozone, ozone_sites, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
