@@ -149,7 +149,7 @@ ml_ozone_caaqs <- ml_ozone_caaqs %>%
 
 ## Determine station management level colours for Management Level reporting
 ml_ozone_caaqs$caaq_mgmt_category_html <- cut_management(ml_ozone_caaqs$caaq_mgt_level_metric, "o3", output = "colour")
-
+ml_ozone_caaqs$caaq_mgmt_cat <- cut_management(ml_ozone_caaqs$caaq_mgt_level_metric, "o3", output = "labels")
 
 ## Add info from ozone sites to ml_ozone_caaqs dataframe & drop some columns
 ml_ozone_caaqs <- ml_ozone_caaqs %>% 
@@ -192,4 +192,4 @@ ml_airzone_map$caaq_mngt_colour <- cut_management(ml_airzone_map$caaq_mgt_level_
 
 
 dir.create("tmp", showWarnings = FALSE)
-save(ozone_caaqs, ambient_airzone_map, ml_ozone_caaqs, ml_airzone_map, min_year, max_year, file = "tmp/analysed.RData")
+save.image("tmp/analysed.RData")
