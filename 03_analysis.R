@@ -191,6 +191,5 @@ ml_airzone_map$caaq_mngt_level <- cut_management(ml_airzone_map$caaq_mgt_level_m
 ml_airzone_map$caaq_mngt_colour <- cut_management(ml_airzone_map$caaq_mgt_level_metric, "o3", output = "colour")
 
 
-
 dir.create("tmp", showWarnings = FALSE)
-save.image("tmp/analysed.RData")
+save(ozone_caaqs, ambient_airzone_map, ml_ozone_caaqs, ml_airzone_map, file = "tmp/analysed.RData")
