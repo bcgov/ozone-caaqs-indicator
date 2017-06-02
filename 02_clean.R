@@ -21,44 +21,44 @@ if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
 min_year <- 2014
 max_year <- 2016
 
+## Convert ozone_all column names to lowercase:
+names(ozone_all) <- tolower(names(ozone_all))
+
 ##create y, m, d columns and select years for 3 year analysis
-ozone_all$year <- as.integer(format(ozone_all$DATE_PST, "%Y"))
-ozone_all$month <- as.integer(format(ozone_all$DATE_PST, "%m"))
-ozone_all$day <- as.integer(format(ozone_all$DATE_PST, "%d"))
+ozone_all$year <- as.integer(format(ozone_all$date_pst, "%Y"))
+ozone_all$month <- as.integer(format(ozone_all$date_pst, "%m"))
+ozone_all$day <- as.integer(format(ozone_all$date_pst, "%d"))
 
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
-
 
 # Format date column using rcaaqs::format_date()
 #ozone$DATE_PST <- format_date(ozone$DATE_PST)
 
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone$RAW_VALUE <- clean_neg(ozone$RAW_VALUE, "ozone")
+ozone$raw_value <- clean_neg(ozone$raw_value, "ozone")
 
 ## Fill in missing hourly readings with NA
-ozone <- group_by(ozone, EMS_ID, STATION_NAME)
-ozone <- do(ozone, date_fill(., date_col = "DATE_PST", fill_cols = c("EMS_ID", "STATION_NAME"), interval = "1 hour"))
+ozone <- group_by(ozone, ems_id, station_name)
+ozone <- do(ozone, date_fill(., date_col = "date_pst", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
 
 
 ## Summarize sites
 site_summary <- ozone %>%
-  group_by(EMS_ID, STATION_NAME) %>%
-  summarize(min_date = min(DATE_PST), 
-            max_date = max(DATE_PST), 
+  group_by(ems_id, station_name) %>%
+  summarize(min_date = min(date_pst), 
+            max_date = max(date_pst), 
             n_hours = n(), 
-            n_readings = length(na.omit(RAW_VALUE)), 
+            n_readings = length(na.omit(raw_value)), 
             percent_readings = n_readings / n_hours) %>%
   ungroup() %>%
-  arrange(STATION_NAME) %>%
+  arrange(station_name) %>%
   as.data.frame()
 
 ## Convert stations column names to lowercase:
 names(stations) <- tolower(names(stations))
 
 ## Subset station file list of ems_sites for just sites analyzed
-ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,] 
-#removes "Chetwynd SW BCOGC MAML" from ozone data frame
-#"Chetwynd SW BCOGC MAML" station not in stations, only 3 weeks of data from 2014
+ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
 
 
 ## Remove duplicates
