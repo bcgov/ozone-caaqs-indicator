@@ -11,47 +11,51 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 library(readr)
-## Download the ozone and station data from BC Data Catalogue:
+## Download the ozone and station data from the BC Data Catalogue:
 ## ozone data from http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-raw-hourly-data-and-station-data
 ## station data from https://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-unverified-hourly-air-quality-and-meteorological-data
-databc_ozone <- "http://pub.data.gov.bc.ca/datasets/77eeadf4-0c19-48bf-a47a-fa9eef01f409/O3_hourly.zip"
+databc_ozone <- "ftp://ftp.env.gov.bc.ca/pub/outgoing/AIR/AnnualSummary/2009-LatestVerified/O3.csv"
 databc_stations <- "ftp://ftp.env.gov.bc.ca/pub/outgoing/AIR/Air_Monitoring_Stations/bc_air_monitoring_stations.csv"
 path <- "data"
-ozone_zip <- "O3_hourly.zip"
+ozone_file <- "O3.csv"
 stn_file <- "bc_air_monitoring_stations.csv"
+
 dir.create(path, showWarnings = FALSE)
 
-download.file(databc_ozone, destfile = file.path(path,ozone_zip))
+download.file(databc_ozone, destfile = file.path(path,ozone_file))
 download.file(databc_stations, destfile = file.path(path, stn_file))
-unzip(file.path(path,ozone_zip), exdir = path)
 
 ## Load stations and data from files
-stations <- read.csv(file.path(path, stn_file), stringsAsFactors = FALSE)
-
-ozone_all <- read_csv(file.path(path, "O3_hourly.csv"), col_types = "cccccidc")
-
+stations <- read_csv(file.path(path, stn_file))
+ozone_all <- read_csv(file.path(path, "O3.csv"))
+                      
 ## store data in local repository
 dir.create("tmp", showWarnings = FALSE)
 save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 
-#####################################################
-# ## Some basic data checks
-# 
+
+
+################################
+## Some basic data checks
+################################
+
+
 # library("ggplot2") # plotting
 # library("dplyr") #filter()
 # library("bcmaps") # quickly plot bc air zones
 # library("sp") #plot lat-longs in stations file
 # 
 # ## Set constants
-# min_year <- 2013
-# max_year <- 2015
+# min_year <- 2014
+# max_year <- 2016
 # 
 # ## subset for 3-year period of focus
+# ozone_all$year <- as.numeric(format(ozone_all$DATE_PST, "%Y"))
 # ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 # 
 # ## check precision
 # precis <- function(x) nchar(gsub("(.*\\.)|([0]*$)", "", as.character(x)))
-# table(precis(ozone$value)) # all 0 to 2 digits
+# table(precis(ozone$RAW_VALUE)) # 0 to 10 digits
 # 
 # summary(ozone)
 # 
@@ -59,13 +63,12 @@ save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 # tail(ozone, 50)
 # 
 # ## look at the values
-# ggplot(ozone, aes(x = value)) + facet_wrap(~ site) + geom_histogram()
+# ggplot(ozone, aes(x = RAW_VALUE)) + facet_wrap(~ STATION_NAME) + geom_histogram()
 # 
 # ## Which sites in ozone dataset don't have a corresponding site in ems locations
-# missing_sites <- unique(ozone$site)[!unique(ozone$ems_id) %in% stations$EMS_ID]
-# missing_sites
-# #Chetwynd SW BCOGC MAML missing from station file. The station only tested for 3 weeks in 2014.
-# #Very little O3 data so removed for this analysis.
+# missing_sites <- unique(ozone$STATION_NAME)[!unique(ozone$EMS_ID) %in% stations$EMS_ID]
+# missing_sites #none
+# 
 # 
 # ## look at the station locations
 # station_points <- stations
