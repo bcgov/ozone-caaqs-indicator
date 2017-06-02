@@ -18,37 +18,38 @@ library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.
 if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
 
 ## Set constants
-min_year <- 2013
-max_year <- 2015
+min_year <- 2014
+max_year <- 2016
 
-## Select years and removed Chetwynd SW BCOGC MAML data
+##create y, m, d columns and select years for 3 year analysis
+ozone_all$year <- as.integer(format(ozone_all$DATE_PST, "%Y"))
+ozone_all$month <- as.integer(format(ozone_all$DATE_PST, "%m"))
+ozone_all$day <- as.integer(format(ozone_all$DATE_PST, "%d"))
+
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
-ozone <- filter(ozone, ems_id != "E299970")
+
 
 # Format date column using rcaaqs::format_date()
-ozone$date_time <- format_date(ozone$date_time)
+#ozone$DATE_PST <- format_date(ozone$DATE_PST)
 
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone$value <- clean_neg(ozone$value, "ozone")
+ozone$RAW_VALUE <- clean_neg(ozone$RAW_VALUE, "ozone")
 
-## Fill in missing hourly readings with NA, create y, m, d columns
-ozone <- group_by(ozone, ems_id, site)
-ozone <- do(ozone, date_fill(., date_col = "date_time", fill_cols = c("ems_id", "site"), interval = "1 hour"))
-ozone <- ungroup(ozone)
-ozone$year <- as.integer(format(ozone$date_time, "%Y"))
-ozone$month <- as.integer(format(ozone$date_time, "%m"))
-ozone$day <- as.integer(format(ozone$date_time, "%d"))
+## Fill in missing hourly readings with NA
+ozone <- group_by(ozone, EMS_ID, STATION_NAME)
+ozone <- do(ozone, date_fill(., date_col = "DATE_PST", fill_cols = c("EMS_ID", "STATION_NAME"), interval = "1 hour"))
+
 
 ## Summarize sites
 site_summary <- ozone %>%
-  group_by(ems_id, site) %>%
-  summarize(min_date = min(date_time), 
-            max_date = max(date_time), 
+  group_by(EMS_ID, STATION_NAME) %>%
+  summarize(min_date = min(DATE_PST), 
+            max_date = max(DATE_PST), 
             n_hours = n(), 
-            n_readings = length(na.omit(value)), 
+            n_readings = length(na.omit(RAW_VALUE)), 
             percent_readings = n_readings / n_hours) %>%
   ungroup() %>%
-  arrange(site) %>%
+  arrange(STATION_NAME) %>%
   as.data.frame()
 
 ## Convert stations column names to lowercase:
