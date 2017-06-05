@@ -27,18 +27,16 @@ download.file(databc_stations, destfile = file.path(path, stn_file))
 
 ## Load stations and data from files
 stations <- read_csv(file.path(path, stn_file))
-ozone_all <- read_csv(file.path(path, "O3.csv"), col_types = "cccccncn")
-                      
+ozone_all <- read_csv(file.path(path, "O3.csv"))
+                  
 ## store data in local repository
 dir.create("tmp", showWarnings = FALSE)
 save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 
 
-
 ################################
 ## Some basic data checks
 ################################
-
 
 # library("ggplot2") # plotting
 # library("dplyr") #filter()
