@@ -24,25 +24,25 @@ if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
 #########################################################################
 
 ## Compute the daily rolling 8 hour average
-rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "site"))
+rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
 glimpse(rolling_avg)
 
 # Compute the daily maximum
-daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "site"))
+daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "station_name"))
 glimpse(daily_max_o3)
 
 # Compute the 4th highest  daily maximum
-ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "site"))
+ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "station_name"))
 glimpse(ann_4th_highest)
 
 # Compute the rolling three year average
-three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "site"))
+three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "station_name"))
 glimpse(three_yr_avg)
 
 
 # Calculate the number of years contributing to rolling 3-year average & max and min years
 ozone_caaqs <- three_yr_avg %>% 
-  group_by(ems_id, site) %>%
+  group_by(ems_id, station_name) %>%
   mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
                       ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
   mutate(n = n()) %>% 
@@ -64,10 +64,12 @@ ozone_caaqs$caaq_category_u <- cut_management(ozone_caaqs$caaq_metric, "o3", out
 
 ## Add info from ozone sites to ozone_caaqs dataframe & drop some columns
 ozone_caaqs <- ozone_caaqs %>% 
-  merge(ozone_sites, ., by = "ems_id") %>% 
-  select(-c(site, year, n, valid, quarter_1, quarter_2,
-            quarter_3, quarter_4, max8hr, exceed, 
+  merge(ozone_sites, ., by = c("ems_id")) %>% 
+  select(-c(n_hours, year, valid, station_name.y,
+            flag_two_of_three_years, valid_in_year, quarter_1, quarter_2,
+            quarter_3, quarter_4, max8hr, valid_year, exceed, 
             flag_year_based_on_incomplete_data, n))
+colnames(ozone_caaqs)[which(names(ozone_caaqs) == "station_name.x")] <- "station_name"
 
 ## Do mapping
 ## Convert ozone_caaqs to SpatialPointsDataFrame and put in the same projection
@@ -108,32 +110,32 @@ ambient_airzone_map$caaq_category_u <- cut_achievement(ambient_airzone_map$caaq_
 ####################################################################################
 
 ## Recompute the daily rolling 8 hour average with EEs and TFs removed
-ml_rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "site"),
+ml_rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"),
                                      exclude_df = ee.tf.exclusions,
                                      exclude_df_dt = c("start", "end"))
 glimpse(ml_rolling_avg)
 
 # Recompute the daily maximum with EEs and TFs removed
-ml_daily_max_o3 <- o3_daily_max(ml_rolling_avg, by = c("ems_id", "site"),
+ml_daily_max_o3 <- o3_daily_max(ml_rolling_avg, by = c("ems_id", "station_name"),
                                 exclude_df = ee.tf.exclusions,
                                 exclude_df_dt = c("start", "end"))
 glimpse(ml_daily_max_o3)
 
 # Recompute the 4th highest  daily maximum with EEs and TFs removed
-ml_ann_4th_highest <- o3_ann_4th_highest(ml_daily_max_o3, by = c("ems_id", "site"),
+ml_ann_4th_highest <- o3_ann_4th_highest(ml_daily_max_o3, by = c("ems_id", "station_name"),
                                          exclude_df = ee.tf.exclusions,
                                          exclude_df_dt = c("start", "end"))
 glimpse(ml_ann_4th_highest)
 
 # Compute the rolling three year average for Management Level assignment
-ml_three_yr_avg <- o3_three_yr_avg(ml_ann_4th_highest, by = c("ems_id", "site"))
+ml_three_yr_avg <- o3_three_yr_avg(ml_ann_4th_highest, by = c("ems_id", "station_name"))
 glimpse(ml_three_yr_avg)
 
 
 # Calculate the number of years contributing to rolling 3-year average & max and min years
 #  for Management Level assignment
 ml_ozone_caaqs <- ml_three_yr_avg %>% 
-  group_by(ems_id, site) %>%
+  group_by(ems_id, station_name) %>%
   mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
                       ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
   mutate(n = n()) %>% 
@@ -154,9 +156,11 @@ ml_ozone_caaqs$caaq_mgmt_cat <- cut_management(ml_ozone_caaqs$caaq_mgt_level_met
 ## Add info from ozone sites to ml_ozone_caaqs dataframe & drop some columns
 ml_ozone_caaqs <- ml_ozone_caaqs %>% 
   merge(ozone_sites, ., by = "ems_id") %>% 
-  select(-c(site, year, n, valid, quarter_1, quarter_2,
-            quarter_3, quarter_4, max8hr, exceed, 
+  select(-c(n_hours, year, valid, station_name.y,
+            flag_two_of_three_years, valid_in_year, quarter_1, quarter_2,
+            quarter_3, quarter_4, max8hr, valid_year, exceed, 
             flag_year_based_on_incomplete_data, n))
+colnames(ml_ozone_caaqs)[which(names(ml_ozone_caaqs) == "station_name.x")] <- "station_name"
 
 ## Do mapping
 ## Convert ml_ozone_caaqs to SpatialPointsDataFrame and put in the same projection
