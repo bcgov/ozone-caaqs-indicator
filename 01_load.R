@@ -27,7 +27,7 @@ download.file(databc_stations, destfile = file.path(path, stn_file))
 
 ## Load stations and data from files
 stations <- read_csv(file.path(path, stn_file))
-ozone_all <- read_csv(file.path(path, "O3.csv"))
+ozone_all <- read_csv(file.path(path, "O3.csv"), col_types = "cccccncn")
                       
 ## store data in local repository
 dir.create("tmp", showWarnings = FALSE)
