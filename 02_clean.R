@@ -21,33 +21,34 @@ if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
 min_year <- 2014
 max_year <- 2016
 
-## Convert ozone_all column names to lowercase:
+## Convert ozone_all column names to lowercase
 names(ozone_all) <- tolower(names(ozone_all))
 
-##create y, m, d columns and select years for 3 year analysis
-ozone_all$year <- as.integer(format(ozone_all$date_pst, "%Y"))
-ozone_all$month <- as.integer(format(ozone_all$date_pst, "%m"))
-ozone_all$day <- as.integer(format(ozone_all$date_pst, "%d"))
+## Change column names top `rcaaqs` defaults
+colnames(ozone_all)[which(names(ozone_all) == "date_pst")] <- "date_time"
+colnames(ozone_all)[which(names(ozone_all) == "raw_value")] <- "value"
+
+## Create y, m, d columns and select years for 3 year analysis
+ozone_all$year <- as.integer(format(ozone_all$date_time, "%Y"))
+ozone_all$month <- as.integer(format(ozone_all$date_time, "%m"))
+ozone_all$day <- as.integer(format(ozone_all$date_time, "%d"))
 
 ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
 
-# Format date column using rcaaqs::format_date()
-#ozone$DATE_PST <- format_date(ozone$DATE_PST)
-
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone$raw_value <- clean_neg(ozone$raw_value, "ozone")
+ozone$value <- clean_neg(ozone$value, "ozone")
 
 ## Fill in missing hourly readings with NA
 ozone <- group_by(ozone, ems_id, station_name)
-ozone <- do(ozone, date_fill(., date_col = "date_pst", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
+ozone <- do(ozone, date_fill(., date_col = "date_time", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
 
 ## Summarize sites
 site_summary <- ozone %>%
   group_by(ems_id, station_name) %>%
-  summarize(min_date = min(date_pst), 
-            max_date = max(date_pst), 
+  summarize(min_date = min(date_time), 
+            max_date = max(date_time), 
             n_hours = n(), 
-            n_readings = length(na.omit(raw_value)), 
+            n_readings = length(na.omit(value)), 
             percent_readings = n_readings / n_hours) %>%
   ungroup() %>%
   arrange(station_name) %>%
