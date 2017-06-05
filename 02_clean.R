@@ -41,7 +41,6 @@ ozone$raw_value <- clean_neg(ozone$raw_value, "ozone")
 ozone <- group_by(ozone, ems_id, station_name)
 ozone <- do(ozone, date_fill(., date_col = "date_pst", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
 
-
 ## Summarize sites
 site_summary <- ozone %>%
   group_by(ems_id, station_name) %>%
@@ -60,12 +59,11 @@ names(stations) <- tolower(names(stations))
 ## Subset station file list of ems_sites for just sites analyzed
 ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
 
-
 ## Remove duplicates
-typos <- c("Chilliwack Airport_", "Elk Falls Dogwood OLD", "Pitt Meadows Meadowlands School_")
+typos <- c("Pitt Meadows Meadowlands School")
 
 ozone_sites <- ozone_sites %>% 
-  mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM)", "", station_name), 
+  mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM|OLD)", "", station_name), 
          station_owner = gsub("[Ss]hared - ", "Shared ", station_owner)) %>% 
   select(ems_id, station_name, latitude, longitude) %>% 
   filter(!station_name %in% typos) %>% 
@@ -74,14 +72,15 @@ ozone_sites <- ozone_sites %>%
 
 ## Merge site attributes into ozone_sites
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
-ozone_sites <- select(ozone_sites, -site)
+ozone_sites <- select(ozone_sites, -station_name.y)
+colnames(ozone_sites)[which(names(ozone_sites) == "station_name.x")] <- "station_name"
 
 ## Subset ozone data file so only analyze the pertinent sites:
 #ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
 
 ## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe
 ## for determining AQMS Air Zone Management Levels
-## Two days in 2016 were flagged as exceptional events: 
+## Two days in 2015 were flagged as exceptional events: 
 ## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
 ## These days are removed -- as a result of suspected wildfire influence --
 ## for determining AQMS Air Zone Management Levels
