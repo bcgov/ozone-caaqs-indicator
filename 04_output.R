@@ -52,8 +52,8 @@ ann_text <- data.frame(station_name = "Victoria Topaz", caaq_metric = 62.5,
 summary_plot <- ggplot(sum_dat, 
                        aes(x = caaq_metric, 
                            y = reorder(station_name, caaq_metric, sum))) + 
-  facet_grid(Airzone~., scales = "free_y", space = "free_y", drop=TRUE, 
-             labeller = label_wrap_gen(15)) + 
+  facet_grid(Airzone~., scales = "free_y", space = "free", drop=TRUE, 
+             labeller = label_wrap_gen(width = 15, multi_line = TRUE)) + 
   geom_point(size = 4, colour = "#377eb8") + 
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
   geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 4, 
@@ -63,9 +63,8 @@ summary_plot <- ggplot(sum_dat,
   theme(axis.title.y = element_text(size=rel(1.2)), 
         axis.text.y = element_text(size = rel(0.8)), 
         axis.line.x = element_blank(), 
-        strip.text = element_text(size = rel(0.8)))
+        strip.text.y = element_text(size = rel(1), angle = 0))
 plot(summary_plot)
-
 
 
 # Individual monitoring station plots with daily maximum data and ambient CAAQS metric
