@@ -81,7 +81,7 @@ for (emsid in ems_ids) {
   
   if (nrow(dailydata) == 0) next
   
-  site <- dailydata$site[1]
+  site <- dailydata$station_name[1]
   
  caaq_data <- sum_dat[sum_dat$ems_id == emsid,]
 
@@ -123,13 +123,13 @@ for (emsid in ems_ids) {
                                                  levels = c("Achieved", "Not Achieved"))), 
                    size = 1.5) + 
       annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")), 
-               y = 73, label = "2013-2015 Ozone Metric", size = 3.5, hjust=0, 
+               y = 73, label = "2014-2016 Ozone Metric", size = 3.5, hjust=0, 
                colour = "grey50") + 
       geom_segment(data = caaq_data, colour = "grey60",
                    aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69, 
                        xend = as.Date(paste0(caaq_year_min, "-11-01")), 
                        yend = caaq_metric + 1)) +
-      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2011-2013 Ozone Metric", 
+      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric", 
                           name = element_blank(), guide = "none") #+ 
 
   }
