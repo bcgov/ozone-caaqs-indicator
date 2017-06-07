@@ -268,6 +268,12 @@ dev.off()
 ## Airzone CAAQS ambient achievement map
 ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
 
+png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
+    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
+plot(caaqs_achievement_map)
+dev.off()
+
+
 ## Combined Management map and barchart with multiplot
 png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
