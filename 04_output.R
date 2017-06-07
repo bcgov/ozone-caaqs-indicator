@@ -12,7 +12,7 @@
 
 ## @knitr pre
 
-# library("dplyr")
+library("dplyr")
 #library("sp")
 #library("rgdal")
 # library("rgeos")
