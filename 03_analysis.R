@@ -53,7 +53,7 @@ ozone_caaqs <- three_yr_avg %>%
 ozone_caaqs <- ozone_caaqs %>% 
       filter(nyr != "<2") %>% 
       filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
-      mutate(caaq_metric = round(ozone_metric, digits = 0))
+      mutate(caaq_metric = rcaaqs:::round_caaqs(ozone_metric))
 
 
 ## Determine station achievements with o3_standard <- 63
