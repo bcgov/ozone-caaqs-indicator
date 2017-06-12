@@ -2,11 +2,11 @@
 
 ---
 
-# Ozone CAAQS Analysis for B.C. (2011-2013)
+# Ozone CAAQS Analysis for B.C. (2014-2016)
 
-A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for Ozone for 2011-2013. These scripts reproduce the 2015 analysis presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
+A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for Ozone for 2014-2016. These scripts reproduce the 2017 analysis presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
 
-This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the Ministry of Enviornment.
+This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the B.C. Ministry of Environment.
 
 ### Usage
 
@@ -19,7 +19,7 @@ There are four core scripts that are required for the analysis, they need to be 
 
 The `run_all.R` script can be `source`ed to run it all at once.
 
-Most packages used in the analysis can be installed from CRAN using `install.packages()`, but you will need to install [rcaaqs](https://github.com/bcgov/rcaaqs) and [bcmaps](https://github.com/bcgov/bcmaps) using devtools:
+Most packages used in the analysis can be installed from CRAN using `install.packages()`, but you will need to install [envreportutils](https://github.com/bcgov/envreportutils), [rcaaqs](https://github.com/bcgov/rcaaqs) and [bcmaps](https://github.com/bcgov/bcmaps) using devtools:
 
 ```r
 install.packages("devtools") # If you don't already have it installed
@@ -27,6 +27,7 @@ install.packages("devtools") # If you don't already have it installed
 library(devtools)
 install_github("bcgov/rcaaqs")
 install_github("bcgov/bcmaps")
+install_github("bcgov/envreportutils")
 ```
 
 ### Getting Help or Reporting an Issue
