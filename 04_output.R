@@ -13,20 +13,13 @@
 ## @knitr pre
 
 library("dplyr")
-#library("sp")
-#library("rgdal")
-# library("rgeos")
 library("ggplot2") # for plotting
-# library("grid")
 library("scales") # for date_breaks()
-# library("rcaaqs")
-# library("geojsonio")
 library("envreportutils") # for theme_facet_soe()
 library("forcats") # tweak factor levels
 
 ## Load data
 if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
-
 
 ## Set constants
 min_year <- max_year - 2
