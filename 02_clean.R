@@ -29,7 +29,7 @@ colnames(ozone_all)[which(names(ozone_all) == "date_pst")] <- "date_time"
 colnames(ozone_all)[which(names(ozone_all) == "raw_value")] <- "value"
 
 ## Subtract 1 second so reading is assigned to previous hour
-ozone_all$date_time <- ozone_all$date_time - 1 
+ozone_all$date_time <- format_caaqs_dt(ozone_all$date_time)
 
 ## Create y, m, d columns and select years for 3 year analysis
 ozone_all$year <- as.integer(format(ozone_all$date_time, "%Y"))
