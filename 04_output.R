@@ -307,6 +307,11 @@ write.csv(as.data.frame(ml_airzone_map), "out/ozone_aqms_airzone_mgmt_levels.csv
           row.names = FALSE)
 
 # Output ozone_caaqs_sites as csv - format for the BC Data Catalogue
+#
+# library("sp")
+# library("rgdal")
+# library("geojsonio")
+#
 # ozone_caaqs_map %>%
 #   spTransform(CRSobj = outCRS) %>%
 #   as.data.frame() %>%
