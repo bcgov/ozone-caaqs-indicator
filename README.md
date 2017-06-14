@@ -32,7 +32,7 @@ install_github("bcgov/envreportutils")
 
 ### Getting Help or Reporting an Issue
 
-To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/<repo-name>/issues/).
+To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/ozone-caaqs-analysis/issues).
 
 ### How to Contribute
 
