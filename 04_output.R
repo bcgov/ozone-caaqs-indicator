@@ -136,12 +136,12 @@ for (emsid in ems_ids) {
 
 ## @knitr ambient CAAQS achievement_map (print version only)
 
-airzones <- fortify(ambient_airzone_map, region = "Airzone") %>% 
+ach_airzones <- fortify(ambient_airzone_map, region = "Airzone") %>% 
  left_join(ambient_airzone_map@data, by = c("id" = "Airzone"))
 
 station.points <- as.data.frame(ozone_caaqs_map)
 
-caaqs_achievement_map <- ggplot(airzones, aes(long, lat)) + 
+caaqs_achievement_map <- ggplot(ach_airzones, aes(long, lat)) + 
   geom_polygon(aes(group=group, fill = caaq_status)) + 
   coord_fixed() + 
   scale_fill_manual(values = c("Achieved" = "#377eb8", "Not Achieved" = "#e41a1c", 
