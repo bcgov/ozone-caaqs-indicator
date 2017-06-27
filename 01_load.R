@@ -29,11 +29,11 @@ download.file(databc_stations, destfile = file.path(path, stn_file))
 
 ## Load stations and data from files
 stations <- read_csv(file.path(path, stn_file), na = c("", "N/A"))
-ozone_all <- read_csv(file.path(path, "O3.csv"))
+ozone_raw <- read_csv(file.path(path, "O3.csv"))
                   
 ## store data in local repository
 dir.create("tmp", showWarnings = FALSE)
-save(ozone_all, stations, file = "tmp/ozone_raw.RData")
+save(ozone_raw, stations, file = "tmp/ozone_raw.RData")
 
 
 ################################
@@ -50,8 +50,8 @@ save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 # max_year <- 2016
 # 
 # ## subset for 3-year period of focus
-# ozone_all$year <- as.numeric(format(ozone_all$DATE_PST, "%Y"))
-# ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
+# ozone_raw$year <- as.numeric(format(ozone_raw$DATE_PST, "%Y"))
+# ozone <- ozone_raw[ozone_raw$year >= min_year & ozone_raw$year <= max_year,]
 # 
 # ## check precision
 # precis <- function(x) nchar(gsub("(.*\\.)|([0]*$)", "", as.character(x)))
@@ -67,7 +67,7 @@ save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 # 
 # ## Which sites in ozone dataset don't have a corresponding site in ems locations
 # missing_sites <- unique(ozone$STATION_NAME)[!unique(ozone$EMS_ID) %in% stations$EMS_ID]
-# missing_sites #none
+# missing_sites # none
 # 
 # 
 # ## look at the station locations
