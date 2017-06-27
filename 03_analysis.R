@@ -93,13 +93,14 @@ ozone_caaqs_map$Airzone <- over(ozone_caaqs_map, airzones)[["Airzone"]]
 az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "nyr", 
                  az = "Airzone", val = "caaq_metric", 
                  keep = c(rep_station_id = "ems_id", 
-                          rep_station_name = "station_name",
-                          "caaq_status", "caaq_category_html", "caaq_category_u"))
+                          rep_station_name = "station_name"))
 
 ambient_airzone_map <- airzones
 ambient_airzone_map <- sp::merge(ambient_airzone_map, as.data.frame(az_metric), by = "Airzone")
 
-
+ambient_airzone_map$caaq_status <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "labels")
+ambient_airzone_map$caaq_category_html <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "breaks_h")
+ambient_airzone_map$caaq_category_u <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "breaks_u")
 
 
 #####################################################################################
@@ -178,12 +179,13 @@ ml_ozone_caaqs_map$Airzone <- over(ml_ozone_caaqs_map, airzones)[["Airzone"]]
 ml_az_metric <- airzone_metric(ml_ozone_caaqs_map@data, n_years = "nyr", 
                             az = "Airzone", val = "caaq_mgt_level_metric", 
                             keep = c(rep_station_id = "ems_id", 
-                                     rep_station_name = "station_name",
-                                     "caaq_mgmt_category_html", "caaq_mgmt_cat"))
+                                     rep_station_name = "station_name"))
 
 ml_airzone_map <- airzones
 ml_airzone_map <- sp::merge(ml_airzone_map, as.data.frame(ml_az_metric), by = "Airzone")
 
+ml_airzone_map$caaq_mngt_level <- cut_management(ml_airzone_map$caaq_mgt_level_metric, "o3", output = "labels")
+ml_airzone_map$caaq_mngt_colour <- cut_management(ml_airzone_map$caaq_mgt_level_metric, "o3", output = "colour")
 
 dir.create("tmp", showWarnings = FALSE)
 save.image("tmp/analysed.RData")
