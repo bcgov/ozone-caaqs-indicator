@@ -44,7 +44,7 @@ ozone$value <- clean_neg(ozone$value, "ozone")
 ozone <- group_by(ozone, ems_id, station_name)
 ozone <- do(ozone, date_fill(., date_col = "date_time", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
 
-## Summarize sites
+## Summarize sites in clean dataframe
 site_summary <- ozone %>%
   group_by(ems_id, station_name) %>%
   summarize(min_date = min(date_time), 
@@ -56,13 +56,13 @@ site_summary <- ozone %>%
   arrange(station_name) %>%
   as.data.frame()
 
-## Convert stations column names to lowercase:
+## Convert stations column names to lowercase
 names(stations) <- tolower(names(stations))
 
-## Subset station file list of ems_sites for just sites analyzed
+## Subset station file list of ems_sites for just sites analyzed in clean dataframe
 ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
 
-## Remove duplicates
+## Remove duplicates from ozone_sites
 typos <- c("Pitt Meadows Meadowlands School")
 
 ozone_sites <- ozone_sites %>% 
@@ -73,13 +73,11 @@ ozone_sites <- ozone_sites %>%
   group_by(station_name) %>% 
   slice(which.max(latitude))
 
-## Merge site attributes into ozone_sites
+## Merge site attributes from site_summary into ozone_sites
 ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
 ozone_sites <- select(ozone_sites, -station_name.y)
 colnames(ozone_sites)[which(names(ozone_sites) == "station_name.x")] <- "station_name"
 
-## Subset ozone data file so only analyze the pertinent sites:
-#ozone <- ozone[ozone$ems_id %in% ozone_sites$ems_id, ]
 
 ## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe
 ## for determining AQMS Air Zone Management Levels
