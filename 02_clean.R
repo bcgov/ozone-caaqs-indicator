@@ -63,13 +63,10 @@ names(stations) <- tolower(names(stations))
 ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
 
 ## Remove duplicates from ozone_sites
-typos <- c("Pitt Meadows Meadowlands School")
-
 ozone_sites <- ozone_sites %>% 
   mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM|OLD)", "", station_name), 
          station_owner = gsub("[Ss]hared - ", "Shared ", station_owner)) %>% 
   select(ems_id, station_name, latitude, longitude) %>% 
-  filter(!station_name %in% typos) %>% 
   group_by(station_name) %>% 
   slice(which.max(latitude))
 
