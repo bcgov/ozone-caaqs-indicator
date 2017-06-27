@@ -14,28 +14,28 @@
 library("dplyr") # data munging
 library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
-if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
+if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
-## Set constants
+## Set constants for 3-year analysis
 min_year <- 2014
 max_year <- 2016
 
-## Convert ozone_all column names to lowercase
-names(ozone_all) <- tolower(names(ozone_all))
+## Convert ozone_raw column names to lowercase
+names(ozone_raw) <- tolower(names(ozone_raw))
 
-## Change column names top `rcaaqs` defaults
-colnames(ozone_all)[which(names(ozone_all) == "date_pst")] <- "date_time"
-colnames(ozone_all)[which(names(ozone_all) == "raw_value")] <- "value"
+## Change column names to match `rcaaqs` defaults
+colnames(ozone_raw)[which(names(ozone_raw) == "date_pst")] <- "date_time"
+colnames(ozone_raw)[which(names(ozone_raw) == "raw_value")] <- "value"
 
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
-ozone_all$date_time <- format_caaqs_dt(ozone_all$date_time)
+ozone_raw$date_time <- format_caaqs_dt(ozone_raw$date_time)
 
 ## Create y, m, d columns and select years for 3 year analysis
-ozone_all$year <- as.integer(format(ozone_all$date_time, "%Y"))
-ozone_all$month <- as.integer(format(ozone_all$date_time, "%m"))
-ozone_all$day <- as.integer(format(ozone_all$date_time, "%d"))
+ozone_raw$year <- as.integer(format(ozone_raw$date_time, "%Y"))
+#ozone_raw$month <- as.integer(format(ozone_raw$date_time, "%m"))
+#ozone_raw$day <- as.integer(format(ozone_raw$date_time, "%d"))
 
-ozone <- ozone_all[ozone_all$year >= min_year & ozone_all$year <= max_year,]
+ozone <- ozone_raw[ozone_raw$year >= min_year & ozone_raw$year <= max_year,]
 
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone$value <- clean_neg(ozone$value, "ozone")
