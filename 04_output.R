@@ -17,6 +17,9 @@ library("ggplot2") # for plotting
 library("scales") # for date_breaks()
 library("envreportutils") # for theme_facet_soe()
 library("forcats") # tweak factor levels
+#library("sp") 
+library("rgdal") # for spTransform
+library("geojsonio") # for geojson outputs
 
 ## Load data
 if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
@@ -25,7 +28,7 @@ if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
 min_year <- max_year - 2
 maxdate <- as.Date(paste0(max_year, "-12-31"))
 mindate <- as.Date(paste0(min_year, "-01-01"))
-# outCRS <- CRS("+init=epsg:4326")
+ outCRS <- CRS("+init=epsg:4326")
 dir.create("out", showWarnings = FALSE)
 o3_standard <- 63
 
@@ -163,6 +166,7 @@ plot(caaqs_achievement_map)
 
 
 ##  AQMS Management Levels map 
+
 ## @knitr mgmt_map
 
 
@@ -242,7 +246,7 @@ mgmt_chart <- ggplot(data=ml_station.points,
         legend.title = element_text(size = 12),
         legend.text = element_text(size = 12),
    #     legend.margin = unit(15,"mm"),
-        plot.margin = unit(c(0,10,0,0),"mm")) +
+        plot.margin = unit(c(10,10,0,0),"mm")) +
   coord_flip()
 plot(mgmt_chart)
 
@@ -259,7 +263,7 @@ plot(summary_plot)
 dev.off()
 
 ## Airzone CAAQS ambient achievement map
-ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
+#ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
 
 png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
     width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
@@ -291,11 +295,11 @@ graphics.off() # Kill any hanging graphics processes
 
 # Ouput csv files ---------------------------------------------------------
 
-daily_max_o3$max8hr <- round(daily_max_o3$max8hr, 1)
-write.csv(daily_max_o3, "out/daily_max_03.csv", row.names = FALSE)
-
-ann_4th_highest$max8hr <- round(ann_4th_highest$max8hr, 1)
-write.csv(ann_4th_highest, "out/annual_4th_highest.csv", row.names = FALSE)
+# daily_max_o3$max8hr <- round(daily_max_o3$max8hr, 1)
+# write.csv(daily_max_o3, "out/daily_max_03.csv", row.names = FALSE)
+# 
+# ann_4th_highest$max8hr <- round(ann_4th_highest$max8hr, 1)
+# write.csv(ann_4th_highest, "out/annual_4th_highest.csv", row.names = FALSE)
 
 write.csv(as.data.frame(ozone_caaqs_map), "out/ozone_caaq_metrics.csv", 
           row.names = FALSE)
@@ -306,23 +310,20 @@ write.csv(as.data.frame(ambient_airzone_map), "out/ozone_caaq_airzone_metrics.cs
 write.csv(as.data.frame(ml_airzone_map), "out/ozone_aqms_airzone_mgmt_levels.csv", 
           row.names = FALSE)
 
-# Output ozone_caaqs_sites as csv - format for the BC Data Catalogue
-#
-# library("sp")
-# library("rgdal")
-# library("geojsonio")
-#
-# ozone_caaqs_map %>%
-#   spTransform(CRSobj = outCRS) %>%
-#   as.data.frame() %>%
-#   select(ems_id, station_name, longitude, latitude, Airzone,
-#          caaq_year_min, caaq_year_max, caaq_nYears,
-#          based_on_incomplete, caaq_metric, caaq_status,
-#          caaq_mgmt_level = caaq_level) %>%
-#   write.csv("out/ozone_site_summary.csv", row.names = FALSE)
+## Output ozone_caaqs_sites as csv - format for the BC Data Catalogue
 
-# # Outputs spatial files as geojson: ----------------------------------------
-# 
+ozone_caaqs_map %>%
+   spTransform(CRSobj = outCRS) %>%
+   as.data.frame() %>%
+   select(ems_id, station_name, longitude, latitude, Airzone,
+          caaq_year_min, caaq_year_max, caaq_nYears,
+          based_on_incomplete, caaq_metric, caaq_status,
+          caaq_mgmt_level = caaq_level) %>%
+   write.csv("out/ozone_site_summary.csv", row.names = FALSE)
+
+
+## Outputs spatial files as geojson: ----------------------------------------
+#
 # airzone_map %>%
 #   spTransform(CRSobj = outCRS) %>%
 #   geojson_write(file = "out/airzones.geojson")
