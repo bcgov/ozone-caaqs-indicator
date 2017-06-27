@@ -49,7 +49,7 @@ ozone_caaqs <- three_yr_avg %>%
   mutate(caaq_year_min = min(year), caaq_year_max = max(year))
 
          
-# Extract 2013-2015 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
+# Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
 ozone_caaqs <- ozone_caaqs %>% 
       filter(nyr != "<2") %>% 
       filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
@@ -82,7 +82,7 @@ ozone_caaqs_map$latitude <- as.double(ozone_caaqs_map$latitude)
 ozone_caaqs_map$longitude <- as.double(ozone_caaqs_map$longitude)
 ozone_caaqs_map$nyr <- as.integer(ozone_caaqs_map$nyr)
 
-# setting projections
+# setting projections to match bcmaps::airzones
 coordinates(ozone_caaqs_map) <- c("longitude", "latitude")
 proj4string(ozone_caaqs_map) <- "+init=epsg:4617"
 ozone_caaqs_map <- spTransform(ozone_caaqs_map, CRSobj = proj4string(airzones))
@@ -142,7 +142,7 @@ ml_ozone_caaqs <- ml_three_yr_avg %>%
   mutate(caaq_year_min = min(year), caaq_year_max = max(year))
 
 
-# Extract 2013-2015 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
+# Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
 ml_ozone_caaqs <- ml_ozone_caaqs %>% 
   filter(nyr != "<2") %>% 
   filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
