@@ -12,7 +12,6 @@
 
 
 library("dplyr") # data munging
-library("lubridate") # for format_date()
 library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
 if (!exists("ozone_all")) load("tmp/ozone_raw.RData")
@@ -28,7 +27,7 @@ names(ozone_all) <- tolower(names(ozone_all))
 colnames(ozone_all)[which(names(ozone_all) == "date_pst")] <- "date_time"
 colnames(ozone_all)[which(names(ozone_all) == "raw_value")] <- "value"
 
-## Subtract 1 second so reading is assigned to previous hour
+## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ozone_all$date_time <- format_caaqs_dt(ozone_all$date_time)
 
 ## Create y, m, d columns and select years for 3 year analysis
