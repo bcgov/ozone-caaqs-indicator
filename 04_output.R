@@ -193,7 +193,7 @@ plot(caaqs_achievement_map)
 ## PNG of airzone CAAQS ambient achievement map
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
 png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
-    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
+    width = 836, height = 700, units = "px", res = 80)
 plot(caaqs_achievement_map)
 dev.off()
 
@@ -307,16 +307,16 @@ ml_airzone_map %>%
   write.csv("out/airzone_management_level_summary.csv", row.names = FALSE)
 
 
-## Outputs spatial files as geojson: ----------------------------------------
-#
-# airzone_map %>%
-#   spTransform(CRSobj = outCRS) %>%
-#   geojson_write(file = "out/airzones.geojson")
-# 
-# ozone_sites %>%
-#   spTransform(CRSobj = outCRS) %>%
-#   geojson_write(file = "out/ozone_sites.geojson")
-# 
-# regional_districts_disp %>% 
-#   spTransform(outCRS) %>% 
-#   geojson_write(file = "out/regional_districts.geojson", precision = 4)
+### Outputs spatial files as geojson for web ###
+
+ozone_caaqs_map %>%
+  spTransform(CRSobj = outCRS) %>%
+  as.data.frame() %>%
+  geojson_write(file = "out/ozone_sites.geojson")
+
+ambient_airzone_map %>%
+  spTransform(CRSobj = outCRS) %>%
+  geojson_write(file = "out/airzones.geojson")
+
+
+
