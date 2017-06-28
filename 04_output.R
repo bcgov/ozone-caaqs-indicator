@@ -12,11 +12,11 @@
 
 ## @knitr pre
 
-library("dplyr")
+library("dplyr") # data munging
 library("ggplot2") # for plotting
 library("scales") # for date_breaks()
 library("envreportutils") # for theme_facet_soe()
-library("forcats") # tweak factor levels
+library("forcats") # tweak factor levels fct_drop()
 library("sp") 
 #library("rgdal") # for spTransform
 library("geojsonio") # for geojson outputs
@@ -33,9 +33,10 @@ dir.create("out", showWarnings = FALSE)
 o3_standard <- 63
 
 
-# Summary graph of ambient CAAQ metrics by station and airzones (print version only)
+### Plots for web and print version ##
 
 ## @knitr summary_plot 
+## Summary graph of ambient CAAQ metrics by station and airzones (print version only)
 
 sum_dat <- ozone_caaqs_map@data
 sum_dat$Airzone <- reorder(sum_dat$Airzone, sum_dat$caaq_metric, max, order = TRUE)
@@ -62,8 +63,17 @@ summary_plot <- ggplot(sum_dat,
         strip.text.y = element_text(size = rel(1), angle = 0))
 plot(summary_plot)
 
+## @knitr end
 
-# Individual monitoring station plots with daily maximum data and ambient CAAQS metric
+## PNG of summary ozone CAAQS achivement by station and air zone chart
+png(filename = paste0("out/ozone_station_summary_chart.png"), 
+    width = 836, height = 700, units = "px", res = 80) 
+plot(summary_plot)
+dev.off()
+
+
+## Individual monitoring station plots with daily maximum data and ambient
+## CAAQS metric (for both print & web)
 
 ems_ids <- sum_dat$ems_id
 stn_plots <- vector("list", length(sum_dat$ems_id))
@@ -135,10 +145,24 @@ for (emsid in ems_ids) {
   cat("creating plot for", emsid, site, "\n")
 }
 
-# Plot maps ---------------------------------------------------------------
+## PNGs of CAAQS metrics and raw data station line plots
+line_dir <- "out/station_plots/"
+dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 
-## @knitr ambient CAAQS achievement_map (print version only)
+for (i in seq_along(stn_plots)) {
+  obj <- stn_plots[i]
+  name <- names(obj)
+  cat("saving plot for", name, "\n")
+  png(filename = paste0(line_dir, name, "_lineplot.png"), 
+      width = 778, height = 254, units = "px", res = 90)
+  plot(obj[[1]])
+  dev.off()
+}
+graphics.off() # kill any hanging graphics processes
 
+
+## @knitr achievement_map
+## Ambient CAAQS achievement map (print version only)
 ach_airzones <- fortify(ambient_airzone_map, region = "Airzone") %>% 
  left_join(ambient_airzone_map@data, by = c("id" = "Airzone"))
 
@@ -164,12 +188,18 @@ caaqs_achievement_map <- ggplot(ach_airzones, aes(long, lat)) +
         legend.position = "bottom", legend.box.just = "left")
 plot(caaqs_achievement_map)
 
+## @knitr achievement_map end
 
-##  AQMS Management Levels map 
+## PNG of airzone CAAQS ambient achievement map
+#ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
+png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
+    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
+plot(caaqs_achievement_map)
+dev.off()
+
 
 ## @knitr mgmt_map
-
-
+##  AQMS Management Levels Map
 ml_airzones <- fortify(ml_airzone_map, region = "Airzone") %>% 
   left_join(ml_airzone_map@data, by = c("id" = "Airzone"))
 
@@ -211,10 +241,9 @@ mgmt_map <- ggplot(ml_airzones, aes(long, lat)) +
 
 plot(mgmt_map)
 
-# AQMS Management Levels by station bar chart---------------
 
 ## @knitr mgmt_chart
-
+## AQMS Management Levels by station bar chart
 ml_station.points <- as.data.frame(ml_ozone_caaqs_map)
 ml_station.points$caaq_mgmt_cat <- fct_drop(ml_station.points$caaq_mgmt_cat,
                                             only = "Insufficient Data")
@@ -252,74 +281,30 @@ plot(mgmt_chart)
 
 ## @knitr stop
 
-
-
-# Save plots --------------------------------------------------------------
-
-## Summary ozone CAAQS achivement by station and air zone chart
-png(filename = paste0("out/ozone_station_summary_chart.png"), 
-    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
-plot(summary_plot)
-dev.off()
-
-## Airzone CAAQS ambient achievement map
-#ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
-
-png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
-    width = 836, height = 700, units = "px", res = 80) # Match dimensions to invasive species
-plot(caaqs_achievement_map)
-dev.off()
-
-
-## Combined Management map and barchart with multiplot
+## PNG of combined Management map and barchart with multiplot
 png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
 
-## CAAQS metrics and raw data station line plots
-line_dir <- "out/station_plots/"
-dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 
-for (i in seq_along(stn_plots)) {
-  obj <- stn_plots[i]
-  name <- names(obj)
-  cat("saving plot for", name, "\n")
-  png(filename = paste0(line_dir, name, "_lineplot.png"), 
-      width = 778, height = 254, units = "px", res = 90)
-  plot(obj[[1]])
-  dev.off()
-}
-graphics.off() # Kill any hanging graphics processes
+### BCDC Resources ###
 
-
-
-# Ouput csv files ---------------------------------------------------------
-
-# daily_max_o3$max8hr <- round(daily_max_o3$max8hr, 1)
-# write.csv(daily_max_o3, "out/daily_max_03.csv", row.names = FALSE)
-# 
-# ann_4th_highest$max8hr <- round(ann_4th_highest$max8hr, 1)
-# write.csv(ann_4th_highest, "out/annual_4th_highest.csv", row.names = FALSE)
-
-write.csv(as.data.frame(ozone_caaqs_map), "out/ozone_caaq_metrics.csv", 
-          row.names = FALSE)
-
-write.csv(as.data.frame(ambient_airzone_map), "out/ozone_caaq_airzone_metrics.csv", 
-          row.names = FALSE)
-
-write.csv(as.data.frame(ml_airzone_map), "out/ozone_aqms_airzone_mgmt_levels.csv", 
-          row.names = FALSE)
-
-## Output ozone_caaqs_sites as csv - format for the BC Data Catalogue
-
+## Output ozone_caaqs as CSV format for the BC Data Catalogue
 ozone_caaqs_map %>%
    spTransform(CRSobj = outCRS) %>%
    as.data.frame() %>%
    select(ems_id, station_name, longitude, latitude, Airzone,
           caaq_year_min, caaq_year_max, caaq_nYears,
-          based_on_incomplete, caaq_metric, caaq_status,
-          caaq_mgmt_level = caaq_level) %>%
+          based_on_incomplete, caaq_metric, caaq_status) %>%
    write.csv("out/ozone_site_summary.csv", row.names = FALSE)
+
+## Output ml_airzone as CSV format for the BC Data Catalogue
+ml_airzone_map %>%
+  spTransform(CRSobj = outCRS) %>%
+  as.data.frame() %>%
+  select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
+         caaq_mgt_level_metric, caaq_mngt_level) %>%
+  write.csv("out/airzone_management_level_summary.csv", row.names = FALSE)
 
 
 ## Outputs spatial files as geojson: ----------------------------------------
