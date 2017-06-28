@@ -17,8 +17,8 @@ library("ggplot2") # for plotting
 library("scales") # for date_breaks()
 library("envreportutils") # for theme_facet_soe()
 library("forcats") # tweak factor levels
-#library("sp") 
-library("rgdal") # for spTransform
+library("sp") 
+#library("rgdal") # for spTransform
 library("geojsonio") # for geojson outputs
 
 ## Load data
@@ -28,7 +28,7 @@ if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
 min_year <- max_year - 2
 maxdate <- as.Date(paste0(max_year, "-12-31"))
 mindate <- as.Date(paste0(min_year, "-01-01"))
- outCRS <- CRS("+init=epsg:4326")
+outCRS <- CRS("+init=epsg:4326")
 dir.create("out", showWarnings = FALSE)
 o3_standard <- 63
 
