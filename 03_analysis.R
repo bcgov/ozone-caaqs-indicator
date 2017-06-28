@@ -39,7 +39,6 @@ glimpse(ann_4th_highest)
 three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "station_name"))
 glimpse(three_yr_avg)
 
-
 ## Calculate the number of years contributing to rolling 3-year average & max and min years
 ozone_caaqs <- three_yr_avg %>% 
   group_by(ems_id, station_name) %>%
@@ -48,49 +47,40 @@ ozone_caaqs <- three_yr_avg %>%
   mutate(n = n()) %>% 
   mutate(caaq_year_min = min(year), caaq_year_max = max(year))
 
-         
 ## Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
 ozone_caaqs <- ozone_caaqs %>% 
       filter(nyr != "<2") %>% 
       filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
-      mutate(caaq_metric = rcaaqs:::round_caaqs(ozone_metric))
-
+      mutate(caaq_metric = round_caaqs(ozone_metric))
 
 ## Determine station achievements with o3_standard <- 63
 ozone_caaqs$caaq_status <- cut_achievement(ozone_caaqs$caaq_metric, "o3", output = "labels")
 ozone_caaqs$caaq_category_html <- cut_management(ozone_caaqs$caaq_metric, "o3", output = "breaks_h")
 ozone_caaqs$caaq_category_u <- cut_management(ozone_caaqs$caaq_metric, "o3", output = "breaks_u")
 
-
-## Add info from ozone_sites to ozone_caaqs dataframe & drop some columns
+## Add info from stations_clean to ozone_caaqs dataframe & drop some columns
 ozone_caaqs <- ozone_caaqs %>% 
-  merge(ozone_sites, ., by = c("ems_id")) %>% 
-  select(-c(n_hours, year, valid, station_name.y,
-            flag_two_of_three_years, valid_in_year, quarter_1, quarter_2,
-            quarter_3, quarter_4, max8hr, valid_year, exceed, 
-            flag_year_based_on_incomplete_data, n))
-colnames(ozone_caaqs)[which(names(ozone_caaqs) == "station_name.x")] <- "station_name"
+  left_join(stations_clean, by = c("ems_id", "station_name")) %>% 
+  select(c(ems_id, station_name, longitude, latitude, caaq_year_min, caaq_year_max, caaq_nYears = nyr,
+           based_on_incomplete = flag_year_based_on_incomplete_data, caaq_metric, caaq_status, caaq_category_u, caaq_category_html))
 
-## Do mapping
-## Convert ozone_caaqs to SpatialPointsDataFrame and put in the same projection
-## as the airzone map from bcmaps:
-
+## For mapping
+## Convert ozone_caaqs to SpatialPointsDataFrame and put in the same projection as bcmaps::airzones
 ozone_caaqs_map <- ozone_caaqs
 
 ## converting characters to numbers for nyr
-ozone_caaqs_map$nyr <- as.integer(ozone_caaqs_map$nyr)
+ozone_caaqs_map$caaq_nYears <- as.integer(ozone_caaqs_map$caaq_nYears)
 
 ## setting projections to match bcmaps::airzones
 coordinates(ozone_caaqs_map) <- c("longitude", "latitude")
 proj4string(ozone_caaqs_map) <- "+init=epsg:4617"
 ozone_caaqs_map <- spTransform(ozone_caaqs_map, CRSobj = proj4string(airzones))
 
-
 ## Get airzone information into ozone_caaqs_map
 ozone_caaqs_map$Airzone <- over(ozone_caaqs_map, airzones)[["Airzone"]]
 
-## Get air zone CAAQ value and achievement status into airzones
-az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "nyr", 
+## Get air zone CAAQS value and achievement status into airzones
+az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "caaq_nYears", 
                  az = "Airzone", val = "caaq_metric", 
                  keep = c(rep_station_id = "ems_id", 
                           rep_station_name = "station_name"))
