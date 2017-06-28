@@ -12,6 +12,7 @@
 
 
 library("dplyr") # data munging
+library("lubridate") # for year()
 library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
@@ -20,32 +21,25 @@ if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 min_year <- 2014
 max_year <- 2016
 
-## Convert ozone_raw column names to lowercase
-names(ozone_raw) <- tolower(names(ozone_raw))
-
-## Change column names to match `rcaaqs` defaults
-colnames(ozone_raw)[which(names(ozone_raw) == "date_pst")] <- "date_time"
-colnames(ozone_raw)[which(names(ozone_raw) == "raw_value")] <- "value"
-
-## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
-ozone_raw$date_time <- format_caaqs_dt(ozone_raw$date_time)
-
-## Create y, m, d columns and select years for 3 year analysis
-ozone_raw$year <- as.integer(format(ozone_raw$date_time, "%Y"))
-#ozone_raw$month <- as.integer(format(ozone_raw$date_time, "%m"))
-#ozone_raw$day <- as.integer(format(ozone_raw$date_time, "%d"))
-
-ozone <- ozone_raw[ozone_raw$year >= min_year & ozone_raw$year <= max_year,]
-
+## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
+## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt(),
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone$value <- clean_neg(ozone$value, "ozone")
+ozone <- mutate(ozone_all, 
+               date_time = format_caaqs_dt(DATE_PST), 
+               year = year(date_time)) %>% 
+  filter(year >= min_year, year <= max_year) %>% 
+  select(-DATE_PST) %>% 
+  rename_all(tolower) %>% 
+  rename(value = raw_value) %>% 
+  mutate(value = clean_neg(value, type = "ozone"))
 
-## Fill in missing hourly readings with NA
+
+## Fill in missing hourly readings with NA using rcaaaqs::date_fill()
 ozone <- group_by(ozone, ems_id, station_name)
 ozone <- do(ozone, date_fill(., date_col = "date_time", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
 
-## Summarize sites in clean dataframe
-site_summary <- ozone %>%
+## Summarize ozone sites in clean ozone dataframe
+ozone_site_summary <- ozone %>%
   group_by(ems_id, station_name) %>%
   summarize(min_date = min(date_time), 
             max_date = max(date_time), 
@@ -56,34 +50,21 @@ site_summary <- ozone %>%
   arrange(station_name) %>%
   as.data.frame()
 
-## Convert stations column names to lowercase
-names(stations) <- tolower(names(stations))
-
-## Subset station file list of ems_sites for just sites analyzed in clean dataframe
-ozone_sites <- stations[stations$ems_id %in% site_summary$ems_id,]
-
-## Remove duplicates from ozone_sites
-ozone_sites <- ozone_sites %>% 
-  mutate(station_name = gsub("(\\s+|_)(\\d+|Met|BAM|OLD)", "", station_name), 
-         station_owner = gsub("[Ss]hared - ", "Shared ", station_owner)) %>% 
-  select(ems_id, station_name, latitude, longitude) %>% 
-  group_by(station_name) %>% 
-  slice(which.max(latitude))
-
-## Merge site attributes from site_summary into ozone_sites
-ozone_sites <- merge(ozone_sites, site_summary, by = "ems_id")
-ozone_sites <- select(ozone_sites, -station_name.y)
-colnames(ozone_sites)[which(names(ozone_sites) == "station_name.x")] <- "station_name"
+## Clean station data - lowercase column names, remove pseudo-duplicates, subset to those stations analysed
+stations_clean <- rename_all(stations, tolower) %>% 
+  group_by(ems_id) %>%
+  filter(n() == 1 | 
+           !grepl("_60$|Met$|OLD$", station_name)) %>% 
+  filter(ems_id %in% unique(ozone_site_summary$ems_id))
 
 
-## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe
-## for determining AQMS Air Zone Management Levels
+## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe for determining AQMS Air Zone Management Levels
 ## Two days in 2015 were flagged as exceptional events: 
 ## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
-## These days are removed -- as a result of suspected wildfire influence --
-## for determining AQMS Air Zone Management Levels
+## These days are removed -- as a result of suspected wildfire influence -- for determining AQMS Air Zone Management Levels
 
 ee.tf.exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
                       start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
 
-save(ozone, ozone_sites, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
+
+save(ozone, stations_clean, ozone_site_summary, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
