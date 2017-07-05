@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-## @knitr pre
 
 library("dplyr") # data munging
 library("ggplot2") # for plotting
@@ -18,11 +17,12 @@ library("scales") # for date_breaks()
 library("envreportutils") # for theme_facet_soe()
 library("forcats") # tweak factor levels fct_drop()
 library("sp") 
-#library("rgdal") # for spTransform
 library("geojsonio") # for geojson outputs
 
 ## Load data
 if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
+
+## @knitr pre
 
 ## Set constants
 min_year <- max_year - 2
@@ -36,6 +36,7 @@ o3_standard <- 63
 ### Plots for web and print version ##
 
 ## @knitr summary_plot 
+
 ## Summary graph of ambient CAAQ metrics by station and airzones (print version only)
 
 sum_dat <- ozone_caaqs_map@data
@@ -61,9 +62,10 @@ summary_plot <- ggplot(sum_dat,
         axis.text.y = element_text(size = rel(0.8)), 
         axis.line.x = element_blank(), 
         strip.text.y = element_text(size = rel(1), angle = 0))
-plot(summary_plot)
 
-## @knitr end
+## @knitr summary_plot_end
+
+plot(summary_plot)
 
 ## PNG of summary ozone CAAQS achivement by station and air zone chart
 png(filename = paste0("out/ozone_station_summary_chart.png"), 
@@ -162,6 +164,7 @@ graphics.off() # kill any hanging graphics processes
 
 
 ## @knitr achievement_map
+
 ## Ambient CAAQS achievement map (print version only)
 ach_airzones <- fortify(ambient_airzone_map, region = "Airzone") %>% 
  left_join(ambient_airzone_map@data, by = c("id" = "Airzone"))
@@ -186,9 +189,10 @@ caaqs_achievement_map <- ggplot(ach_airzones, aes(long, lat)) +
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         axis.ticks = element_blank(), panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.just = "left")
-plot(caaqs_achievement_map)
 
-## @knitr achievement_map end
+## @knitr achievement_map_end
+
+plot(caaqs_achievement_map)
 
 ## PNG of airzone CAAQS ambient achievement map
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
@@ -199,6 +203,7 @@ dev.off()
 
 
 ## @knitr mgmt_map
+
 ##  AQMS Management Levels Map
 ml_airzones <- fortify(ml_airzone_map, region = "Airzone") %>% 
   left_join(ml_airzone_map@data, by = c("id" = "Airzone"))
@@ -243,6 +248,7 @@ plot(mgmt_map)
 
 
 ## @knitr mgmt_chart
+
 ## AQMS Management Levels by station bar chart
 ml_station.points <- as.data.frame(ml_ozone_caaqs_map)
 ml_station.points$caaq_mgmt_cat <- fct_drop(ml_station.points$caaq_mgmt_cat,
@@ -285,7 +291,6 @@ plot(mgmt_chart)
 png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
-
 
 ### BCDC Resources ###
 
