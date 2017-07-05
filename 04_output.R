@@ -52,7 +52,7 @@ summary_plot <- ggplot(sum_dat,
                            y = reorder(station_name, caaq_metric, sum))) + 
   facet_grid(Airzone~., scales = "free_y", space = "free", drop=TRUE, 
              labeller = label_wrap_gen(width = 15, multi_line = TRUE)) + 
-  geom_point(size = 4, colour = "#377eb8") + 
+  geom_point(size = 2, colour = "#377eb8") + 
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
   geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 4, 
             hjust = 1, colour = "#e41a1c") + 
@@ -62,10 +62,10 @@ summary_plot <- ggplot(sum_dat,
         axis.text.y = element_text(size = rel(0.8)), 
         axis.line.x = element_blank(), 
         strip.text.y = element_text(size = rel(1), angle = 0))
+plot(summary_plot)
 
 ## @knitr summary_plot_end
 
-plot(summary_plot)
 
 ## PNG of summary ozone CAAQS achivement by station and air zone chart
 png(filename = paste0("out/ozone_station_summary_chart.png"), 
@@ -189,10 +189,9 @@ caaqs_achievement_map <- ggplot(ach_airzones, aes(long, lat)) +
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         axis.ticks = element_blank(), panel.grid = element_blank(), 
         legend.position = "bottom", legend.box.just = "left")
+plot(caaqs_achievement_map)
 
 ## @knitr achievement_map_end
-
-plot(caaqs_achievement_map)
 
 ## PNG of airzone CAAQS ambient achievement map
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
