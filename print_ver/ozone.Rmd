@@ -1,67 +1,38 @@
 ---
-title: Air
-subtitle: Status of Ground-Level Ozone in B.C. (2011-2013)
-output:
-  pdf_document:
-    template: D:/templates/print_ver_template.tex
+topic: "air"
+title: Status of Ground-Level Ozone in B.C. (2014-2016)
+output: envreportbc::print_ver
 ---
 
 ```{r set-options, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
+
 knitr::opts_chunk$set(echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, 
-                      error=FALSE, fig.width=7)
+                      error=FALSE)
 
-library("dplyr")
-library("sp")
-library("rgeos")
-library("ggplot2")
-library("grid")
-library("scales")
-library("envreportutils")
+library("dplyr") # data munging
+library("ggplot2") # for plotting
+library("scales") # for date_breaks()
+library("envreportutils") # for theme_facet_soe()
+library("forcats") # tweak factor levels fct_drop()
+library("sp") # mapping
+library("knitr") #for knitting to PDF
 
+## Reading in datasets
 load("../tmp/analysed.RData")
 
-ozone_sites <- ozone_sites[!is.na(ozone_sites$caaq_metric),]
+read_chunk("../04_output.R")
 
-min_year <- max_year - 2
-maxdate <- as.Date(paste0(max_year, "-12-31"))
-mindate <- as.Date(paste0(min_year, "-01-01"))
-
-knitr_latex_char <- function(x) {
-  y <- gsub("\\\\", "\\\\textbackslash{}", x) # backslash has to be first!
-  y <- gsub("([#$%&_])", "\\\\\\1", y) # Doesdn't deal with { or } because of function{}
-  y <- gsub("\\^", "\\\\textasciicircum{}", y)
-  y <- gsub("~", "\\\\textasciitilde{}", y)
-  return(y)
-}
 ```
 
+```{r pre}
+```
 
 British Columbia operates a network of air monitoring stations that
 measure ground-level ozone and other air pollutants. This indicator
-reports on the concentration of ground-level ozone from 2011-2013 and
-compares it to the [Canadian Ambient Air Quality Standards
-(CAAQS)](http://www.ccme.ca/en/current_priorities/air/caaqs.html)
-developed by the [Canadian Council of Ministers of the
+reports on the concentration of ground-level ozone from 2014-2016 and
+compares it to the [Canadian Ambient Air Quality Standard](http://www.ccme.ca/en/resources/air/aqms.html#anchor1)
+established by the [Canadian Council of Ministers of the
 Environment](http://www.ccme.ca/index.html).
-
-\begin{center}
-\fbox{
-  \begin{minipage}[c]{12cm}
-    \centering{\bf Ground-Level Ozone\\ Canadian Ambient Air Quality Standard (CAAQS)}
-    \vspace{-1mm}
-    \begin{itemize}
-      \itemsep1pt\parskip0pt\parsep0pt
-     \item
-     The CAAQS ozone metric should be \textbf{lower than 63 parts per billion}. 
-     \item
-     The \textbf{CAAQS ozone metric} is the 3-year average of the annual 4th-highest
-     daily maximum 8-hour rolling average concentration of ozone.
-      \end{itemize}
-      \href{www.ccme.ca/en/current_priorities/air/caaqs.html}{Learn more about CAAQS ozone metric calculations.}
-  \end{minipage}
-}
-\end{center}
-
 
 -   **Ground-level ozone is an air pollutant.** While ozone in the
     Earth's atmosphere occurs naturally, additional ozone at the
@@ -75,108 +46,74 @@ Environment](http://www.ccme.ca/index.html).
     to more emergency room visits, hospitalizations, and absenteeism, and
     higher health care costs^[2](#fn2)^.
 -   **Ozone levels met the Canadian Ambient Air Quality Standard at all B.C. 
-    ozone monitoring stations.** The CAAQS ozone metric
-    from the 37 stations ranged from 38 to 60 parts per billion (ppb).
-    Metric values were $\leq\!\!$ 50 ppb at 25 reporting stations (68%). No
+    ozone monitoring stations.** The ozone metric (see sidebar) from the 39 
+    stations ranged from 34 to 60 parts per billion (ppb).
+    Ozone metric values were $\leq\!\!$ 50 ppb at 26 reporting stations (67%). No
     stations reported CAAQs metric values \>60 ppb.
--   **Ozone levels met the Canadian Ambient Air Quality Standard in four
-    of B.C.'s seven air zones.** There was not enough data to estimate
-    the CAAQS ozone metric for the remaining three air zones for this
-    reporting period. The ozone level for an air zone
-    is the highest CAAQS ozone metric value reported from monitoring
-    stations within the air zone. 
--   **CAAQS ozone metrics are used to set management levels for each air
+-   **Ozone levels met the Canadian Ambient Air Quality Standard in six
+    of B.C.'s seven air zones.** The ozone level for an air zone is the 
+    highest ozone metric value reported from monitoring stations within 
+    the air zone. Currently, there are no [air monitoring stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
+    in the Northwest Air Zone.
+-   **Ozone metrics are used to set management levels for each air
     zone.** Four management levels (green, yellow, orange, and red) are each
     associated with a suite of actions that become more rigorous as
     ozone metric values approach the Canadian Ambient Air Quality
     Standard.
 
 
-The map and chart below summarise the Canadian Ambient Air Quality Standard (CAAQS)
-achievement status for ozone in B.C. air zones, as well as the individual 
-monitoring stations across the province. Summaries are given for each
-monitoring station where sufficient data was available for the 2011-2013
-reporting period. 
+\begin{center}
+\fbox{
+  \begin{minipage}[c]{15cm}
+  
+    \begingroup\centering{\textbf{Ground-Level Ozone: Canadian Ambient Air Quality Standard}}
+    
+    \endgroup
+    
+    \vspace{1mm}
+    
+    \text{The Canadian Ambient Air Quality Standard ozone metric should be \textbf{lower than 63 parts per billion}.}
+    
+    \href{http://www.ccme.ca/en/resources/air/aqms.html}{Learn more about the  Canadian Ambient Air Quality Standards.}
+    
+  \end{minipage}
+}
+\end{center}
 
-```{r achievement_map, fig.height=8}
-airzones.points <- fortify(airzone_map, region = "Airzone") %>%
-  rename(Airzone = id) %>%
-  left_join(airzone_map@data, by = "Airzone")
 
-stations.points <- as.data.frame(ozone_sites)
 
-achievement_map <- ggplot(airzones.points, aes(long, lat)) + 
-  geom_polygon(aes(group=group, fill = caaq_status)) + 
-  coord_fixed() + 
-  scale_fill_manual(values = c("Achieved" = "#377eb8", "Not Achieved" = "#e41a1c", 
-                               "Insufficient Data" ="grey80"), drop = FALSE, 
-                    name = "Airzones:\nOzone Air Quality Standard", 
-                    guide = guide_legend(order = 1, title.position = "top")) + 
-  geom_path(aes(group=group), colour = "white") + 
-  geom_point(data = stations.points, aes(x = longitude, y = latitude, 
-                                         colour = caaq_metric)) +
-  scale_colour_gradient(high = "#252525", low = "#f0f0f0", 
-                        name = "Monitoring Stations:\nOzone Metric (ppb)", 
-                        guide = guide_colourbar(order = 2, title.position = "top", 
-                                                barwidth = 10)) + 
-  ggtitle("Status of Ozone Levels in B.C. Air Zones (2011-2013)") + 
-  theme_minimal() + 
-  theme(axis.title = element_blank(), axis.text = element_blank(), 
-        axis.ticks = element_blank(), panel.grid = element_blank(), 
-        legend.position = "bottom", legend.box = "horizontal", 
-        legend.box.just = "top", legend.direction = "horizontal", 
-        legend.title.align = 0, legend.margin = unit(20, "mm"),
-        legend.title = element_text(face="plain", size = 11))
+\newpage
 
-plot(achievement_map)
+The map and chart below summarise Canadian Ambient Air Quality Standard
+achievement status for ozone in B.C. air zones, as well as the ozone metric at individual monitoring stations. Summaries are given for each monitoring station where sufficient data was available for the 2014-2016
+reporting period.
+
+```{r achievement_map}
+```
+```{r fig.height=8, fig.width=7}
+caaqs_achievement_map <- caaqs_achievement_map + labs(title = "Status of Ozone Levels in B.C. Air Zones (2014-2016)")
+plot(caaqs_achievement_map)
 ```
 
-```{r summary-plot, fig.height=7}
-sum_dat <- ozone_sites@data
-sum_dat$Airzone <- reorder(sum_dat$Airzone, sum_dat$caaq_metric, max, order = TRUE)
-sum_dat$Airzone <- factor(sum_dat$Airzone, levels = rev(levels(sum_dat$Airzone)))
+\newpage
 
-ann_text <- data.frame(display_name = "Elk Falls Dogwood", caaq_metric = 62.5, 
-                       Airzone = factor("Georgia Strait", 
-                                        levels = levels(sum_dat$Airzone)))
-
-summary_plot <- ggplot(sum_dat, 
-                       aes(x = caaq_metric, 
-                           y = reorder(display_name, caaq_metric, sum))) + 
-  facet_grid(Airzone~., scales = "free_y", space = "free_y", drop=TRUE, 
-             labeller = label_wrap_gen(15)) + 
-  geom_point(size = 2, colour = "#377eb8") + 
-  geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
-  labs(title="Ozone Metric for Air Monitoring Stations within B.C. Air Zones",
-       x = "CAAQS Ozone Metric", y = "Ozone Monitoring Station") + 
-  geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 3, 
-            hjust = 1, colour = "#e41a1c") + 
-  theme_soe_facet(base_family = "", use_sizes=FALSE) + 
-  theme(axis.title = element_text(size=rel(1)), 
-        axis.text.y = element_text(size = rel(0.7)), 
-        axis.line.x = element_blank(), 
-        strip.text = element_text(size = rel(0.75)))
-
+```{r summary_plot}
+```
+```{r fig.height=9, fig.width=7}
+summary_plot <- summary_plot + labs(title = "Ozone Metric for Air Monitoring Stations within B.C. Air Zones")
 plot(summary_plot)
-
 ```
 
 
-### More about the CAAQS ozone metric: 
+### More about the Canadian Ambient Air Quality Standard ozone metric:
 
--   The CAAQS ozone metric is measured as the 3-year average of the
-    annual 4th-highest daily maximum 8-hour rolling average
-    concentration.
--   The ozone level for an air zone is the highest CAAQS ozone metric value
-    reported from monitoring stations within the air zone. However, stations 
-    with metric values based on only two years of data are excluded for
-    consideration of the *air zone* metric value.
+-   The Canadian Ambient Air Quality Standard ozone metric is the 3-year average of the annual 4th-highest daily maximum 8-hour rolling average concentration.
+-   The ozone metric for an air zone is the highest ozone metric value reported from monitoring stations within the air zone. However, air zone metric values are only taken from stations reporting on two years of data when there are no available three year reporting stations in the air zone.
 -   Only air monitoring stations with sufficient data on ozone
-    concentrations for the 2011-2013 reporting period were included in
-    this indicator. Visit [B.C Air
-    Quality](http://www.bcairquality.ca/readings/index.html) for a
+    concentrations for the 2014-2016 reporting period were included in
+    this indicator. Visit [Current Air Quality Data](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) for a
     complete list of air monitoring stations across B.C.
--   Data completeness and sufficiency criteria for the CAAQS ozone
+-   Data completeness and sufficiency criteria for the ozone
     metric are described in the [Guidance Document on Achievement
     Determination: Canadian Ambient Air Quality Standards for Fine
     Particulate Matter and Ozone
@@ -184,15 +121,10 @@ plot(summary_plot)
 
 ## Canada-wide Air Quality Management System
 
-The Air Quality Management System (AQMS) is Canada's approach for
-protecting air quality. Under the AQMS, provinces and territories
-monitor, report and manage local air quality within air
-zones, with the goal of continuously improving air quality and
-keeping pollutants below the Canadian Ambient Air Quality Standards
-(CAAQS).
+The Air Quality Management System is Canada's approach for protecting air quality. Under the Air Quality Management System, provinces and territories monitor, report and manage local air quality within air zones, with the goal of continuously improving air quality and keeping pollutants below the Canadian Ambient Air Quality Standards.
 
 -   Provinces and territories establish air zones that are defined by a
-    similar set of air quality characteristics, issues and trends. 
+    similar set of air quality characteristics, issues and trends.
 -   There are seven air zones in British Columbia: Coastal, Georgia Strait,
     Lower Fraser Valley, Southern Interior, Central Interior, Northeast
     and Northwest.
@@ -206,250 +138,250 @@ keeping pollutants below the Canadian Ambient Air Quality Standards
     the CAAQS.
 -   All four B.C. air zones that were assessed met the Canadian Ambient Air
     Quality Standard for ground-level ozone ($\leq\!\!$ 63 ppb).
--   Based on the highest CAAQS ozone metric value reported within each air zone, 
-    the Central Interior, Georgia Strait, and Lower Fraser Valley air zones 
-    were assigned to a yellow management level (actions for preventing air 
-    quality deterioration) and the Southern Interior air zone to an orange 
-    management level (actions for preventing CAAQS exceedance). Due to 
-    insufficient data, ozone management levels in the Coastal, Northwest and 
+-   Based on the highest CAAQS ozone metric value reported within each air zone,
+    the Central Interior, Georgia Strait, and Lower Fraser Valley air zones
+    were assigned to a yellow management level (actions for preventing air
+    quality deterioration) and the Southern Interior air zone to an orange
+    management level (actions for preventing CAAQS exceedance). Due to
+    insufficient data, ozone management levels in the Coastal, Northwest and
     Northeast air zones are yet to be determined.
 -   Actions for each management level are detailed in the
     [CCME](http://www.ccme.ca/en/current_priorities/air/caaqs.html)
     [Guidance Document on Air Zone Management
     (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1481_gdazm_e.pdf).
-   
-```{r mgmt_map, fig.height = 5}
-colrs <- c("Insufficient Data" = "grey80", 
-           "Actions for Keeping Clean Areas Clean" = "#A6D96A", 
-           "Actions for Preventing Air Quality Deterioration" = "#FEE08B", 
-           "Actions for Preventing CAAQS Exceedance" = "#F46D43", 
-           "Actions for Achieving Air Zone CAAQS" = "#A50026")
 
-mgmt_map <- ggplot(airzones.points, aes(long, lat)) +   
-  geom_polygon(aes(group=group, fill = caaq_level)) + 
-  coord_fixed() + 
-  geom_path(aes(group=group), colour = "white") + 
-  ggtitle("Management Levels for Ozone in B.C. Air Zones") + 
-  theme_minimal() + 
-  scale_fill_manual(values = colrs, 
-                    drop = FALSE, 
-                    name = "Air Zone Management Levels", 
-                    guide = guide_legend(reverse = TRUE)) + 
-  theme(axis.title = element_blank(),
-        axis.text = element_blank(), 
-        axis.ticks = element_blank(),
-        panel.grid = element_blank(),
-       legend.position = "none",
-       plot.margin = unit(c(0,0,0,0),"mm")) +
-  annotate("text", x=680000, y=950000, label="Coastal", 
-           colour="black", size=3.5) +
-  annotate("text", x=1150000, y=1550000, label="Northeast", 
-           colour="black", size=3.5) +
-  annotate("text", x=780000, y=1500000, label="Northwest", 
-           colour="black", size=3.5) +
-  annotate("text", x=1150000, y=950000, label="Central\n Interior", 
-           colour="black", size=3.5) +
-  annotate("text", x=1550000, y=600000, label="Southern\n Interior", 
-           colour="black", size=3.5) +
-  annotate("text", x=1150000, y=325000, label="Georgia Strait", 
-           colour="black", size=3.5) +
-  annotate("text", x=1500000, y=410000, label="Lower Fraser Valley", 
-           colour="black", size=3.5)
+<!-- ```{r mgmt_map, fig.height = 5} -->
+<!-- colrs <- c("Insufficient Data" = "grey80",  -->
+<!--            "Actions for Keeping Clean Areas Clean" = "#A6D96A",  -->
+<!--            "Actions for Preventing Air Quality Deterioration" = "#FEE08B",  -->
+<!--            "Actions for Preventing CAAQS Exceedance" = "#F46D43",  -->
+<!--            "Actions for Achieving Air Zone CAAQS" = "#A50026") -->
 
-plot(mgmt_map)
-```
+<!-- mgmt_map <- ggplot(airzones.points, aes(long, lat)) +    -->
+<!--   geom_polygon(aes(group=group, fill = caaq_level)) +  -->
+<!--   coord_fixed() +  -->
+<!--   geom_path(aes(group=group), colour = "white") +  -->
+<!--   ggtitle("Management Levels for Ozone in B.C. Air Zones") +  -->
+<!--   theme_minimal() +  -->
+<!--   scale_fill_manual(values = colrs,  -->
+<!--                     drop = FALSE,  -->
+<!--                     name = "Air Zone Management Levels",  -->
+<!--                     guide = guide_legend(reverse = TRUE)) +  -->
+<!--   theme(axis.title = element_blank(), -->
+<!--         axis.text = element_blank(),  -->
+<!--         axis.ticks = element_blank(), -->
+<!--         panel.grid = element_blank(), -->
+<!--        legend.position = "none", -->
+<!--        plot.margin = unit(c(0,0,0,0),"mm")) + -->
+<!--   annotate("text", x=680000, y=950000, label="Coastal",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=1150000, y=1550000, label="Northeast",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=780000, y=1500000, label="Northwest",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=1150000, y=950000, label="Central\n Interior",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=1550000, y=600000, label="Southern\n Interior",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=1150000, y=325000, label="Georgia Strait",  -->
+<!--            colour="black", size=3.5) + -->
+<!--   annotate("text", x=1500000, y=410000, label="Lower Fraser Valley",  -->
+<!--            colour="black", size=3.5) -->
 
-```{r mgmt_chart, fig.height=4}
-chart_colrs <- colrs[-1]
+<!-- plot(mgmt_map) -->
+<!-- ``` -->
 
-# <- c(expression(paste("Actions for Keeping Clean Areas Clean ("<=50, " ppb)")), 
-#             expression(paste("Actions for Preventing Air Quality Deterioration (">50, " & " <= 56, " #ppb)")), 
-#             expression(paste("Actions for Preventing CAAQS Exceedance (">56, " & " <=63, " ppb)")), 
-#             expression(paste("Actions for Achieving Air Zone CAAQS (">63, " ppb)")))
+<!-- ```{r mgmt_chart, fig.height=4} -->
+<!-- chart_colrs <- colrs[-1] -->
 
-mlevels <- c("Actions for Keeping Clean Areas Clean (<=50 ppb)", 
-             "Actions for Preventing Air Quality Deterioration (>50 & <=56 ppb)", 
-             "Actions for Preventing CAAQS Exceedance (>56 & <=63 ppb)", 
-             "Actions for Achieving Air Zone CAAQS (>63 ppb)")
+<!-- # <- c(expression(paste("Actions for Keeping Clean Areas Clean ("<=50, " ppb)")),  -->
+<!-- #             expression(paste("Actions for Preventing Air Quality Deterioration (">50, " & " <= 56, " #ppb)")),  -->
+<!-- #             expression(paste("Actions for Preventing CAAQS Exceedance (">56, " & " <=63, " ppb)")),  -->
+<!-- #             expression(paste("Actions for Achieving Air Zone CAAQS (">63, " ppb)"))) -->
 
-mgmt_chart <- ggplot(data=stations.points,
-                              aes(x = Airzone, fill = caaq_level)) + 
-  geom_bar(stat = "bin", alpha = 1) +
-  xlab ("") + ylab ("Number of Reporting Stations") +
-  scale_y_continuous(limits = c(0,20), breaks=seq(0, 20, 4),
-                     expand=c(0,0)) +
-  scale_fill_manual(values = chart_colrs, 
-                    drop = FALSE, 
-                    name = "Air Zone Management Levels", 
-                    guide = guide_legend(reverse = TRUE),
-                    labels = mlevels) + 
-  theme_soe(base_family = "") +
-  theme(panel.grid.major.y = (element_blank()),
-        axis.text = element_text(size = 12),
-        legend.position = "bottom",
-        legend.direction = "vertical",
-        legend.margin = unit(15,"mm"),
-        legend.text.align = 0) +
-  coord_flip()
+<!-- mlevels <- c("Actions for Keeping Clean Areas Clean (<=50 ppb)",  -->
+<!--              "Actions for Preventing Air Quality Deterioration (>50 & <=56 ppb)",  -->
+<!--              "Actions for Preventing CAAQS Exceedance (>56 & <=63 ppb)",  -->
+<!--              "Actions for Achieving Air Zone CAAQS (>63 ppb)") -->
 
-plot(mgmt_chart)
-```
+<!-- mgmt_chart <- ggplot(data=stations.points, -->
+<!--                               aes(x = Airzone, fill = caaq_level)) +  -->
+<!--   geom_bar(stat = "bin", alpha = 1) + -->
+<!--   xlab ("") + ylab ("Number of Reporting Stations") + -->
+<!--   scale_y_continuous(limits = c(0,20), breaks=seq(0, 20, 4), -->
+<!--                      expand=c(0,0)) + -->
+<!--   scale_fill_manual(values = chart_colrs,  -->
+<!--                     drop = FALSE,  -->
+<!--                     name = "Air Zone Management Levels",  -->
+<!--                     guide = guide_legend(reverse = TRUE), -->
+<!--                     labels = mlevels) +  -->
+<!--   theme_soe(base_family = "") + -->
+<!--   theme(panel.grid.major.y = (element_blank()), -->
+<!--         axis.text = element_text(size = 12), -->
+<!--         legend.position = "bottom", -->
+<!--         legend.direction = "vertical", -->
+<!--         legend.margin = unit(15,"mm"), -->
+<!--         legend.text.align = 0) + -->
+<!--   coord_flip() -->
 
-
-### More about the AQMS management levels:
-
--   There can be cases when an air zone does not achieve a given CAAQS
-    because of sources over which jurisdictions have little or no
-    control, such as those related to transboundary flows and
-    exceptional events like forest fires.
--   Prior to determining management levels, jurisdictions have the
-    option of adjusting their air zone metric values to remove such
-    external influences. These arrangements aim to ensure that
-    jurisdictions are responsible for managing only the emissions
-    sources they can control.
--   For the 2011-2013 reporting period, all ozone monitoring stations met
-    the CAAQS and no adjustments for transboundary or exceptional events were
-    warranted. Air zone management levels for ground-level ozone were
-    determined directly from the CAAQS ground-level ozone metric for this
-    reporting period. 
-
-# Methods
-
-The methods used to develop this indicator --- including procedures, data
-requirements, and calculation of the CAAQS ozone metric --- are detailed in
-the [CCME](http://www.ccme.ca/index.html) [Guidance Document on
-Achievement Determination: Canadian Ambient Air Quality Standards for
-Fine Particulate Matter and Ozone
-(2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1483_gdad_eng.pdf). 
-**R package and code:** We have developed an [R](http://www.r-project.org) package to facilitate the calculation of air quality metrics according to the Canadian Ambient Air Quality Standards [CAAQS](http://www.ccme.ca/en/current_priorities/air/caaqs.html). Download the 'rcaaqs' package from [GitHub](https://github.com/bcgov/rcaaqs). The source code for repeating the analysis presented on this page is also available on [GitHub](https://github.com/bcgov/ozone_caaqs_analysis).
+<!-- plot(mgmt_chart) -->
+<!-- ``` -->
 
 
-# References and Other Useful Links
+<!-- ### More about the AQMS management levels: -->
 
-Visit [BC Air Quality](http://www.bcairquality.ca/plans/national-air-quality-management-system.html) for more information on the implementation of the AQMS in B.C., and to read individual Air Zone reports on the achievement of CAAQS for ground-level ozone and fine particulate matter.
+<!-- -   There can be cases when an air zone does not achieve a given CAAQS -->
+<!--     because of sources over which jurisdictions have little or no -->
+<!--     control, such as those related to transboundary flows and -->
+<!--     exceptional events like forest fires. -->
+<!-- -   Prior to determining management levels, jurisdictions have the -->
+<!--     option of adjusting their air zone metric values to remove such -->
+<!--     external influences. These arrangements aim to ensure that -->
+<!--     jurisdictions are responsible for managing only the emissions -->
+<!--     sources they can control. -->
+<!-- -   For the 2011-2013 reporting period, all ozone monitoring stations met -->
+<!--     the CAAQS and no adjustments for transboundary or exceptional events were -->
+<!--     warranted. Air zone management levels for ground-level ozone were -->
+<!--     determined directly from the CAAQS ground-level ozone metric for this -->
+<!--     reporting period.  -->
 
-Access [B.C.'s Air Quality
-Readings](http://www.bcairquality.ca/readings/index.html) for real-time
-data on air pollutants and locations of all air monitoring stations in
-B.C.
+<!-- # Methods -->
 
-For more details on the CAAQS and Canada's Air Quality Management System
-visit [Canada-wide Air Quality Management System
-(AQMS)](http://www.ccme.ca/en/resources/air/aqms.html)
+<!-- The methods used to develop this indicator --- including procedures, data -->
+<!-- requirements, and calculation of the CAAQS ozone metric --- are detailed in -->
+<!-- the [CCME](http://www.ccme.ca/index.html) [Guidance Document on -->
+<!-- Achievement Determination: Canadian Ambient Air Quality Standards for -->
+<!-- Fine Particulate Matter and Ozone -->
+<!-- (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1483_gdad_eng.pdf).  -->
+<!-- **R package and code:** We have developed an [R](http://www.r-project.org) package to facilitate the calculation of air quality metrics according to the Canadian Ambient Air Quality Standards [CAAQS](http://www.ccme.ca/en/current_priorities/air/caaqs.html). Download the 'rcaaqs' package from [GitHub](https://github.com/bcgov/rcaaqs). The source code for repeating the analysis presented on this page is also available on [GitHub](https://github.com/bcgov/ozone_caaqs_analysis). -->
 
-[BC Lung Asssociation's BC State of the Air Reports](http://www.bc.lung.ca/airquality/stateoftheair-report.html)
 
-^1^[United States Environmental Protection Agency. February 2013.
-Integrated Science Assessment of Ozone and Related Photochemical
-Oxidants
-(600/R-10/076F)](http://cfpub.epa.gov/ncea/isa/recordisplay.cfm?deid=247492#Download)
+<!-- # References and Other Useful Links -->
 
-^2^Willey, J., N. Gilbert, and N. Lyrette. 2004. Human health effects of
-ozone: Update in support of the Canada-wide standards for particulate
-matter and ozone. Revised version. Working paper prepared for Canadian
-Council of Ministers of the Environment. Health Canada. Ottawa, Ontario:
-Health Canada
+<!-- Visit [BC Air Quality](http://www.bcairquality.ca/plans/national-air-quality-management-system.html) for more information on the implementation of the AQMS in B.C., and to read individual Air Zone reports on the achievement of CAAQS for ground-level ozone and fine particulate matter. -->
 
-# Data
+<!-- Access [B.C.'s Air Quality -->
+<!-- Readings](http://www.bcairquality.ca/readings/index.html) for real-time -->
+<!-- data on air pollutants and locations of all air monitoring stations in -->
+<!-- B.C. -->
 
-\*By accessing these datasets, you agree to the license associated with
-each file, as indicated in parentheses below.
+<!-- For more details on the CAAQS and Canada's Air Quality Management System -->
+<!-- visit [Canada-wide Air Quality Management System -->
+<!-- (AQMS)](http://www.ccme.ca/en/resources/air/aqms.html) -->
 
--   [Indicator data: BC Ozone CAAQS 2011-2013](http://catalogue.data.gov.bc.ca/dataset/bc-ambient-air-quality-standards-reporting-results-ozone) ([License: B.C.
-    OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf))
--   [Hourly ozone data](http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data) (License: [B.C.     OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf))
--   [BC Air Monitoring     Stations](http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data)
-    (License: [B.C.
-    OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf))
--   [BC Air Zones](http://catalogue.data.gov.bc.ca/dataset/british-columbia-air-zones) (License: [B.C.
-    OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf))
+<!-- [BC Lung Asssociation's BC State of the Air Reports](http://www.bc.lung.ca/airquality/stateoftheair-report.html) -->
 
-Published and Available On-Line at Environmental Reporting BC (August 2015):
-<http://www.env.gov.bc.ca/soe/indicators/air/ozone.html>
+<!-- ^1^[United States Environmental Protection Agency. February 2013. -->
+<!-- Integrated Science Assessment of Ozone and Related Photochemical -->
+<!-- Oxidants -->
+<!-- (600/R-10/076F)](http://cfpub.epa.gov/ncea/isa/recordisplay.cfm?deid=247492#Download) -->
 
-Email correspondence to: envreportbc@gov.bc.ca
+<!-- ^2^Willey, J., N. Gilbert, and N. Lyrette. 2004. Human health effects of -->
+<!-- ozone: Update in support of the Canada-wide standards for particulate -->
+<!-- matter and ozone. Revised version. Working paper prepared for Canadian -->
+<!-- Council of Ministers of the Environment. Health Canada. Ottawa, Ontario: -->
+<!-- Health Canada -->
 
-\newpage
+<!-- # Data -->
 
-# Appendix: Detailed CAAQS results for each monitoring station within air zones in B.C.
+<!-- \*By accessing these datasets, you agree to the license associated with -->
+<!-- each file, as indicated in parentheses below. -->
 
-```{r appendix, results='asis', fig.height=3.5}
-plot_exceedances <- FALSE
+<!-- -   [Indicator data: BC Ozone CAAQS 2011-2013](http://catalogue.data.gov.bc.ca/dataset/bc-ambient-air-quality-standards-reporting-results-ozone) ([License: B.C. -->
+<!--     OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf)) -->
+<!-- -   [Hourly ozone data](http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data) (License: [B.C.     OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf)) -->
+<!-- -   [BC Air Monitoring     Stations](http://catalogue.data.gov.bc.ca/dataset/air-quality-monitoring-verified-hourly-data-and-station-data) -->
+<!--     (License: [B.C. -->
+<!--     OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf)) -->
+<!-- -   [BC Air Zones](http://catalogue.data.gov.bc.ca/dataset/british-columbia-air-zones) (License: [B.C. -->
+<!--     OGL](http://www.data.gov.bc.ca/local/dbc/docs/license/OGL-vbc2.0.pdf)) -->
 
-for (az in (unique(sum_dat$Airzone))) {
-  dat <- sum_dat[sum_dat$Airzone == az, ]
-  ems_ids <- unique(dat$ems_id)
-  cat("\\subsection{", az, " Air Zone}", sep = "")
+<!-- Published and Available On-Line at Environmental Reporting BC (August 2015): -->
+<!-- <http://www.env.gov.bc.ca/soe/indicators/air/ozone.html> -->
 
-  for (emsid in ems_ids) {
-    site_sum <- dat[dat$ems_id == emsid, ]
-    dailydata <- daily_8hr_roll_max[daily_8hr_roll_max$ems_id == emsid &
-                                      daily_8hr_roll_max$date <= maxdate,]
+<!-- Email correspondence to: envreportbc@gov.bc.ca -->
 
-    if (nrow(dailydata) == 0) next
+<!-- \newpage -->
 
-    site <- knitr_latex_char(site_sum$display_name[1])
-    cat("\\subsubsection*{\\underline{", site, " monitoring station}}", sep = "")
-    cat("\\textbf{Ozone Air Quality Standard:} ", site_sum$caaq_status, " \\newline ")
-    cat("\\textbf{Ozone Metric:} ", site_sum$caaq_metric, " ppb (", site_sum$caaq_nYears, 
-        " year average) \\newline ", sep = "")
-    cat("\\textbf{Air Quality Management Level:} ", as.character(site_sum$caaq_level), 
-        " \\newline \\newline \\newline ")
+<!-- # Appendix: Detailed CAAQS results for each monitoring station within air zones in B.C. -->
 
-    caaq_data <- three_yr_avg[three_yr_avg$ems_id == emsid,]
+<!-- ```{r appendix, results='asis', fig.height=3.5} -->
+<!-- plot_exceedances <- FALSE -->
 
-  lineplot <- ggplot(dailydata, size = 1) + 
-    scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate), 
-                 breaks = date_breaks(width = "1 year"), labels = date_format("%Y")) + 
-  scale_y_continuous(limits = c(0, 102), 
-                     breaks = seq(0, 100, by = 20), labels = seq(0, 100, by = 20), 
-                     expand = c(0,0)) + 
-  geom_line(aes(x = date, y = max8hr), colour = "#9ecae1", size = 0.5) + 
-    geom_hline(aes(yintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
-    annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "), 
-             x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1, 
-             size = 3.5, colour = "#e41a1c") + 
-  theme_soe(base_family = "", base_size = 10) + 
-    theme(axis.title.y = element_text(vjust = 1)) + 
-    labs(x = NULL, y = "Daily Maximum Ozone\n(parts per billion)")
-  
-  if (plot_exceedances) {
-    exceedance_data <- filter(dailydata, exceed)
-    
-    if (nrow(exceedance_data) > 0) {
-      lineplot <- lineplot + 
-        geom_point(data = exceedance_data, aes(x = date, y = max8hr), 
-                   colour = "#e41a1c", size = 2) + 
-        annotate("text", x = exceedance_data$date[1] + 20, y = exceedance_data$max8hr[1], 
-                 label = "Exceedances", hjust = 0, vjust = 0, colour = "#e41a1c", size = 3)
-    }
-  }
-  
-  if (nrow(caaq_data) > 0) {
-    lineplot <- lineplot + 
-      geom_segment(data = caaq_data, 
-                   mapping = aes(x = as.Date(paste0(caaq_year_min, "-01-01")), 
-                                 xend = as.Date(paste0(caaq_year_max,"-12-31")), 
-                                 y = caaq_metric, yend = caaq_metric, 
-                                 colour = factor(caaq_status, 
-                                                 levels = c("Achieved", "Not Achieved"))), 
-                   size = 1.5) + 
-      annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")), 
-               y = 73, label = "2011-2013 Ozone Metric", size = 3.5, hjust=0, 
-               colour = "grey50") + 
-      geom_segment(data = caaq_data, colour = "grey60",
-                   aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69, 
-                       xend = as.Date(paste0(caaq_year_min, "-11-01")), 
-                       yend = caaq_metric + 1)) +
-      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2011-2013 Ozone Metric", 
-                          name = element_blank(), guide = "none")
-  }
-  
-  plot(lineplot)
-  cat("\\newpage ")
-  }
-}
+<!-- for (az in (unique(sum_dat$Airzone))) { -->
+<!--   dat <- sum_dat[sum_dat$Airzone == az, ] -->
+<!--   ems_ids <- unique(dat$ems_id) -->
+<!--   cat("\\subsection{", az, " Air Zone}", sep = "") -->
 
-```
+<!--   for (emsid in ems_ids) { -->
+<!--     site_sum <- dat[dat$ems_id == emsid, ] -->
+<!--     dailydata <- daily_8hr_roll_max[daily_8hr_roll_max$ems_id == emsid & -->
+<!--                                       daily_8hr_roll_max$date <= maxdate,] -->
+
+<!--     if (nrow(dailydata) == 0) next -->
+
+<!--     site <- knitr_latex_char(site_sum$display_name[1]) -->
+<!--     cat("\\subsubsection*{\\underline{", site, " monitoring station}}", sep = "") -->
+<!--     cat("\\textbf{Ozone Air Quality Standard:} ", site_sum$caaq_status, " \\newline ") -->
+<!--     cat("\\textbf{Ozone Metric:} ", site_sum$caaq_metric, " ppb (", site_sum$caaq_nYears,  -->
+<!--         " year average) \\newline ", sep = "") -->
+<!--     cat("\\textbf{Air Quality Management Level:} ", as.character(site_sum$caaq_level),  -->
+<!--         " \\newline \\newline \\newline ") -->
+
+<!--     caaq_data <- three_yr_avg[three_yr_avg$ems_id == emsid,] -->
+
+<!--   lineplot <- ggplot(dailydata, size = 1) +  -->
+<!--     scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate),  -->
+<!--                  breaks = date_breaks(width = "1 year"), labels = date_format("%Y")) +  -->
+<!--   scale_y_continuous(limits = c(0, 102),  -->
+<!--                      breaks = seq(0, 100, by = 20), labels = seq(0, 100, by = 20),  -->
+<!--                      expand = c(0,0)) +  -->
+<!--   geom_line(aes(x = date, y = max8hr), colour = "#9ecae1", size = 0.5) +  -->
+<!--     geom_hline(aes(yintercept = o3_standard), linetype = 2, colour = "#e41a1c") +  -->
+<!--     annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "),  -->
+<!--              x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1,  -->
+<!--              size = 3.5, colour = "#e41a1c") +  -->
+<!--   theme_soe(base_family = "", base_size = 10) +  -->
+<!--     theme(axis.title.y = element_text(vjust = 1)) +  -->
+<!--     labs(x = NULL, y = "Daily Maximum Ozone\n(parts per billion)") -->
+
+<!--   if (plot_exceedances) { -->
+<!--     exceedance_data <- filter(dailydata, exceed) -->
+
+<!--     if (nrow(exceedance_data) > 0) { -->
+<!--       lineplot <- lineplot +  -->
+<!--         geom_point(data = exceedance_data, aes(x = date, y = max8hr),  -->
+<!--                    colour = "#e41a1c", size = 2) +  -->
+<!--         annotate("text", x = exceedance_data$date[1] + 20, y = exceedance_data$max8hr[1],  -->
+<!--                  label = "Exceedances", hjust = 0, vjust = 0, colour = "#e41a1c", size = 3) -->
+<!--     } -->
+<!--   } -->
+
+<!--   if (nrow(caaq_data) > 0) { -->
+<!--     lineplot <- lineplot +  -->
+<!--       geom_segment(data = caaq_data,  -->
+<!--                    mapping = aes(x = as.Date(paste0(caaq_year_min, "-01-01")),  -->
+<!--                                  xend = as.Date(paste0(caaq_year_max,"-12-31")),  -->
+<!--                                  y = caaq_metric, yend = caaq_metric,  -->
+<!--                                  colour = factor(caaq_status,  -->
+<!--                                                  levels = c("Achieved", "Not Achieved"))),  -->
+<!--                    size = 1.5) +  -->
+<!--       annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")),  -->
+<!--                y = 73, label = "2011-2013 Ozone Metric", size = 3.5, hjust=0,  -->
+<!--                colour = "grey50") +  -->
+<!--       geom_segment(data = caaq_data, colour = "grey60", -->
+<!--                    aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69,  -->
+<!--                        xend = as.Date(paste0(caaq_year_min, "-11-01")),  -->
+<!--                        yend = caaq_metric + 1)) + -->
+<!--       scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2011-2013 Ozone Metric",  -->
+<!--                           name = element_blank(), guide = "none") -->
+<!--   } -->
+
+<!--   plot(lineplot) -->
+<!--   cat("\\newpage ") -->
+<!--   } -->
+<!-- } -->
+
+<!-- ``` -->
 
 
