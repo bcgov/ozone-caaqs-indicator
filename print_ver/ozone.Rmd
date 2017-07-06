@@ -164,18 +164,15 @@ Fine Particulate Matter and Ozone
 
 # References and Other Useful Links
 
-Visit [BC Air Quality](http://www.bcairquality.ca/plans/national-air-quality-management-system.html) for more information on the implementation of the AQMS in B.C., and to read individual Air Zone reports on the achievement of CAAQS for ground-level ozone and fine particulate matter.
+[Learn more about the implementation of the Air Quality Management System in British Columbia](http://www2.gov.bc.ca/gov/content?id=8FA84ADC845A49AB93E525A58D9D4A97)
 
-Access [B.C.'s Air Quality
-Readings](http://www.bcairquality.ca/readings/index.html) for real-time
-data on air pollutants and locations of all air monitoring stations in
-B.C.
+Read individual [Air Zone reports](http://www2.gov.bc.ca/gov/search?q=air+zone%2Binmeta%3AnrsAirQuality_nrs_air_quality_topic%3DAir+Zone+Reports&id=04D14E7F7EE043889E1AC20E205CA3F8&tab=1&sourceId=267EE7E2432B4DE89BF1905EF80F505E) on the achievement of the Canadian Ambient Air Quality Standards for ground-level ozone and fine particulate matter in B.C.
 
-For more details on the CAAQS and Canada's Air Quality Management System
-visit [Canada-wide Air Quality Management System
-(AQMS)](http://www.ccme.ca/en/resources/air/aqms.html)
+[Access B.C.'s real-time data on air pollutants and find locations of all air monitoring stations in B.C.](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
 
 [BC Lung Asssociation's BC State of the Air Reports](http://www.bc.lung.ca/airquality/stateoftheair-report.html)
+
+[Canadian Environmental Sustainability Indicators: Air and Climate Indicators](http://www.ec.gc.ca/indicateurs-indicators/default.asp?lang=En&n=03603FB3-1)
 
 ^1^[United States Environmental Protection Agency. February 2013.
 Integrated Science Assessment of Ozone and Related Photochemical
@@ -204,9 +201,9 @@ Published and Available On-Line at Environmental Reporting BC (July 2017):
 
 Email correspondence to: envreportbc@gov.bc.ca
 
-<!-- \newpage -->
+\newpage
 
-<!-- # Appendix: Detailed CAAQS results for each monitoring station within air zones in B.C. -->
+# Appendix: Detailed CAAQS results for each monitoring station within air zones in B.C.
 
 <!-- ```{r appendix, results='asis', fig.height=3.5} -->
 <!-- plot_exceedances <- FALSE -->
