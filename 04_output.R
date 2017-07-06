@@ -286,9 +286,10 @@ mgmt_chart <- ggplot(data=ml_station.points,
    #     legend.margin = unit(15,"mm"),
         plot.margin = unit(c(10,10,0,0),"mm")) +
   coord_flip()
-plot(mgmt_chart)
 
 ## @knitr stop
+plot(mgmt_chart)
+
 
 ## PNG of combined Management map and barchart with multiplot
 png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
