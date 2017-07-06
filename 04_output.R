@@ -298,7 +298,7 @@ dev.off()
 
 ### BCDC Resources ###
 
-## Output ozone_caaqs as CSV format for the BC Data Catalogue
+## Output ozone_caaqs ambient caaqs for stations as CSV format for the BC Data Catalogue
 ozone_caaqs_map %>%
    spTransform(CRSobj = outCRS) %>%
    as.data.frame() %>%
@@ -307,7 +307,15 @@ ozone_caaqs_map %>%
           based_on_incomplete, caaq_metric, caaq_status) %>%
    write.csv("out/ozone_site_summary.csv", row.names = FALSE)
 
-## Output ml_airzone as CSV format for the BC Data Catalogue
+## Output ozone_caaqs ambient caaqs for air zones as CSV format for the BC Data Catalogue
+ambient_airzone_map %>%
+  spTransform(CRSobj = outCRS) %>%
+  as.data.frame() %>%
+  select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
+         caaq_metric, caaq_status) %>%
+  write.csv("out/airzone_ambient_summary.csv", row.names = FALSE)
+
+## Output ml_airzone air zone management levels as CSV format for the BC Data Catalogue
 ml_airzone_map %>%
   spTransform(CRSobj = outCRS) %>%
   as.data.frame() %>%
