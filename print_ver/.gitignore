@@ -1,4 +1,5 @@
 /ozone_cache
 /ozone_files
-envreporbc_ozone*
+envreportbc_ozone*
 *.pdf
+/out
