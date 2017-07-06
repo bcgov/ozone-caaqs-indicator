@@ -113,7 +113,7 @@ reporting period.
 ### More about the Canadian Ambient Air Quality Standard ozone metric:
 
 -   The Canadian Ambient Air Quality Standard ozone metric is the 3-year average of the annual 4th-highest daily          maximum 8-hour rolling average concentration.
--   The ozone metric for an air zone is the highest ozone metric value reported from monitoring stations within the       air zone. However, air zone metric values are only taken from stations reporting on two years of data when there      are no available three year reporting stations in the air zone.
+-   The ozone metric for an air zone is the highest ozone metric value reported from monitoring stations within the       air zone. Air zone metric values are only taken from stations reporting on two years of data when there      are no available three year reporting stations in the air zone.
 -   Only air monitoring stations with sufficient data on ozone
     concentrations for the 2014-2016 reporting period were included in
     this indicator. Visit [Current Air Quality Data](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) for a
@@ -129,11 +129,11 @@ reporting period.
 The Air Quality Management System is Canada's approach for protecting air quality. Under the Air Quality Management System, provinces and territories monitor, report and manage local air quality within air zones, with the goal of continuously improving air quality and keeping pollutants below the Canadian Ambient Air Quality Standards.
 
 -   Provinces and territories establish air zones that are defined by a similar set of air quality characteristics,       issues and trends. There are seven air zones in British Columbia: Coastal, Georgia Strait, Lower Fraser Valley,       Southern Interior, Central Interior, Northeast and Northwest.
--   The Air Zone Management Framework defines management levels based on the highest ozone metric value reported from     monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas     clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian     Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality     Standard). Each management level is associated with a suite of actions that become more rigorous as ozone             concentration levels approach the Canadian Ambient Air Quality Standard.
+-   The Air Zone Management Framework defines management levels based on the highest ozone metric value reported from     monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas     clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian     Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality     Standard).
 -   All six B.C. air zones that were assessed met the Canadian Ambient Air
     Quality Standard for ground-level ozone ($\leq\!\!$ 63 ppb).
 -   Based on the highest ozone metric value reported within each air zone, the Coastal air zone was assigned to a         green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were          assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level.        Currently, there are no [air monitoring     stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
--   Actions for each management level are detailed in the [Guidance Document on Air Zone Management
+-   Each management level is associated with a suite of actions that become more rigorous as ozone             concentration levels approach the Canadian Ambient Air Quality Standard. Actions for each management level are detailed in the [Guidance Document on Air Zone Management
     (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1481_gdazm_e.pdf).
 
 # Management Levels for Ozone in B.C. Air Zones (2014-2016)
@@ -142,8 +142,12 @@ The Air Quality Management System is Canada's approach for protecting air qualit
 ```
 
 
-```{r mgmt_chart, fig.height=4}
+```{r mgmt_chart}
 ```
+```{r fig.height=4}
+mgmt_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"))
+```
+
 
 ### More about the Air Quality Management System management levels:
 
@@ -167,7 +171,7 @@ Achievement Determination: Canadian Ambient Air Quality Standards for
 Fine Particulate Matter and Ozone
 (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1483_gdad_eng.pdf) published by the [Canadian Council of Ministers of the Environment](http://www.ccme.ca/index.html).
 
-**R package and code:** We have developed an [R](http://www.r-project.org) package to facilitate the calculation of air quality metrics according to the Canadian Ambient Air Quality Standards [CAAQS](http://www.ccme.ca/en/current_priorities/air/caaqs.html). Download the 'rcaaqs' package from [GitHub](https://github.com/bcgov/rcaaqs). The source code for repeating the analysis presented on this page is also available on [GitHub](https://github.com/bcgov/ozone_caaqs_analysis).
+**R package and code:** We have developed an [R](http://www.r-project.org) package to facilitate the calculation of air quality metrics according to the [Canadian Ambient Air Quality Standards](http://www.ccme.ca/en/current_priorities/air/caaqs.html). Download the 'rcaaqs' package from [GitHub](https://github.com/bcgov/rcaaqs). The source code for repeating the analysis presented on this page is also available on [GitHub](https://github.com/bcgov/ozone_caaqs_analysis).
 
 
 # References and Other Useful Links
@@ -176,7 +180,7 @@ Fine Particulate Matter and Ozone
 
 Read individual [Air Zone reports](http://www2.gov.bc.ca/gov/search?q=air+zone%2Binmeta%3AnrsAirQuality_nrs_air_quality_topic%3DAir+Zone+Reports&id=04D14E7F7EE043889E1AC20E205CA3F8&tab=1&sourceId=267EE7E2432B4DE89BF1905EF80F505E) on the achievement of the Canadian Ambient Air Quality Standards for ground-level ozone and fine particulate matter in B.C.
 
-[Access B.C.'s real-time data on air pollutants and find locations of all air monitoring stations in B.C.](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
+[Access B.C.'s real-time data on air pollutants and find locations of all provincial air monitoring stations in B.C.](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
 
 [BC Lung Asssociation's BC State of the Air Reports](http://www.bc.lung.ca/airquality/stateoftheair-report.html)
 
@@ -201,7 +205,7 @@ each file, as indicated in parentheses below.
 -   [Indicator data: BC Station Ozone CAAQS 2014-2016](https://catalogue.data.gov.bc.ca/dataset/9b7a9e74-9274-4f97-be81-ce4ee475077d) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [Indicator data: BC Air Zone Ozone CAAQS 2014-2016](https://catalogue.data.gov.bc.ca/dataset/9b7a9e74-9274-4f97-be81-ce4ee475077d) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [Indicator data: BC Air Zone Ozone Management Levels 2014-2016](https://catalogue.data.gov.bc.ca/dataset/9b7a9e74-9274-4f97-be81-ce4ee475077d) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
--   [BC Ozone Hourly Data & Air Monitoring Station locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+-   [BC Ozone Hourly Data & Air Monitoring Station Locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [BC Air Zones](https://catalogue.data.gov.bc.ca/dataset/e8eeefc4-2826-47bc-8430-85703d328516) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
 Published and Available On-Line at Environmental Reporting BC (July 2017):
@@ -211,7 +215,7 @@ Email correspondence to: envreportbc@gov.bc.ca
 
 \newpage
 
-# Appendix: Detailed CAAQS results for each monitoring station within air zones in B.C.
+# Appendix: Detailed ground-level ozone Canadian Ambient Air Quality Standard results for each monitoring station within air zones in B.C.
 
 
 ```{r appendix, results='asis', fig.height=3.5}
