@@ -77,6 +77,7 @@ dev.off()
 ## Individual monitoring station plots with daily maximum data and ambient
 ## CAAQS metric (for both print & web)
 
+
 ems_ids <- sum_dat$ems_id
 stn_plots <- vector("list", length(sum_dat$ems_id))
 names(stn_plots) <- ems_ids
@@ -138,14 +139,17 @@ for (emsid in ems_ids) {
                        xend = as.Date(paste0(caaq_year_min, "-11-01")), 
                        yend = caaq_metric + 1)) +
       scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric", 
-                          name = element_blank(), guide = "none") #+ 
+                          name = element_blank(), guide = "none") 
 
   }
+  
   
   stn_plots[[emsid]] <- lineplot
   
   cat("creating plot for", emsid, site, "\n")
 }
+
+
 
 ## PNGs of CAAQS metrics and raw data station line plots
 line_dir <- "out/station_plots/"
