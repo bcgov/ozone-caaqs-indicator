@@ -122,7 +122,8 @@ for (emsid in ems_ids) {
              size = 3.5, colour = "#e41a1c") +
     theme_soe(base_size = 10) +
     theme(axis.title.y = element_text(vjust = 1),
-          axis.ticks.x = element_blank(), panel.grid.major.x = element_blank(), 
+          axis.ticks.x = element_blank(),
+          panel.grid.major.x = element_blank(), 
           panel.grid.minor.x = element_line(colour = "grey85")) +
     labs(x = NULL, y = "Daily Maximum Ozone\n(parts per billion)")
 
