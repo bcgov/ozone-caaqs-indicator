@@ -25,8 +25,9 @@ if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
 ## @knitr pre
 
 ## Set constants
-min_year <- max_year - 2
-maxdate <- as.Date(paste0(max_year, "-12-31"))
+rep_yr <- 2016
+min_year <- rep_yr - 2
+maxdate <- as.Date(paste0(rep_yr, "-12-31"))
 mindate <- as.Date(paste0(min_year, "-01-01"))
 outCRS <- CRS("+init=epsg:4326")
 dir.create("out", showWarnings = FALSE)
@@ -56,7 +57,7 @@ summary_plot <- ggplot(sum_dat,
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
   geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 4, 
             hjust = 1, colour = "#e41a1c") + 
-  labs(x = "CAAQS Metric", y = "Ozone Monitoring Station") + 
+  labs(x = "CAAQS Metric Value (ppb)", y = "Monitoring Station") + 
   theme_soe_facet() + 
   theme(axis.title.y = element_text(size=rel(1.2)), 
         axis.text.y = element_text(size = rel(0.8)), 
@@ -72,6 +73,16 @@ png(filename = paste0("out/ozone_station_summary_chart.png"),
     width = 836, height = 700, units = "px", res = 80) 
 plot(summary_plot)
 dev.off()
+
+
+mid_breaks <- function(width = "1 year") {
+  function(x) {
+    if (length(x) > 2) stop("x should be a range of length 2")
+    sq <- scales::fullseq(x, width)
+    diff <- diff(sq)
+    sq[-length(sq)] + diff / 2
+  }
+}
 
 
 ## Individual monitoring station plots with daily maximum data and ambient
@@ -94,55 +105,60 @@ for (emsid in ems_ids) {
   
  caaq_data <- sum_dat[sum_dat$ems_id == emsid,]
 
-  
-  lineplot <- ggplot(dailydata, size = 1) + 
-    scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate), 
-                 breaks = date_breaks(width = "1 year"), labels = date_format("%Y")) + 
-    scale_y_continuous(limits = c(0, 102), 
-                       breaks = seq(0, 100, by = 20), labels = seq(0, 100, by = 20), 
-                       expand = c(0,0)) + 
-    geom_line(aes(x = date, y = max8hr), colour = "#9ecae1", size = 0.5) + 
-    geom_hline(aes(yintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
-    annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "), 
-             x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1, 
-             size = 3.5, colour = "#e41a1c") + 
-    theme_soe(base_size = 10) + 
-    theme(axis.title.y = element_text(vjust = 1)) + 
+# lineplot <- plot_ts(dailydata, caaqs_data = caaq_data,
+#                      parameter = "o3", rep_yr = 2016)
+# lineplot <- lineplot + coord_cartesian(ylim = c(0, 100))
+
+  lineplot <- ggplot(dailydata, size = 1) +
+    scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate),
+                 breaks = mid_breaks(), labels = date_format("%Y")) +
+    scale_y_continuous(limits = c(0, 102),
+                       breaks = seq(0, 100, by = 20), labels = seq(0, 100, by = 20),
+                       expand = c(0,0)) +
+    geom_line(aes(x = date, y = max8hr), colour = "#9ecae1", size = 0.5) +
+    geom_hline(aes(yintercept = o3_standard), linetype = 2, colour = "#e41a1c") +
+    annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "),
+             x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1,
+             size = 3.5, colour = "#e41a1c") +
+    theme_soe(base_size = 10) +
+    theme(axis.title.y = element_text(vjust = 1),
+          axis.ticks.x = element_blank(), panel.grid.major.x = element_blank(), 
+          panel.grid.minor.x = element_line(colour = "grey85")) +
     labs(x = NULL, y = "Daily Maximum Ozone\n(parts per billion)")
-  
+
   if (plot_exceedances) {
     exceedance_data <- filter(dailydata, exceed)
-    
+
     if (nrow(exceedance_data) > 0) {
-      lineplot <- lineplot + 
-        geom_point(data = exceedance_data, aes(x = date, y = max8hr), 
-                   colour = "#e41a1c", size = 2) + 
-        annotate("text", x = exceedance_data$date[1] + 20, y = exceedance_data$max8hr[1], 
+      lineplot <- lineplot +
+        geom_point(data = exceedance_data, aes(x = date, y = max8hr),
+                   colour = "#e41a1c", size = 2) +
+        annotate("text", x = exceedance_data$date[1] + 20, y = exceedance_data$max8hr[1],
                  label = "Exceedances", hjust = 0, vjust = 0, colour = "#e41a1c", size = 3)
     }
   }
-    
+
   if (nrow(caaq_data) > 0) {
-    lineplot <- lineplot + 
-      geom_segment(data = caaq_data, 
-                   mapping = aes(x = as.Date(paste0(caaq_year_min, "-01-01")), 
-                                 xend = as.Date(paste0(caaq_year_max,"-12-31")), 
-                                 y = caaq_metric, yend = caaq_metric, 
-                                 colour = factor(caaq_status, 
-                                                 levels = c("Achieved", "Not Achieved"))), 
-                   size = 1.5) + 
-      annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")), 
-               y = 73, label = "2014-2016 Ozone Metric", size = 3.5, hjust=0, 
-               colour = "grey50") + 
+    lineplot <- lineplot +
+      geom_segment(data = caaq_data,
+                   mapping = aes(x = as.Date(paste0(caaq_year_min, "-01-01")),
+                                 xend = as.Date(paste0(caaq_year_max,"-12-31")),
+                                 y = caaq_metric, yend = caaq_metric,
+                                 colour = factor(caaq_status,
+                                                 levels = c("Achieved", "Not Achieved"))),
+                   size = 1.5) +
+      annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")),
+               y = 73, label = "2014-2016 Ozone Metric", size = 3.5, hjust=0,
+               colour = "grey50") +
       geom_segment(data = caaq_data, colour = "grey60",
-                   aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69, 
-                       xend = as.Date(paste0(caaq_year_min, "-11-01")), 
+                   aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69,
+                       xend = as.Date(paste0(caaq_year_min, "-11-01")),
                        yend = caaq_metric + 1)) +
-      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric", 
-                          name = element_blank(), guide = "none") 
+      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric",
+                          name = element_blank(), guide = "none")
 
   }
-  
+
   
   stn_plots[[emsid]] <- lineplot
   
