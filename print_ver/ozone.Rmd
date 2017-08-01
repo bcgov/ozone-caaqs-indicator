@@ -218,6 +218,16 @@ Email correspondence to: envreportbc@gov.bc.ca
 
 ```{r appendix, results='asis', fig.height=3.5}
 
+mid_breaks <- function(width = "1 year") {
+  function(x) {
+    if (length(x) > 2) stop("x should be a range of length 2")
+    sq <- scales::fullseq(x, width)
+    diff <- diff(sq)
+    sq[-length(sq)] + diff / 2
+  }
+}
+
+
 ems_ids <- sum_dat$ems_id
 sum_dat$caaq_status <- as.character(sum_dat$caaq_status)
 
@@ -247,7 +257,7 @@ for (emsid in ems_ids) {
   
   lineplot <- ggplot(dailydata, size = 1) + 
     scale_x_date(expand = c(0,50), limits = c(mindate - 1, maxdate), 
-                 breaks = date_breaks(width = "1 year"), labels = date_format("%Y")) + 
+                 breaks = mid_breaks(), labels = date_format("%Y")) + 
     scale_y_continuous(limits = c(0, 102), 
                        breaks = seq(0, 100, by = 20), labels = seq(0, 100, by = 20), 
                        expand = c(0,0)) + 
@@ -258,7 +268,9 @@ for (emsid in ems_ids) {
              size = 3.5, colour = "#e41a1c") + 
     theme_soe(base_size = 10) + 
     theme(axis.title.y = element_text(vjust = 1),
-          plot.margin = unit(c(10,0,0,0),"mm")) + 
+          plot.margin = unit(c(10,0,0,0),"mm"),
+              panel.grid.major.x = element_blank(), 
+          panel.grid.minor.x = element_line(colour = "grey85")) + 
     labs(x = NULL, y = "Daily Maximum Ozone\n(parts per billion)")
   
   if (plot_exceedances) {
