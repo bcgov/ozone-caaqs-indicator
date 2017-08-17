@@ -57,7 +57,7 @@ summary_plot <- ggplot(sum_dat,
   geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
   geom_text(data = ann_text, label = "Ozone Standard (63 ppb)", size = 4, 
             hjust = 1, colour = "#e41a1c") + 
-  labs(x = "CAAQS Metric Value (ppb)", y = "Monitoring Station") + 
+  labs(x = "Ozone Metric (ppb)", y = "Monitoring Station") + 
   theme_soe_facet() + 
   theme(axis.title.y = element_text(size=rel(1.2)), 
         axis.text.y = element_text(size = rel(0.8)), 
@@ -276,10 +276,15 @@ ml_station.points$caaq_mgmt_cat <- fct_drop(ml_station.points$caaq_mgmt_cat,
 
 chart_colrs <- colrs[-1]
 
-mlevels <- c("Actions for Keeping Clean Areas Clean (\u226450 ppb)", 
-             "Actions for Preventing Air Quality Deterioration (>50 & \u226456 ppb)", 
-             "Actions for Preventing CAAQS Exceedance (>56 & \u226463 ppb)", 
-             "Actions for Achieving Air Zone CAAQS (>63 ppb)")
+# mlevels <- c("Actions for Keeping Clean Areas Clean (\u226450 ppb)", 
+#              "Actions for Preventing Air Quality Deterioration (>50 & \u226456 ppb)", 
+#              "Actions for Preventing CAAQS Exceedance (>56 & \u226463 ppb)", 
+#              "Actions for Achieving Air Zone CAAQS (>63 ppb)")
+
+mlevels <- c("Actions for Keeping Clean Areas Clean", 
+             "Actions for Preventing Air Quality Deterioration", 
+             "Actions for Preventing CAAQS Exceedance", 
+             "Actions for Achieving Air Zone CAAQS")
 
 mgmt_chart <- ggplot(data=ml_station.points,
                               aes(x = Airzone, fill = caaq_mgmt_cat)) + 
