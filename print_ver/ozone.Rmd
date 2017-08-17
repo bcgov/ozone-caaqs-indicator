@@ -54,16 +54,16 @@ Environment](http://www.ccme.ca/index.html).
     to more emergency room visits, hospitalizations, and absenteeism, and
     higher health care costs^[2](#fn2)^.
 -   **Ozone levels met the Canadian Ambient Air Quality Standard at all B.C. 
-    ozone monitoring stations.** The ozone metric (see sidebar) from the 39 
+    ozone monitoring stations.** The ozone metric values (see sidebar) from the 39 
     stations ranged from 34 to 60 parts per billion (ppb).
     Ozone metric values were $\leq\!\!$ 50 ppb at 26 reporting stations (67%). No
-    stations reported CAAQs metric values \>60 ppb.
+    stations reported ozone metric values \>60 ppb.
 -   **Ozone levels met the Canadian Ambient Air Quality Standard in six
     of B.C.'s seven air zones.** The ozone level for an air zone is the 
     highest ozone metric value reported from monitoring stations within 
     the air zone. Currently, there are no [air monitoring stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
     in the Northwest Air Zone.
--   **Ozone metrics are used to set management levels for each air
+-   **Ozone levels are used to set management levels for each air
     zone.** Four management levels (green, yellow, orange, and red) are each
     associated with a suite of actions that become more rigorous as
     ozone metric values approach the Canadian Ambient Air Quality
@@ -80,7 +80,7 @@ Environment](http://www.ccme.ca/index.html).
     
     \vspace{1mm}
     
-    \text{The Canadian Ambient Air Quality Standard ozone metric should be \textbf{lower than 63 parts per billion}.}
+    \text{The Canadian Ambient Air Quality Standard value for ozone is \textbf{63 parts per billion}.}      \text{Ozone levels---calculated using the ozone metric value---equal to or lower then 63 ppb meet the standard.}
     
     \href{http://www.ccme.ca/en/resources/air/aqms.html}{Learn more about the  Canadian Ambient Air Quality Standards.}
     
@@ -93,17 +93,17 @@ Environment](http://www.ccme.ca/index.html).
 \newpage
 
 The map and chart below summarise Canadian Ambient Air Quality Standard
-achievement status for ozone in B.C. air zones, as well as the ozone metric at individual monitoring stations. Summaries are given for each monitoring station where sufficient data was available for the 2014-2016
+achievement status for ozone in B.C. air zones, as well as the ozone metric values at individual monitoring stations. Summaries are given for each monitoring station where sufficient data was available for the 2014-2016
 reporting period.
 
-# Status of Ozone Levels in B.C. Air Zones (2014-2016)
+# Status of Ground-Level Ozone Levels in B.C. Air Zones (2014-2016)
 
 ```{r achievement_map, fig.height=8, fig.width=7}
 ```
 
 \newpage
 
-# Ozone Metric for Air Monitoring Stations within B.C. Air Zones (2014-2016)
+# Ground-Level Ozone Levels for Air Monitoring Stations within B.C. Air Zones (2014-2016)
 
 ```{r summary_plot, fig.height=9, fig.width=7}
 ```
@@ -112,27 +112,27 @@ reporting period.
 
 ### More about the Canadian Ambient Air Quality Standard ozone metric:
 
--   The Canadian Ambient Air Quality Standard ozone metric is the 3-year average of the annual 4th-highest daily          maximum 8-hour rolling average concentration.
--   The ozone metric for an air zone is the highest ozone metric value reported from monitoring stations within the       air zone. Air zone metric values are only taken from stations reporting on two years of data when there      are no available three year reporting stations in the air zone.
+-   The Canadian Ambient Air Quality Standard ozone metric value is the 3-year average of the annual 4th-highest daily          maximum 8-hour rolling average concentration.
+-   The ozone metric vlaue for an air zone is the highest ozone metric value reported from monitoring stations within the air zone. Air zone metric values are only taken from stations reporting on two years of data when there are no available three year reporting stations in the air zone.
 -   Only air monitoring stations with sufficient data on ozone
     concentrations for the 2014-2016 reporting period were included in
     this indicator. Visit [Current Air Quality Data](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) for a
     complete list of air monitoring stations across B.C.
 -   Data completeness and sufficiency criteria for the ozone
-    metric are described in the [Guidance Document on Achievement
+    metric value are described in the [Guidance Document on Achievement
     Determination: Canadian Ambient Air Quality Standards for Fine
     Particulate Matter and Ozone
     (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1483_gdad_eng.pdf).
 
 ## Canada-wide Air Quality Management System
 
-The Air Quality Management System is Canada's approach for protecting air quality. Under the Air Quality Management System, provinces and territories monitor, report and manage local air quality within air zones, with the goal of continuously improving air quality and keeping pollutants below the Canadian Ambient Air Quality Standards.
+The Air Quality Management System is Canada's approach for protecting air quality. Under the Air Quality Management System, provinces and territories monitor, report and manage local air quality within air zones, with the goal of continuously improving air quality and keeping pollutants below the Canadian Ambient Air Quality Standard values.
 
--   Provinces and territories establish air zones that are defined by a similar set of air quality characteristics,       issues and trends. There are seven air zones in British Columbia: Coastal, Georgia Strait, Lower Fraser Valley,       Southern Interior, Central Interior, Northeast and Northwest.
--   The Air Zone Management Framework defines management levels based on the highest ozone metric value reported from     monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas     clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian     Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality     Standard).
+-   Provinces and territories establish air zones that are defined by a similar set of air quality characteristics, issues and trends. There are seven air zones in British Columbia: Coastal, Georgia Strait, Lower Fraser Valley, Southern Interior, Central Interior, Northeast and Northwest.
+-   The Air Zone Management Framework defines management levels based on the highest ozone metric value reported from monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality Standard).
 -   All six B.C. air zones that were assessed met the Canadian Ambient Air
     Quality Standard for ground-level ozone ($\leq\!\!$ 63 ppb).
--   Based on the highest ozone metric value reported within each air zone, the Coastal air zone was assigned to a         green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were          assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level.        Currently, there are no [air monitoring     stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
+-   Based on the highest ozone metric value reported within each air zone, the Coastal air zone was assigned to a green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level. Currently, there are no [air monitoring     stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
 -   Each management level is associated with a suite of actions that become more rigorous as ozone             concentration levels approach the Canadian Ambient Air Quality Standard. Actions for each management level are detailed in the [Guidance Document on Air Zone Management
     (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1481_gdazm_e.pdf).
 
@@ -160,12 +160,12 @@ mgmt_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"))
     external influences. These arrangements aim to ensure that
     jurisdictions are responsible for managing only the emissions
     sources they can control.
--   Two days were flagged as exceptional events as a result of suspected wildfire influence in B.C. for the 2014-2016 reporting period (July 8-9, 2015 for [Agassiz Municipal Hall](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E293810)). However, removal of the data from these days had no impact on the resulting air zone management levels for ground-level ozone.
+-   Two days were flagged as exceptional events as a result of suspected wildfire influence in B.C. for the 2014-2016 reporting period (July 8-9, 2015 for [Agassiz Municipal Hall](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E293810)). Removal of the data from these days had no impact on the resulting air zone management levels for ground-level ozone.
 
 # Methods
 
 The methods used to develop this indicator --- including procedures, data
-requirements, and calculation of the Canadian Ambient Air Quality Standard ozone metric --- are detailed in
+requirements, and calculation of the Canadian Ambient Air Quality Standard ozone metric values --- are detailed in
 the [Guidance Document on
 Achievement Determination: Canadian Ambient Air Quality Standards for
 Fine Particulate Matter and Ozone
@@ -301,7 +301,7 @@ for (emsid in ems_ids) {
                    aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69, 
                        xend = as.Date(paste0(caaq_year_min, "-11-01")), 
                        yend = caaq_metric + 1)) +
-      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric", 
+      scale_colour_manual(values = c("#377eb8", "#e41a1c"), labels = "2014-2016 Ozone Metric Value", 
                           name = element_blank(), guide = "none") 
 
   }
