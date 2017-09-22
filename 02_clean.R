@@ -52,6 +52,7 @@ ozone_site_summary <- ozone %>%
 
 ## Clean station data - lowercase column names, remove pseudo-duplicates, subset to those stations analysed
 stations_clean <- rename_all(stations, tolower) %>% 
+  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
   group_by(ems_id) %>%
   filter(n() == 1 | 
            !grepl("_60$|Met$|OLD$", station_name)) %>% 
