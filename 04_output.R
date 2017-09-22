@@ -69,7 +69,7 @@ plot(summary_plot)
 
 
 ## PNG of summary ozone CAAQS achivement by station and air zone chart
-png(filename = paste0("out/ozone_station_summary_chart.png"), 
+png_retina(filename = paste0("out/ozone_station_summary_chart.png"), 
     width = 836, height = 700, units = "px", res = 80) 
 plot(summary_plot)
 dev.off()
@@ -176,7 +176,7 @@ for (i in seq_along(stn_plots)) {
   obj <- stn_plots[i]
   name <- names(obj)
   cat("saving plot for", name, "\n")
-  png(filename = paste0(line_dir, name, "_lineplot.png"), 
+  png_retina(filename = paste0(line_dir, name, "_lineplot.png"), 
       width = 778, height = 254, units = "px", res = 90)
   plot(obj[[1]])
   dev.off()
@@ -216,7 +216,7 @@ plot(caaqs_achievement_map)
 
 ## PNG of airzone CAAQS ambient achievement map
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
-png(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
+png_retina(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
     width = 836, height = 700, units = "px", res = 80)
 plot(caaqs_achievement_map)
 dev.off()
@@ -314,7 +314,7 @@ plot(mgmt_chart)
 
 
 ## PNG of combined Management map and barchart with multiplot
-png(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
+png_retina(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
 
