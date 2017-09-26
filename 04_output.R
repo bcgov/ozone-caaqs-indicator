@@ -18,6 +18,7 @@ library("envreportutils") # for theme_facet_soe()
 library("forcats") # tweak factor levels fct_drop()
 library("sp") 
 library("geojsonio") # for geojson outputs
+library("svglite")
 
 ## Load data
 if (!exists("ml_airzone_map")) load("tmp/analysed.RData")
@@ -69,8 +70,11 @@ plot(summary_plot)
 
 
 ## PNG of summary ozone CAAQS achivement by station and air zone chart
-png_retina(filename = paste0("out/ozone_station_summary_chart.png"), 
-    width = 836, height = 700, units = "px", res = 80) 
+# png_retina(filename = paste0("out/ozone_station_summary_chart.png"),
+#     width = 836, height = 700, units = "px", res = 80)
+svglite(paste0("out/ozone_station_summary_chart.svg"), 
+        width = 836 / 80, height = 700 / 80) 
+
 plot(summary_plot)
 dev.off()
 
@@ -120,7 +124,7 @@ for (emsid in ems_ids) {
     annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "),
              x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1,
              size = 3.5, colour = "#e41a1c") +
-    theme_soe(base_size = 10) +
+    theme_soe(base_size = 14) +
     theme(axis.title.y = element_text(vjust = 1),
           axis.ticks.x = element_blank(),
           panel.grid.major.x = element_blank(), 
@@ -176,8 +180,10 @@ for (i in seq_along(stn_plots)) {
   obj <- stn_plots[i]
   name <- names(obj)
   cat("saving plot for", name, "\n")
-  png_retina(filename = paste0(line_dir, name, "_lineplot.png"), 
-      width = 778, height = 254, units = "px", res = 90)
+  # png_retina(filename = paste0(line_dir, name, "_lineplot.png"), 
+  #     width = 778, height = 254, units = "px", res = 90)
+  svglite(paste0(line_dir, name, "_lineplot.svg"), 
+          width = 778 / 72, height = 254 / 72)
   plot(obj[[1]])
   dev.off()
 }
@@ -216,8 +222,10 @@ plot(caaqs_achievement_map)
 
 ## PNG of airzone CAAQS ambient achievement map
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
-png_retina(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
-    width = 836, height = 700, units = "px", res = 80)
+# png_retina(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
+#     width = 836, height = 700, units = "px", res = 80)
+svglite(paste0("out/ozone_caaqs_achievement_map.svg"), 
+        width = 836 / 80, height = 700 / 80)
 plot(caaqs_achievement_map)
 dev.off()
 
@@ -314,7 +322,8 @@ plot(mgmt_chart)
 
 
 ## PNG of combined Management map and barchart with multiplot
-png_retina(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
+# png_retina(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
+svglite("./out/mgmt_viz.svg", width=836 / 72, height=430 / 72)
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
 
