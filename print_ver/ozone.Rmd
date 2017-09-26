@@ -226,7 +226,7 @@ each file, as indicated in parentheses below.
 -   [BC Ozone Hourly Data & Air Monitoring Station Locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [BC Air Zones](https://catalogue.data.gov.bc.ca/dataset/e8eeefc4-2826-47bc-8430-85703d328516) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-Published and Available On-Line at Environmental Reporting BC (September 2017):
+Published and Available On-Line at Environmental Reporting BC (October 2017):
 <http://www.env.gov.bc.ca/soe/indicators/air/ozone.html>
 
 Email correspondence to: envreportbc@gov.bc.ca
