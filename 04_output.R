@@ -123,7 +123,7 @@ for (emsid in ems_ids) {
     geom_hline(aes(yintercept = o3_standard), linetype = 2, colour = "#e41a1c") +
     annotate("text", label = paste0("Ozone Standard (", o3_standard, " ppb)  "),
              x = maxdate, y = o3_standard + 3, vjust = 0, hjust = 1,
-             size = 3.5, colour = "#e41a1c") +
+             size = 4.5, colour = "#e41a1c") +
     theme_soe(base_size = 14) +
     theme(axis.title.y = element_text(vjust = 1),
           axis.ticks.x = element_blank(),
@@ -153,7 +153,7 @@ for (emsid in ems_ids) {
                                                  levels = c("Achieved", "Not Achieved"))),
                    size = 1.5) +
       annotate("text", x = as.Date(paste0(caaq_data$caaq_year_min, "-01-30")),
-               y = 73, label = "2014-2016 Ozone Metric", size = 3.5, hjust=0,
+               y = 73, label = "2014-2016 Ozone Metric", size = 4.5, hjust=0,
                colour = "grey50") +
       geom_segment(data = caaq_data, colour = "grey60",
                    aes(x = as.Date(paste0(caaq_year_min,"-09-15")), y = 69,
