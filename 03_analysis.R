@@ -14,6 +14,7 @@ library("rcaaqs") # rcaaqs functions
 library("sp") # converting to spatial dataframe
 library("bcmaps") #air zone map
 library("dplyr") # for glimpse()
+library("rgdal") # for spTransform of spatial data
 
 ## Load the tmp file if ozone doesn't exist (need inherits = FALSE as "ozone" 
 ## exists in 'maps' package on which 'openair' depends)
