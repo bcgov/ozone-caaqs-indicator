@@ -125,7 +125,7 @@ reporting period.
 
 \newpage
 
-# Ground-Level Ozone Levels for Air Monitoring Stations within B.C. Air Zones (2014-2016)
+# Ozone Metrics for Air Monitoring Stations within B.C. Air Zones (2014-2016)
 
 ```{r summary_plot, fig.height=9, fig.width=7}
 ```
@@ -161,6 +161,7 @@ The Air Quality Management System is Canada's approach for protecting air qualit
 ```{r mgmt_map, fig.height = 5}
 ```
 
+\vspace{12pt}
 
 ```{r mgmt_chart}
 ```
@@ -270,7 +271,7 @@ for (emsid in ems_ids) {
   site <- knitr_latex_char(site_sum$station_name[1])
   cat("\\subsubsection*{\\underline{", site, " monitoring station}}", sep = "")
   cat("\\textbf{Ozone Air Quality Standard:} ", site_sum$caaq_status, " \\newline ")
-  cat("\\textbf{Ozone Metric:} ", site_sum$caaq_metric, " ppb (", site_sum$caaq_nYears, " year average) \\newline ", sep = "")
+  cat("\\textbf{Ozone Metric:} ", site_sum$caaq_metric, " ppb (", site_sum$caaq_nYears, " year average) \\newline ", " \\newline ", sep = "")
   
  caaq_data <- sum_dat[sum_dat$ems_id == emsid,]
 
