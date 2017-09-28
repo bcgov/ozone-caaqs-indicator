@@ -281,7 +281,7 @@ plot(mgmt_map)
 ## @knitr mgmt_map_end
 
 ## SVG of airzone CAAQS ambient achievement map
-svg_px("out/ozone_caaqs_mgmt_map.svg", width = 836, height = 700)
+svg_px("out/ozone_caaqs_mgmt_map.svg", width = 400, height = 400)
 plot(mgmt_map)
 dev.off()
 
@@ -332,7 +332,7 @@ mgmt_chart <- ggplot(data=ml_station.points,
 plot(mgmt_chart)
 
 ## SVG of airzone CAAQS ambient achievement bar chart
-svg_px("out/ozone_caaqs_mgmt_chart.svg", width = 836, height = 700)
+svg_px("out/ozone_caaqs_mgmt_chart.svg", width = 400, height = 400)
 plot(mgmt_chart)
 dev.off()
 
