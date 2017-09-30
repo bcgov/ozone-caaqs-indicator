@@ -68,12 +68,14 @@ plot(summary_plot)
 ## @knitr summary_plot_end
 
 
-## PNG of summary ozone CAAQS achivement by station and air zone chart
+## PNG of summary ozone CAAQS achievement by station and air zone chart
 # png_retina(filename = paste0("out/ozone_station_summary_chart.png"),
 #     width = 836, height = 700, units = "px", res = 80)
-svg_px(paste0("out/ozone_station_summary_chart.svg"), 
-        width = 836, height = 700) 
+# plot(summary_plot)
+# dev.off()
 
+## SVG of summary ozone CAAQS achievement by station and air zone chart
+svg_px("out/ozone_station_summary_chart.svg", width = 836, height = 700) 
 plot(summary_plot)
 dev.off()
 
@@ -171,7 +173,7 @@ for (emsid in ems_ids) {
 
 
 
-## PNGs of CAAQS metrics and raw data station line plots
+## SVGs of CAAQS metrics and raw data station line plots
 line_dir <- "out/station_plots/"
 dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -223,8 +225,11 @@ plot(caaqs_achievement_map)
 #ggsave("out/ozone_caaqs_achievement_map.pdf", caaqs_achievement_map, width = 8, height = 10, units = "in", scale = 1)
 # png_retina(filename = paste0("out/ozone_caaqs_achievement_map.png"), 
 #     width = 836, height = 700, units = "px", res = 80)
-svg_px(paste0("out/ozone_caaqs_achievement_map.svg"), 
-        width = 836, height = 700)
+# plot(caaqs_achievement_map)
+# dev.off()
+
+## SVG of airzone CAAQS ambient achievement map
+svg_px("out/ozone_caaqs_achievement_map.svg", width = 836, height = 700)
 plot(caaqs_achievement_map)
 dev.off()
 
@@ -273,6 +278,13 @@ mgmt_map <- ggplot(ml_airzones, aes(long, lat)) +
 
 plot(mgmt_map)
 
+## @knitr mgmt_map_end
+
+## SVG of airzone CAAQS mgmt levels map
+svg_px("out/ozone_caaqs_mgmt_map.svg", width = 500, height = 500)
+plot(mgmt_map)
+dev.off()
+
 
 ## @knitr mgmt_chart
 
@@ -319,12 +331,22 @@ mgmt_chart <- ggplot(data=ml_station.points,
 ## @knitr stop
 plot(mgmt_chart)
 
+## SVG of airzone CAAQS mgmt level bar chart
+svg_px("out/ozone_caaqs_mgmt_chart.svg", width = 500, height = 500)
+plot(mgmt_chart)
+dev.off()
+
 
 ## PNG of combined Management map and barchart with multiplot
 # png_retina(filename = "./out/mgmt_viz.png", width=836, height=430, units="px")
+# multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
+# dev.off()
+
+## SVG of combined Management map and barchart with multiplot
 svg_px("./out/mgmt_viz.svg", width=836, height=430)
 multiplot(mgmt_chart, mgmt_map, cols=2, widths = c(1, 1.25))
 dev.off()
+
 
 ### BCDC Resources ###
 
