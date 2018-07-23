@@ -73,13 +73,15 @@ ozone_caaqs$caaq_category_u <- cut_management(ozone_caaqs$caaq_metric, "o3", out
 ## to add Air Zones to the df
 ozone_caaqs_map <- ozone_caaqs
 
+airzone_map <- bcmaps::airzones(class = "sp")
+
 ## Setting projections to match bcmaps::airzones
 coordinates(ozone_caaqs_map) <- c("longitude", "latitude")
 proj4string(ozone_caaqs_map) <- "+init=epsg:4617"
-ozone_caaqs_map <- spTransform(ozone_caaqs_map, CRSobj = proj4string(airzones))
+ozone_caaqs_map <- spTransform(ozone_caaqs_map, CRSobj = proj4string(airzone_map))
 
 ## Get airzone information into ozone_caaqs_map
-ozone_caaqs_map$Airzone <- over(ozone_caaqs_map, airzones)[["Airzone"]]
+ozone_caaqs_map$Airzone <- over(ozone_caaqs_map, airzone_map)[["Airzone"]]
 
 ## Get air zone CAAQS value and achievement status for each airzone
 az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "caaq_nYears", 
@@ -88,7 +90,7 @@ az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "caaq_nYears",
                           rep_station_name = "station_name"))
 
 ## Add air zone CAAQS value and achievement status to an airzone map
-ambient_airzone_map <- airzones
+ambient_airzone_map <- airzone_map
 ambient_airzone_map <- sp::merge(ambient_airzone_map, as.data.frame(az_metric), by = "Airzone")
 
 ## Determine air zone achievements with o3_standard <- 63
@@ -159,10 +161,10 @@ ml_ozone_caaqs_map <- ml_ozone_caaqs
 ## Setting projections to match bcmaps::airzones
 coordinates(ml_ozone_caaqs_map) <- c("longitude", "latitude")
 proj4string(ml_ozone_caaqs_map) <- "+init=epsg:4617"
-ml_ozone_caaqs_map <- spTransform(ml_ozone_caaqs_map, CRSobj = proj4string(airzones))
+ml_ozone_caaqs_map <- spTransform(ml_ozone_caaqs_map, CRSobj = proj4string(airzone_map))
 
 ## Get airzone information into ml_ozone_caaqs_map
-ml_ozone_caaqs_map$Airzone <- over(ml_ozone_caaqs_map, airzones)[["Airzone"]]
+ml_ozone_caaqs_map$Airzone <- over(ml_ozone_caaqs_map, airzone_map)[["Airzone"]]
 
 ## Get AQMS Management Level status for each airzone
 ml_az_metric <- airzone_metric(ml_ozone_caaqs_map@data, n_years = "caaq_nYears", 
@@ -171,7 +173,7 @@ ml_az_metric <- airzone_metric(ml_ozone_caaqs_map@data, n_years = "caaq_nYears",
                                      rep_station_name = "station_name"))
 
 ## Add air zone CAAQS management value and management level to an airzone map
-ml_airzone_map <- airzones
+ml_airzone_map <- airzone_map
 ml_airzone_map <- sp::merge(ml_airzone_map, as.data.frame(ml_az_metric), by = "Airzone")
 
 ## Determine air zone management levels

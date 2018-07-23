@@ -358,7 +358,7 @@ ozone_caaqs_map %>%
          min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nYears,
          based_on_incomplete, caaq_metric, caaq_status) %>%
   mutate(caaq_year = rep_yr) %>% 
-  left_join(unique(select(stations, EMS_ID, city = CITY)), by = c("ems_id" = "EMS_ID")) %>% 
+  left_join(unique(select(stations_clean, ems_id, city)), by = "ems_id") %>% 
   write.csv(paste0("out/ozone_site_summary_", rep_yr, ".csv"), row.names = FALSE)
 
 ## Output ozone_caaqs ambient caaqs for air zones as CSV format for the BC Data Catalogue
@@ -388,6 +388,3 @@ ozone_caaqs_map %>%
 ambient_airzone_map %>%
   spTransform(CRSobj = outCRS) %>%
   geojson_write(file = "out/airzones.geojson")
-
-
-
