@@ -262,19 +262,19 @@ mgmt_map <- ggplot(ml_airzones, aes(long, lat)) +
        legend.position = "none",
        plot.margin = unit(c(0,0,0,0),"mm")) +
   annotate("text", x=680000, y=950000,label="Coastal",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=1150000, y=1550000,label="Northeast",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=780000, y=1500000,label="Northwest",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=1150000, y=950000,label="Central\n Interior",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=1550000, y=600000,label="Southern\n Interior",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=1150000, y=325000,label="Georgia Strait",colour="black",
-           size=4.5, family = "Verdana") +
+           size=4.5) +
   annotate("text", x=1500000, y=410000,label="Lower Fraser Valley",colour="black",
-           size=4.5, family = "Verdana")
+           size=4.5)
 
 plot(mgmt_map)
 
