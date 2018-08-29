@@ -1,0 +1,97 @@
+---
+title: "leaflet_map"
+output: 
+  html_document:
+    css: "assets/styles.css"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Allows Rmd file to be run interactively and knit 
+# without having to change the relative file locations all the time
+library(here) 
+
+# Tidyverse
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(stringr)
+
+# Mapping
+library(leaflet)
+library(leaflet.extras) # For reset view button
+library(sf)
+library(geojsonio)
+
+# Specific
+library(rcaaqs)
+
+# Load and prep data
+az <- st_read(here("./out/airzones.geojson"), stringsAsFactors = FALSE) %>%
+  mutate(caaq_status = factor(caaq_status, 
+                              levels = c("Not Achieved", "Achieved", "Insufficient Data"),
+                              labels = c("Not Achieved (&gt;63 ppb)", 
+                                         "Achieved (&leq;63 ppb)",
+                                         "Insufficient Data")))
+
+points <- st_read(here("./out/ozone_sites.geojson")) %>%
+  mutate(caaq_category = factor(caaq_category_html,
+                                levels = c("&leq; 50ppb",
+                                           "&gt; 50ppb &amp; &leq; 56ppb",
+                                           "&gt; 56ppb &amp; &leq; 63ppb",
+                                           "&gt; 63ppb"),
+                                labels = c("&leq; 50ppb",
+                                           "&gt;50 &amp; &leq;56 ppb",
+                                           "&gt;56 &amp; &leq;63 ppb",
+                                           "&gt;63 ppb")))
+
+# Create palettes
+pal_az <- colorFactor(palette = c("#cd7277", "#72a4cd", "#dbdbdb"),
+                      levels = levels(az$caaq_status))
+
+# Create icons
+size <- 30
+markers <- icons( # file locations have to be relative (can't use here())
+  iconUrl = c("assets/marker_white.svg", "assets/marker_lightgrey.svg", 
+              "assets/marker_grey.svg", "assets/marker_black.svg")[as.numeric(points$caaq_category)],
+  iconWidth = size, iconHeight = size,
+  iconAnchorX = size/2, iconAnchorY = size,
+  shadowUrl = "marker_shadow.svg",
+  shadowWidth = size*0.75, shadowHeight = size*0.75,
+  shadowAnchorX = 1, shadowAnchorY = size*0.75)
+
+# Create Reset View button
+# (implementation adapted from leaflet.extras::addResetMapButton())
+reset_view <- easyButton(icon = "ion-home", 
+                         title = "Reset View", 
+                         onClick = JS("function(btn, map){ map.setView(map._initialCenter, map._initialZoom); }"))
+```
+
+
+```{r}
+leaflet(width = "100%", height = "90vh", options = leafletOptions(minZoom = 5)) %>% 
+  addProviderTiles(providers$CartoDB) %>%
+  addEasyButton(reset_view) %>%
+  htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
+  addPolygons(data = az,
+              color = "white", weight = 2, opacity = 1, fillOpacity = 0.6,
+              fillColor = ~pal_az(caaq_status),
+              #label = ~pretty_name, popup = ~info,
+              #popupOptions = popupOptions(keepInView = TRUE),
+              highlightOptions = highlightOptions(bringToFront = TRUE, 
+                                                  fillOpacity = 0.7)) %>%
+  addMarkers(data = points, ~longitude, ~latitude, 
+             icon = markers) %>%
+  # Custom legends to override order
+  addLegend("bottomleft", colors = c("#ffffff", "#bdbdbd", "#737373", "#000000"),
+            className = "info legend solid",
+            labels = levels(points$caaq_category),
+            opacity = 1,
+            title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>")) %>%
+  addLegend("bottomleft", colors = pal_az(levels(az$caaq_status)), 
+            labels = levels(az$caaq_status), 
+            opacity = 1, 
+            title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>"))
+
+```

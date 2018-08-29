@@ -1,0 +1,269 @@
+/**************
+Following styles are adapted from:
+http://www.env.gov.bc.ca/soe/indicators/air/ozone_viz/css/main.css
+**************/
+
+/* General Layout */
+
+body, 
+html {
+	font-family: Verdana, sans-serif;
+	font-size: 16px;
+	font-weight: 400;
+	margin: 0;
+	padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	margin: 0;
+	padding: 0;
+	font-weight: 400;
+}
+
+h3 {
+  font-size: 15px;
+}
+
+h4 {
+  font-size: 13px;
+}
+
+a {
+	text-decoration: none;
+}
+
+*:focus {
+	outline: 0;
+}
+
+/***************
+ Leaflet
+***************/
+.leaflet-container,
+.leaflet-label {
+	font: 13px/1.5 Verdana, sans-serif !important;
+	color: #333;
+	font-weight: 400;
+}
+
+.leaflet-control-layers label {
+	font-size: 13px;
+	padding-left: 10px;
+}
+
+.leaflet-bar-part img {
+	padding-top: 4px;
+}
+
+.no-pointer {
+	cursor: -webkit-grab;
+	cursor: -moz-grab;
+}
+
+.info {
+  font: 13px/1.5 Verdana, sans-serif !important;
+  padding: 6px 8px;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  border-radius: 5px;
+  width: 226px;
+}
+
+.info h3 {
+	margin: 0 0 5px;
+	color: #404040;
+}
+
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+
+.legend {
+  line-height: 18px;
+  color: #555;
+}
+
+.legend i {
+  width: 17px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+  margin-top: -1px;
+	margin-bottom: -1px;
+	border: 1px solid #ffffff;
+}
+
+.legend.solid i {
+	opacity: 1;
+	border: 1px solid #404040;
+}
+
+html.lt-ie9 .leaflet-bar-part,
+html.lt-ie9 .info {
+	border: 1px solid #999;
+}
+
+/***************
+ Blur Overlay
+***************/
+.blur-overlay {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	bottom: 0;
+	z-index: 1001;
+	background-color: rgba(0,0,0,0.7);
+	display: none;
+}
+
+html.lt-ie9 .blur-overlay {
+	background-color: #404040;
+}
+
+.blur-overlay.active {
+	display: block;
+}
+
+
+/***************
+ Modal Window
+***************/
+
+.modal {
+	position: absolute;
+	top:5%; bottom: 5%; left: 5%;
+	width: 90%;
+	z-index: 1002;
+	background-color: #fff;
+	display: none;
+	cursor: auto;
+	text-align: left;
+	overflow: auto;
+}
+
+.modal.active {
+	display: block;
+}
+
+.modal a.close-btn {
+	position: absolute;
+	font-size: 1.125em;
+	color: #aaa;
+	top: 3px;
+	right: 6px;
+	border: none;
+}
+
+.modal a.close-btn:hover {
+	color: #777;
+}
+
+.modal-contents {
+	text-align: center;
+	width: 95%;
+	margin: 1.25em auto 0;
+}
+
+.modal-row {
+	overflow: auto;
+}
+
+.modal-row + .modal-row {
+	border-top: 1px solid #CCC;
+	margin-top: 1em;
+	padding: 1em 0;
+}
+
+.modal-row .title {
+	float: left;
+	text-align: left;
+}
+
+.modal-row h2,
+.no-photo h2 {
+	font-size: 2.125em;
+	line-height: 1.2;
+}
+
+.modal-row h3 {
+	font-size: 1.25em;
+}
+
+.modal-row h4 {
+	font-size: 1em;
+}
+
+.modal-row .badge {
+	margin-left: 8%;
+	width: 32%;
+	padding: 1em 0;
+	float: left;
+	background-color: #efefef;
+	min-height: 76px;
+	color: #fff;
+}
+
+.modal-row span {
+	font-size: 0.75em;
+	line-height: 0.75;
+}
+
+.modal-row .section {
+	width: 32%;
+	overflow: auto;
+	float: left;
+	padding: 1em 0;
+	background-color: #efefef;
+	min-height: 76px;
+}
+
+.modal-row .scale {
+	overflow: auto;
+	float: left;
+}
+
+.modal-row .scale img {
+	width: 33px;
+	height: 102px;
+}
+
+.modal-row .section:first-child {
+	margin-left: 14.5%;
+}
+
+.modal-row .section h3 {
+	line-height: 1.2;
+}
+
+.modal-row .badge h4 + h2 {
+	padding-top: 10px;
+}
+
+.modal-row h3 {
+	padding-top: 10px;
+	padding-bottom: 5px;
+}
+
+.modal img {
+	width: 778px;
+	height: 254px;
+}
+
+.modal .no-photo {
+	display: table;
+	width: 778px;
+	height: 254px;
+	background-color: #efefef;
+}
+
+.modal .no-photo h2 {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+}
