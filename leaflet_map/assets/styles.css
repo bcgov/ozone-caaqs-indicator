@@ -201,71 +201,87 @@ html.lt-ie9 .blur-overlay {
  Modal Window
 ***************/
 
-.modal {
-	position: absolute;
-	top:5%; bottom: 5%; left: 5%;
-	width: 90%;
-	z-index: 1002;
+/*.modal {*/
+.leaflet-popup-content-wrapper {
+	/*position: absolute;*/
+	/*top:5%; bottom: 5%; left: 5%;*/
+	/*width: 90%;*/
+	/*z-index: 1002;*/
+	width: 800px; /* This needs to be less than the map-width (900px) */
+	margin: 50px 50px 0 50px;
+  height: 100%;
 	background-color: #fff;
-	display: none;
+	/*display: none;*/
 	cursor: auto;
 	text-align: left;
 	overflow: auto;
+	border-radius: 0;
 }
 
-.modal.active {
-	display: block;
-}
-
-.modal a.close-btn {
+/*.modal a.close-btn {*/
+.leaflet-popup-close-button {
 	position: absolute;
 	font-size: 1.125em;
 	color: #aaa;
-	top: 3px;
-	right: 6px;
+	
+	/* These numbers are the popup margin +3 and +6 respectively*/
+	top: 53px !important; 
+	right: 56px !important;
+	
 	border: none;
 }
 
-.modal a.close-btn:hover {
+/*.modal a.close-btn:hover {*/
+.leaflet-popup-close-button:hover {
 	color: #777;
 }
 
-.modal-contents {
+/*.modal-contents {*/
+.leaflet-popup-content {
 	text-align: center;
-	width: 95%;
+	width: 95% !important;
 	margin: 1.25em auto 0;
 }
 
-.modal-row {
+/*.modal-row {*/
+.popup-row {
 	overflow: auto;
 }
 
-.modal-row + .modal-row {
+/*.modal-row + .modal-row {*/
+.popup-row + .popup-row {
 	border-top: 1px solid #CCC;
 	margin-top: 1em;
 	padding: 1em 0;
 }
 
-.modal-row .title {
+/*.modal-row .title {*/
+.popup-row .title {
 	float: left;
 	text-align: left;
+	padding-bottom: 0.5em;
 }
 
-.modal-row h2,
+/*.modal-row h2,
+.no-photo h2*/
+.popup-row h2,
 .no-photo h2 {
 	font-size: 2.125em;
 	line-height: 1.2;
 }
 
-.modal-row h3 {
+/*.modal-row h3 {*/
+.popup-row h3 {
 	font-size: 1.25em;
 }
 
-.modal-row h4 {
+/*.modal-row h4 {*/
+.popup-row h4 {
 	font-size: 1em;
 }
 
-.modal-row .badge {
+/*.modal-row .badge {*/
+.popup-row .section-standard {
 	margin-left: 8%;
 	width: 32%;
 	padding: 1em 0;
@@ -273,62 +289,83 @@ html.lt-ie9 .blur-overlay {
 	background-color: #efefef;
 	min-height: 76px;
 	color: #fff;
+	-webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
 }
 
-.modal-row span {
+/*.modal-row span {*/
+.popup-row span {
 	font-size: 0.75em;
 	line-height: 0.75;
 }
 
-.modal-row .section {
+/*.modal-row .section {*/
+.popup-row .section-metric {
 	width: 32%;
 	overflow: auto;
 	float: left;
 	padding: 1em 0;
 	background-color: #efefef;
 	min-height: 76px;
+	-webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
 }
 
-.modal-row .scale {
+/*.modal-row .scale {*/
+.popup-row .scale {
 	overflow: auto;
 	float: left;
 }
 
-.modal-row .scale img {
+/*.modal-row .scale img {*/
+.popup-row .scale img {
 	width: 33px;
 	height: 102px;
 }
 
-.modal-row .section:first-child {
+.leaflet-popup-content img {
+  margin-bottom: 1em;
+}
+
+/*.modal-row .section:first-child {*/
+.popup-row .section-metric:first-child {
 	margin-left: 14.5%;
 }
 
-.modal-row .section h3 {
+/*.modal-row .section h3 {*/
+.popup-row .section-metric h3 {
 	line-height: 1.2;
 }
 
-.modal-row .badge h4 + h2 {
+/*.modal-row .badge h4 + h2 {*/
+.popup-row .section-standard h4 + h2 {
 	padding-top: 10px;
 }
 
-.modal-row h3 {
+/*.modal-row h3 {*/
+.popup-row h3 {
 	padding-top: 10px;
 	padding-bottom: 5px;
 }
 
-.modal img {
+/*.modal img {*/
+.leaflet-popup-content-wrapper img {
 	width: 778px;
 	height: 254px;
 }
 
-.modal .no-photo {
+/*.modal .no-photo {*/
+.leaflet-popup-content-wrapper .no-photo {
 	display: table;
 	width: 778px;
 	height: 254px;
 	background-color: #efefef;
 }
 
-.modal .no-photo h2 {
+/*.modal .no-photo h2 {*/
+.leaflet-popup-content-wrapper .no-photo h2 {
 	display: table-cell;
 	vertical-align: middle;
 	text-align: center;
