@@ -1,5 +1,5 @@
 ---
-title: "leaflet_map"
+title: "CAAQS Indicator: Ozone"
 output: 
   html_document:
     css: "assets/styles.css"
