@@ -91,7 +91,7 @@ markers <- icons( # file locations have to be relative (can't use here())
               "assets/marker_grey.svg", "assets/marker_black.svg")[as.numeric(stations$caaq_category)],
   iconWidth = icon_size, iconHeight = icon_size,
   iconAnchorX = icon_size/2, iconAnchorY = icon_size,
-  shadowUrl = "marker_shadow.svg",
+  shadowUrl = "assets/marker_shadow.svg",
   shadowWidth = icon_size * 0.75, shadowHeight = icon_size * 0.75,
   shadowAnchorX = 1, shadowAnchorY = icon_size * 0.75)
 
