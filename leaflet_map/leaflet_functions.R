@@ -56,7 +56,7 @@ standard_popup <- function(data, caaq) {
                  popup_standard = paste0("    <h4>", s, "</h4>\n",
                                          "    <h2>", caaq_status, "</h2>\n"),
                  popup_standard_col = case_when(caaq_status == "Achieved" ~ "#377EB8",
-                                                caaq_status == "Not Achieved" ~ "#cd7277",
+                                                caaq_status == "Not Achieved" ~ "#B8373E",
                                                 TRUE ~ as.character(NA)))
 }
 

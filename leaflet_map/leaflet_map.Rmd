@@ -104,7 +104,7 @@ reset_view <- easyButton(icon = "ion-home",
 
 
 ```{r}
-leaflet(width = "900px", height = "90vh", options = leafletOptions(minZoom = 5)) %>% 
+leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)) %>% 
   addProviderTiles(providers$CartoDB) %>%
   addEasyButton(reset_view) %>%
   htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
@@ -113,6 +113,8 @@ leaflet(width = "900px", height = "90vh", options = leafletOptions(minZoom = 5))
               fillColor = ~pal_az(caaq_status_legend),
               label = ~tooltip, 
               popup = ~popup,
+              popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
+                                          autoPanPaddingBottomRight = c(10, 400)),
               highlightOptions = highlightOptions(bringToFront = TRUE, 
                                                   fillOpacity = 0.7)) %>%
   addMarkers(data = stations, ~longitude, ~latitude, 
@@ -127,7 +129,7 @@ leaflet(width = "900px", height = "90vh", options = leafletOptions(minZoom = 5))
             labels = rev(levels(stations$caaq_category)),
             opacity = 1,
             title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>")) %>%
-  addLegend("bottomleft", colors = pal_az(levels(az$caaq_status_legend)), 
+  addLegend("bottomright", colors = pal_az(levels(az$caaq_status_legend)), 
             labels = levels(az$caaq_status_legend), 
             opacity = 1, 
             title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>"))
