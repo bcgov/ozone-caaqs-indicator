@@ -174,7 +174,7 @@ for (emsid in ems_ids) {
 
 
 ## SVGs of CAAQS metrics and raw data station line plots
-line_dir <- "out/station_plots/"
+line_dir <- "leaflet_map/out/station_plots/"
 dir.create(line_dir, showWarnings = FALSE, recursive = TRUE)
 
 for (i in seq_along(stn_plots)) {

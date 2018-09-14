@@ -6,7 +6,7 @@ create_popup <- function(data, caaq = "o3", type = "polygon") {
     title_popup(., type) %>%
     metric_popup(., caaq) %>%
     standard_popup(., caaq) %>%
-    mutate(popup_svg = paste0("out/station_plots/", p_station_id, "_lineplot.svg"),
+    mutate(popup_svg = paste0("./out/station_plots/", p_station_id, "_lineplot.svg"),
     # Create the rows
     popup_row1 = paste0("<div class = 'popup-row'>\n",
                         "  <div class = 'title'>\n", popup_title, "  </div>\n",
@@ -17,7 +17,7 @@ create_popup <- function(data, caaq = "o3", type = "polygon") {
                         "style = 'background-color: ", popup_standard_col, "'>\n",
                         popup_standard, "  </div>\n",
                         "</div>\n"),
-    popup_row3 = paste0("<img src = ", here(popup_svg), ">"),
+    popup_row3 = paste0("<img src = ", popup_svg, ">"),
     
     # Assemble them all together
     popup = pmap_chr(list(popup_row1, popup_row2, popup_row3),
