@@ -119,9 +119,9 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
                                                   fillOpacity = 0.7)) %>%
   addMarkers(data = stations, ~longitude, ~latitude, 
              icon = markers, label = ~station_name, 
-             popup = ~popup,
+             popup = ~popup, options = markerOptions(riseOnHover = TRUE),
              # Stick to marker, not mouse
-             labelOptions = labelOptions(sticky = FALSE,
+             labelOptions = labelOptions(sticky = FALSE, 
                                          offset = c(0, -icon_size/2))) %>%
   # Custom legends to override order
   addLegend("bottomleft", colors = c("#000000", "#737373", "#bdbdbd", "#ffffff"),
