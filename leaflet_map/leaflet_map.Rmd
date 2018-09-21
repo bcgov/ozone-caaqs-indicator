@@ -16,7 +16,6 @@ library(here)
 library(dplyr)
 library(tidyr)
 library(purrr)
-library(forcats)
 library(stringr)
 
 # Mapping
@@ -29,31 +28,53 @@ library(htmltools) # For HTML() function
 # Functions to create popups
 source(here("./leaflet_map/leaflet_functions.R"))
 
+# Assign colours
+az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
+                "Achieved (&leq;63 ppb)" = "#72a4cd",
+                "Insufficient Data" = "#dbdbdb")
+station_colours <- c("&leq; 50ppb" = "#ffffff", 
+                     "&gt;50 &amp; &leq;56 ppb" = "#bdbdbd", 
+                     "&gt;56 &amp; &leq;63 ppb" = "#737373", 
+                     "&gt;63 ppb" = "#000000")
 
 # Load and prep data
 stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE) %>%
-  mutate(caaq_category = factor(caaq_category_html,
-                                levels = c("&leq; 50ppb",
-                                           "&gt; 50ppb &amp; &leq; 56ppb",
-                                           "&gt; 56ppb &amp; &leq; 63ppb",
-                                           "&gt; 63ppb"),
-                                labels = c("&leq; 50ppb",
-                                           "&gt;50 &amp; &leq;56 ppb",
-                                           "&gt;56 &amp; &leq;63 ppb",
-                                           "&gt;63 ppb")))
+  # Rename for consistency with most recent version of rcaaqs
+  rename(n_years = caaq_nYears,
+         metric_value = caaq_metric,
+         caaqs = caaq_status, 
+         caaqs_category_html = caaq_category_html)
 
+# Count stations before removing for insufficient data
 az_n <- stations %>%
   group_by(Airzone) %>%
   count() %>%
   st_set_geometry(NULL)
 
+stations <- stations %>%
+  # Catch Insufficient data whether it's NA or a named category
+  mutate(caaqs = replace(caaqs, is.na(caaqs), "Insufficient Data"),
+         caaqs_category_html = replace(caaqs_category_html, 
+                                       is.na(caaqs_category_html), "Insufficient Data")) %>%
+  # Remove stations with insufficient data
+  filter(caaqs != "Insufficient Data") %>%
+  # Assign legend values
+  mutate(caaqs_legend = factor(caaqs_category_html,
+                               levels = c("&leq; 50ppb",
+                                          "&gt; 50ppb &amp; &leq; 56ppb",
+                                          "&gt; 56ppb &amp; &leq; 63ppb",
+                                          "&gt; 63ppb"),
+                               labels = names(station_colours))) 
+
 az <- st_read(here("./out/airzones.geojson"), stringsAsFactors = FALSE) %>%
-  mutate(caaq_status_legend = factor(caaq_status, 
-                                     levels = c("Not Achieved", "Achieved", 
-                                                "Insufficient Data"),
-                                     labels = c("Not Achieved (&gt;63 ppb)", 
-                                                "Achieved (&leq;63 ppb)",
-                                         "Insufficient Data"))) %>%
+  rename(caaqs = caaq_status, 
+         n_years = caaq_nYears,
+         metric_value = caaq_metric) %>%
+  mutate(caaqs = replace(caaqs, is.na(caaqs), "Insufficient Data"),
+         caaqs_legend = factor(caaqs, 
+                               levels = c("Not Achieved", "Achieved", 
+                                          "Insufficient Data"),
+                               labels = names(az_colours))) %>%
   left_join(az_n, by = "Airzone") #Join only data, not by spatial
 
 # Calculate/Create Airzone tooltip
@@ -75,20 +96,21 @@ stations <- mutate(stations,
                    p_station = station_name,
                    p_station_id = ems_id) %>%
   create_popup(., caaq = "o3", type = "markers")
-                          
+
 
 # Verify popup formating
 #cat(az$popup[1])
 
-# Create palettes
-pal_az <- colorFactor(palette = c("#cd7277", "#72a4cd", "#dbdbdb"),
-                      levels = levels(az$caaq_status_legend))
+# Create palette
+pal_az <- colorFactor(palette = az_colours,
+                      levels = names(az_colours))
 
 # Create icons
 icon_size <- 30
 markers <- icons( # file locations have to be relative (can't use here())
   iconUrl = c("assets/marker_white.svg", "assets/marker_lightgrey.svg", 
-              "assets/marker_grey.svg", "assets/marker_black.svg")[as.numeric(stations$caaq_category)],
+              "assets/marker_grey.svg", "assets/marker_black.svg"
+  )[as.numeric(stations$caaqs_legend)],
   iconWidth = icon_size, iconHeight = icon_size,
   iconAnchorX = icon_size/2, iconAnchorY = icon_size,
   shadowUrl = "assets/marker_shadow.svg",
@@ -110,27 +132,27 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
   htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
   addPolygons(data = az,
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.6,
-              fillColor = ~pal_az(caaq_status_legend),
+              fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
               popup = ~popup,
               popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
                                           autoPanPaddingBottomRight = c(10, 400)),
               highlightOptions = highlightOptions(bringToFront = TRUE, 
                                                   fillOpacity = 0.7)) %>%
-  addMarkers(data = stations, ~longitude, ~latitude, 
+  addMarkers(data = stations,
              icon = markers, label = ~station_name, 
              popup = ~popup, options = markerOptions(riseOnHover = TRUE),
              # Stick to marker, not mouse
              labelOptions = labelOptions(sticky = FALSE, 
                                          offset = c(0, -icon_size/2))) %>%
   # Custom legends to override order
-  addLegend("bottomleft", colors = c("#000000", "#737373", "#bdbdbd", "#ffffff"),
+  addLegend("bottomleft", colors = rev(station_colours),
             className = "info legend solid",
-            labels = rev(levels(stations$caaq_category)),
+            labels = rev(names(station_colours)),
             opacity = 1,
             title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>")) %>%
-  addLegend("bottomright", colors = pal_az(levels(az$caaq_status_legend)), 
-            labels = levels(az$caaq_status_legend), 
+  addLegend("bottomright", colors = pal_az(names(az_colours)), 
+            labels = names(az_colours), 
             opacity = 1, 
             title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>"))
 
