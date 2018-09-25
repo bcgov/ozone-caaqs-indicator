@@ -28,11 +28,6 @@ library(htmltools) # For HTML() function
 # Functions to create popups
 source(here("./leaflet_map/leaflet_functions.R"))
 
-# Put plots in a folder witnin leaflet_map dir
-file.copy(list.files(here("out/station_plots"), pattern = "lineplot\\.svg$", 
-                     full.names = TRUE), 
-          here("leaflet_map/station_plots"), overwrite = TRUE)
-
 # Assign colours
 az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
                 "Achieved (&leq;63 ppb)" = "#72a4cd",
