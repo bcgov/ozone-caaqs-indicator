@@ -93,7 +93,8 @@ az <- mutate(az,
              p_az = Airzone,
              p_station = rep_station_name,
              p_station_id = rep_station_id) %>%
-  create_popup(., caaq = "o3", type = "polygon")
+  create_popup(., caaq = "o3", type = "polygon") %>%
+  mutate(popup = replace(popup, n == 0, NA))
 
 # Create Stations Popups
 stations <- mutate(stations,
