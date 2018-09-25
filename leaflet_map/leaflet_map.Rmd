@@ -127,7 +127,10 @@ markers <- icons( # file locations have to be relative (can't use here())
 # (implementation adapted from leaflet.extras::addResetMapButton())
 reset_view <- easyButton(icon = "ion-home", 
                          title = "Reset View", 
-                         onClick = JS("function(btn, map){ map.setView(map._initialCenter, map._initialZoom); }"))
+                         onClick = JS("
+                           function(btn, map){
+                             map.setView(map._initialCenter, map._initialZoom);
+                           }"))
 ```
 
 
@@ -135,14 +138,29 @@ reset_view <- easyButton(icon = "ion-home",
 leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)) %>% 
   addProviderTiles(providers$CartoDB) %>%
   addEasyButton(reset_view) %>%
-  htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
+  # Get map center for home button
+  htmlwidgets::onRender(JS("
+    function(el, x){
+    var map = this;
+    map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();
+  }")) %>%
+  # Re-centre map on popup close
+  htmlwidgets::onRender(JS("
+    function(el, x) {
+      var map = this;
+      map.on('popupclose',
+        function (e) {
+          map.setView(map._initialCenter, map._initialZoom);
+        })
+    }")) %>%
   addPolygons(data = az,
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
               popup = ~popup,
               popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
-                                          autoPanPaddingBottomRight = c(10, 400))) %>% 
+                                          autoPanPaddingBottomRight = c(10, 400),
+                                          closeOnEscapeKey = TRUE)) %>% 
               # highlightOptions = highlightOptions(bringToFront = TRUE, 
               #                                     fillOpacity = 0.7)) %>%
   addMarkers(data = stations,
