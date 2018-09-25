@@ -137,17 +137,17 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
   addEasyButton(reset_view) %>%
   htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
   addPolygons(data = az,
-              color = "white", weight = 2, opacity = 1, fillOpacity = 0.6,
+              color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
               popup = ~popup,
               popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
-                                          autoPanPaddingBottomRight = c(10, 400)),
-              highlightOptions = highlightOptions(bringToFront = TRUE, 
-                                                  fillOpacity = 0.7)) %>%
+                                          autoPanPaddingBottomRight = c(10, 400))) %>% 
+              # highlightOptions = highlightOptions(bringToFront = TRUE, 
+              #                                     fillOpacity = 0.7)) %>%
   addMarkers(data = stations,
              icon = markers, label = ~station_name, 
-             popup = ~popup, options = markerOptions(riseOnHover = TRUE),
+             popup = ~popup, #options = markerOptions(riseOnHover = TRUE),
              # Stick to marker, not mouse
              labelOptions = labelOptions(sticky = FALSE, 
                                          offset = c(0, -icon_size/2))) %>%
