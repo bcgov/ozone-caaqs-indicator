@@ -1,10 +1,10 @@
 <a rel="Delivery" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a>[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Ozone CAAQS Analysis for B.C. (2014-2016)
+# Status of Ground-Level Ozone in B.C.
 
-A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for Ozone for 2014-2016. These scripts reproduce the 2017 analysis presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
+A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for  Ground-Level Ozone for British Columbia. These scripts reproduce the analysis and data visualizations supporting the Status of Ground-Level Ozone in B.C. indicator presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
 
-This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the B.C. Ministry of Environment.
+This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [verified air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the B.C. Ministry of Environment.
 
 ## Usage
 
@@ -17,19 +17,19 @@ There are four core scripts that are required for the analysis, they need to be 
 
 The `run_all.R` script can be `source`ed to run it all at once.
 
-Most packages used in the analysis can be installed from CRAN using `install.packages()`, but you will need to install [envreportutils](https://github.com/bcgov/envreportutils), [rcaaqs](https://github.com/bcgov/rcaaqs) and [bcmaps](https://github.com/bcgov/bcmaps) using devtools:
+Most packages used in the analysis can be installed from CRAN using `install.packages()`, but you will need to install [envreportutils](https://github.com/bcgov/envreportutils) and [rcaaqs](https://github.com/bcgov/rcaaqs) using remotes:
 
 ```r
-install.packages("devtools") # If you don't already have it installed
+install.packages("remotes") # If you don't already have it installed
 
-library(devtools)
+library(remotes)
 install_github("bcgov/rcaaqs")
 install_github("bcgov/envreportutils")
 ```
 
 ## Getting Help or Reporting an Issue
 
-To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/ozone-caaqs-analysis/issues).
+To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/ozone-caaqs-indicator/issues).
 
 ## How to Contribute
 
