@@ -11,15 +11,15 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 
-library("dplyr") # data munging
-library("lubridate") # for year()
-library("rcaaqs") # rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
+library("dplyr") #data munging
+library("lubridate") #wrangling dates
+library("rcaaqs") #rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
 ## Set constants for 3-year analysis
-min_year <- 2014
-max_year <- 2016
+min_year <- 2015
+max_year <- 2017
 
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt(),
