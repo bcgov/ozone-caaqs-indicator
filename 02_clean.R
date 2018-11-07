@@ -22,7 +22,7 @@ min_year <- 2015
 max_year <- 2017
 
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
-## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt(),
+## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone <- mutate(ozone_all, 
                date_time = format_caaqs_dt(DATE_PST), 
@@ -34,9 +34,16 @@ ozone <- mutate(ozone_all,
   mutate(value = clean_neg(value, type = "ozone"))
 
 
-## Fill in missing hourly readings with NA using rcaaaqs::date_fill()
-ozone <- group_by(ozone, ems_id, station_name)
-ozone <- do(ozone, date_fill(., date_col = "date_time", fill_cols = c("ems_id", "station_name"), interval = "1 hour"))
+## Fill in missing hourly readings with NA using rcaaqs::date_fill()
+# ozone <- group_by(ozone1, ems_id, station_name) 
+# ozone <- do(ozone, date_fill(., date_col = "date_time",
+#                              fill_cols = c("ems_id", "station_name"),
+#                              interval = "1 hour"))
+ozone <- ozone %>% 
+  group_by(ems_id, station_name) %>% 
+  do(., date_fill(., date_col = "date_time",
+                  fill_cols = c("ems_id", "station_name"),
+                  interval = "1 hour"))
 
 ## Summarize ozone sites in clean ozone dataframe
 ozone_site_summary <- ozone %>%
@@ -50,12 +57,19 @@ ozone_site_summary <- ozone %>%
   arrange(station_name) %>%
   as.data.frame()
 
-## Clean station data - lowercase column names, remove pseudo-duplicates, subset to those stations analysed
+## Clean station data (lowercase column names, remove pseudo-duplicates,
+## subset to those stations analysed):
+## OLD == closed stns; 
+## _60 == meteorological stns;
+## Met == meteorological stns using Campbell loggers; 
+## BAM == Beta Attenuation Monitoring for PM measurement.
+## (note: air pollutant stns mostly using Envidas Ultimate loggers)
+
 stations_clean <- rename_all(stations, tolower) %>% 
-  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
+#  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
   group_by(ems_id) %>%
-  filter(n() == 1 | 
-           !grepl("_60$|Met$|OLD$", station_name)) %>% 
+  filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
+  filter(n() == 1) %>%
   filter(ems_id %in% unique(ozone_site_summary$ems_id))
 
 
@@ -66,6 +80,5 @@ stations_clean <- rename_all(stations, tolower) %>%
 
 ee.tf.exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
                       start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
-
 
 save(ozone, stations_clean, ozone_site_summary, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
