@@ -2,7 +2,7 @@
 title: "CAAQS Indicator: Ozone"
 output: 
   html_document:
-    css: "assets/styles.css"
+    css: "assets/caaqs-styles.css"
 ---
 
 ```{r setup, include = FALSE}
@@ -24,8 +24,11 @@ library(sf)
 library(geojsonio)
 library(htmltools) # For HTML() function
 
-# Functions to create popups
-source(here("./leaflet_map/leaflet_functions.R"))
+# Functions to create popups and center map
+library(envreportutils)
+
+# Get css
+css_caaqs_copy()
 
 # Assign colours
 az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
@@ -87,15 +90,21 @@ az <- mutate(az,
              p_az = Airzone,
              p_station = rep_station_name,
              p_station_id = rep_station_id) %>%
-  create_popup(., caaq = "o3", type = "polygon") %>%
-  mutate(popup = replace(popup, n == 0, NA))
+  mutate(popup = popup_caaqs(., type = "region", 
+                             metric_name = "Ozone Metric",
+                             units = "ppm",
+                             standard_name =" Ozone Air Quality Standard"),
+         popup = replace(popup, n == 0, NA))
 
 # Create Stations Popups
 stations <- mutate(stations,
                    p_az = Airzone,
                    p_station = station_name,
                    p_station_id = ems_id) %>%
-  create_popup(., caaq = "o3", type = "markers")
+  mutate(popup = popup_caaqs(., type = "station", 
+                             metric_name = "Ozone Metric",
+                             units = "ppm",
+                             standard_name = "Ozone Air Quality Standard"))
 
 
 # Verify popup formating
