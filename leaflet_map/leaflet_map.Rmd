@@ -132,9 +132,6 @@ markers <- icons( # file locations have to be relative (can't use here())
 leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)) %>% 
   addProviderTiles(providers$CartoDB) %>%
   add_bc_home_button() %>%
-  # Java tweak to re-load popups the first time their opened to ensure correct panning 
-  # (makes it hard to inspect popup html/css, however)
-  popups_centre() %>%
   # Re-centre map on popup close
   set_bc_view_on_close() %>%
   addPolygons(data = az,
@@ -144,7 +141,7 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
               popup = ~popup,
               popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
                                           autoPanPaddingBottomRight = c(10, 400),
-                                          closeOnEscapeKey = TRUE)) %>% 
+                                          closeOnEscapeKey = TRUE, keepInView = TRUE)) %>% 
               # highlightOptions = highlightOptions(bringToFront = TRUE, 
               #                                     fillOpacity = 0.7)) %>%
   addMarkers(data = stations,
