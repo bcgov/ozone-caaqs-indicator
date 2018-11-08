@@ -2,7 +2,7 @@
 title: "CAAQS Indicator: Ozone"
 output: 
   html_document:
-    css: "assets/styles.css"
+    css: "assets/caaqs-styles.css"
 ---
 
 ```{r setup, include = FALSE}
@@ -20,13 +20,15 @@ library(stringr)
 
 # Mapping
 library(leaflet)
-library(leaflet.extras) # For reset view button
 library(sf)
 library(geojsonio)
 library(htmltools) # For HTML() function
 
-# Functions to create popups
-source(here("./leaflet_map/leaflet_functions.R"))
+# Functions to create popups and center map
+library(envreportutils)
+
+# Get css
+css_caaqs_copy(folder = here("./leaflet_map/"))
 
 # Assign colours
 az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
@@ -88,15 +90,21 @@ az <- mutate(az,
              p_az = Airzone,
              p_station = rep_station_name,
              p_station_id = rep_station_id) %>%
-  create_popup(., caaq = "o3", type = "polygon") %>%
-  mutate(popup = replace(popup, n == 0, NA))
+  mutate(popup = popup_caaqs(., type = "region", 
+                             metric_name = "Ozone Metric",
+                             units = "ppm",
+                             standard_name =" Ozone Air Quality Standard"),
+         popup = replace(popup, n == 0, NA))
 
 # Create Stations Popups
 stations <- mutate(stations,
                    p_az = Airzone,
                    p_station = station_name,
                    p_station_id = ems_id) %>%
-  create_popup(., caaq = "o3", type = "markers")
+  mutate(popup = popup_caaqs(., type = "station", 
+                             metric_name = "Ozone Metric",
+                             units = "ppm",
+                             standard_name = "Ozone Air Quality Standard"))
 
 
 # Verify popup formating
@@ -117,37 +125,15 @@ markers <- icons( # file locations have to be relative (can't use here())
   shadowUrl = "assets/marker_shadow.svg",
   shadowWidth = icon_size * 0.75, shadowHeight = icon_size * 0.75,
   shadowAnchorX = 1, shadowAnchorY = icon_size * 0.75)
-
-# Create Reset View button
-# (implementation adapted from leaflet.extras::addResetMapButton())
-reset_view <- easyButton(icon = "ion-home", 
-                         title = "Reset View", 
-                         onClick = JS("
-                           function(btn, map){
-                             map.setView(map._initialCenter, map._initialZoom);
-                           }"))
 ```
 
 
 ```{r, warning=FALSE}
 leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)) %>% 
   addProviderTiles(providers$CartoDB) %>%
-  addEasyButton(reset_view) %>%
-  # Get map center for home button
-  htmlwidgets::onRender(JS("
-    function(el, x){
-    var map = this;
-    map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();
-  }")) %>%
+  add_bc_home_button() %>%
   # Re-centre map on popup close
-  htmlwidgets::onRender(JS("
-    function(el, x) {
-      var map = this;
-      map.on('popupclose',
-        function (e) {
-          map.setView(map._initialCenter, map._initialZoom);
-        })
-    }")) %>%
+  set_bc_view_on_close() %>%
   addPolygons(data = az,
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
@@ -155,7 +141,7 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
               popup = ~popup,
               popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
                                           autoPanPaddingBottomRight = c(10, 400),
-                                          closeOnEscapeKey = TRUE)) %>% 
+                                          closeOnEscapeKey = TRUE, keepInView = TRUE)) %>% 
               # highlightOptions = highlightOptions(bringToFront = TRUE, 
               #                                     fillOpacity = 0.7)) %>%
   addMarkers(data = stations,
