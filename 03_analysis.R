@@ -16,13 +16,12 @@ library("bcmaps") #air zone map
 library("dplyr") # for glimpse()
 library("rgdal") # for spTransform of spatial data
 
-## Load the tmp file if ozone doesn't exist (need inherits = FALSE as "ozone" 
-## exists in 'maps' package on which 'openair' depends)
-if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
+## Load the tmp file if ozone doesn't exist
+if (!exists("ozone")) load("tmp/ozone_clean.RData")
 
-#########################################################################
-## Ambient Station and AirZone CAAQS Metric and Achievement Analysis
-#########################################################################
+######################
+## Ambient Analysis ##
+######################
 
 ## Compute the daily rolling 8 hour average
 rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
