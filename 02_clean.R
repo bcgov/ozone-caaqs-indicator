@@ -24,7 +24,7 @@ max_year <- 2017
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone <- mutate(ozone_all, 
+ozone_3yrs <- mutate(ozone_all, 
                date_time = format_caaqs_dt(DATE_PST), 
                year = year(date_time)) %>% 
   filter(year >= min_year, year <= max_year) %>% 
@@ -35,11 +35,7 @@ ozone <- mutate(ozone_all,
 
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
-# ozone <- group_by(ozone1, ems_id, station_name) 
-# ozone <- do(ozone, date_fill(., date_col = "date_time",
-#                              fill_cols = c("ems_id", "station_name"),
-#                              interval = "1 hour"))
-ozone <- ozone %>% 
+ozone <- ozone_3yrs %>% 
   group_by(ems_id, station_name) %>% 
   do(., date_fill(., date_col = "date_time",
                   fill_cols = c("ems_id", "station_name"),
