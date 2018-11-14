@@ -33,7 +33,8 @@ ozone_3yrs <- mutate(ozone_all,
   select(-DATE_PST) %>% 
   rename_all(tolower) %>% 
   rename(value = raw_value) %>% 
-  mutate(value = clean_neg(value, type = "ozone"))
+  mutate(value = clean_neg(value, type = "ozone")) %>% 
+  distinct() #remove duplicate records
 
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
@@ -65,7 +66,7 @@ ozone_site_summary <- ozone %>%
 ## (note: air pollutant stns mostly using Envidas Ultimate loggers)
 
 stations_clean <- rename_all(stations, tolower) %>% 
-#  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
+  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
   group_by(ems_id) %>%
   filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
   filter(n() == 1) %>%
