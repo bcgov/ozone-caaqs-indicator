@@ -43,6 +43,16 @@ o3_caaqs_df <- o3_caaqs %>%
 
 write.csv(o3_caaqs_df, "tmp/ozone_caaqs_2015-2017.csv", row.names = FALSE)
 
+#df with intermediate df objects
+o3_caaqs_intermediates <- o3_caaqs(ozone, 
+                      by = c("ems_id", "station_name"),
+                      return_all = TRUE)
+
+#filter for final 2017 caaqs df
+o3_caaqs_df <- o3_caaqs %>% 
+  filter(n_years > 1) %>% 
+  # filter out n_years = 2 where there are duplicates station rows?
+
 # ## Compute the daily rolling 8 hour average
 # rolling_avg <- rcaaqs:::o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
 # glimpse(rolling_avg)
