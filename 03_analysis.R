@@ -10,11 +10,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library("rcaaqs") # rcaaqs functions
-library("sp") # converting to spatial dataframe
-library("bcmaps") #air zone map
-library("dplyr") # for glimpse()
-library("rgdal") # for spTransform of spatial data
+library("rcaaqs") #rcaaqs functions
+library("dplyr") #data munging
+library(tidyr) #unnest()
+library("bcmaps") #airzone map
+library(sf) #mapping
+
+# library("sp") # converting to spatial dataframe
+# library("rgdal") # for spTransform of spatial data
 
 ## Load the tmp file if ozone doesn't exist
 if (!exists("ozone")) load("tmp/ozone_clean.RData")
@@ -23,36 +26,53 @@ if (!exists("ozone")) load("tmp/ozone_clean.RData")
 ## Ambient Analysis ##
 ######################
 
-## Compute the daily rolling 8 hour average
-rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
-glimpse(rolling_avg)
+#caaqs
+o3_caaqs <- o3_caaqs(ozone, by = c("ems_id", "station_name")) %>% 
+  select(-mgmt)
 
-## Compute the daily maximum
-daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "station_name"))
-glimpse(daily_max_o3)
+#df with intermediate df objects
+o3_caaqs_intermediates <- o3_caaqs(ozone, 
+                      by = c("ems_id", "station_name"),
+                      return_all = TRUE)
 
-## Compute the 4th highest  daily maximum
-ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "station_name"))
-glimpse(ann_4th_highest)
+#filter for final 2017 caaqs df
+o3_caaqs_df <- o3_caaqs %>% 
+  group_by(ems_id) %>% 
+  filter(caaqs_year == max(caaqs_year),
+         n_years > 1) 
 
-## Compute the rolling three year average
-three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "station_name"))
-glimpse(three_yr_avg)
+write.csv(o3_caaqs_df, "tmp/ozone_caaqs_2015-2017.csv", row.names = FALSE)
 
-## Calculate the number of years contributing to rolling 3-year average & max and min years
-ozone_caaqs <- three_yr_avg %>% 
-  group_by(ems_id, station_name) %>%
-  mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
-                      ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
-  mutate(n = n()) %>% 
-  mutate(caaq_year_min = min(year), caaq_year_max = max(year))
-
-## Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
-ozone_caaqs <- ozone_caaqs %>% 
-      filter(nyr != "<2") %>% 
-      filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
-      mutate(caaq_metric = round_caaqs(ozone_metric))
-
+# ## Compute the daily rolling 8 hour average
+# rolling_avg <- rcaaqs:::o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
+# glimpse(rolling_avg)
+# 
+# ## Compute the daily maximum
+# daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "station_name"))
+# glimpse(daily_max_o3)
+# 
+# ## Compute the 4th highest  daily maximum
+# ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "station_name"))
+# glimpse(ann_4th_highest)
+# 
+# ## Compute the rolling three year average
+# three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "station_name"))
+# glimpse(three_yr_avg)
+# 
+# ## Calculate the number of years contributing to rolling 3-year average & max and min years
+# ozone_caaqs <- three_yr_avg %>% 
+#   group_by(ems_id, station_name) %>%
+#   mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
+#                       ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
+#   mutate(n = n()) %>% 
+#   mutate(caaq_year_min = min(year), caaq_year_max = max(year))
+# 
+# ## Extract 2015-2017 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
+# ozone_caaqs <- ozone_caaqs %>% 
+#       filter(nyr != "<2") %>% 
+#       filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
+#       mutate(caaq_metric = round_caaqs(ozone_metric))
+# 
 
 ## Add info from stations_clean to ozone_caaqs dataframe & drop some columns
 ozone_caaqs <- ozone_caaqs %>% 
