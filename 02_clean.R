@@ -26,7 +26,9 @@ max_year <- 2017
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone_3yrs <- mutate(ozone_all, 
                date_time = format_caaqs_dt(DATE_PST), 
-               year = year(date_time)) %>% 
+               year = year(date_time),
+               month = month(date_time),
+               day = day(date_time)) %>% 
   filter(year >= min_year, year <= max_year) %>% 
   select(-DATE_PST) %>% 
   rename_all(tolower) %>% 
@@ -39,7 +41,8 @@ ozone <- ozone_3yrs %>%
   group_by(ems_id, station_name) %>% 
   do(., date_fill(., date_col = "date_time",
                   fill_cols = c("ems_id", "station_name"),
-                  interval = "1 hour"))
+                  interval = "1 hour")) %>% 
+  ungroup()
 
 ## Summarize ozone sites in clean ozone dataframe
 ozone_site_summary <- ozone %>%
