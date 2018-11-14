@@ -51,27 +51,31 @@ min_year <- 2015
 max_year <- 2017
 
 ## Subset for 3-year period of focus
-ozone <- ozone_all %>% 
-mutate(year = as.numeric(format(DATE_PST, "%Y"))) %>% 
-filter(year >= min_year & year <= max_year)
+ozone_inspect <- ozone_all %>% 
+  mutate(year = as.numeric(format(DATE_PST, "%Y"))) %>% 
+  filter(year >= min_year & year <= max_year)
 
 ## Check precision
 precis <- function(x) nchar(gsub("(.*\\.)|([0]*$)", "", as.character(x)))
-table(precis(ozone$RAW_VALUE)) # 0 to 10 digits
+table(precis(ozone_inspect$RAW_VALUE)) # 0 to 10 digits
 
-summary(ozone)
+summary(ozone_inspect)
 
-head(ozone, 50)
-tail(ozone, 50)
+head(ozone_inspect, 50)
+tail(ozone_inspect, 50)
 
 ## Look at the raw values 
-ggplot(ozone, aes(x = RAW_VALUE)) + facet_wrap(~ STATION_NAME) + geom_histogram()
+ggplot(ozone_inspect, aes(x = RAW_VALUE)) + facet_wrap(~ STATION_NAME) + geom_histogram()
+
+## Check for duplicates
+duplicates <- ozone_inspect[duplicated(ozone_inspect),]
+duplicates # two duplicates found
 
 ## Which sites in ozone dataset don't have a corresponding site in ems locations
-missing_sites <- unique(ozone$STATION_NAME)[!unique(ozone$EMS_ID) %in% stations$EMS_ID]
+missing_sites <- unique(ozone_inspect$STATION_NAME)[!unique(ozone_inspect$EMS_ID) %in% stations$EMS_ID]
 missing_sites # none
 
-## look at the station locations
+## Look at the station locations
 station_points <- stations %>% 
   select(EMS_ID, STATION_NAME, LONGITUDE, LATITUDE) %>% 
   filter(!is.na(LATITUDE) | !is.na(LONGITUDE)) %>% #filter out NAs
