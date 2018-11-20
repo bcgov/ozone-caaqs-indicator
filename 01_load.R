@@ -48,6 +48,8 @@ library("bcmaps") #quickly plot bc air zones
 library("sf") #plot lat-longs in stations file
 library("mapview") #interact with station metadata
 
+
+
 ## Set constants
 min_year <- 2015
 max_year <- 2017
