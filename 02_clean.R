@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 
-library("dplyr") #data munging
-library("lubridate") #wrangling dates
-library("rcaaqs") #rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
+library(dplyr) #data munging
+library(lubridate) #wrangling dates
+library(rcaaqs) #rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
