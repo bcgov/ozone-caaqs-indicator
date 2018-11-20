@@ -10,10 +10,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library("rcaaqs") #rcaaqs functions
-library("dplyr") #data munging
+library(rcaaqs) #rcaaqs functions
+library(dplyr) #data munging
 library(tidyr) #unnest()
-library("bcmaps") #airzone map
+library(bcmaps) #airzone map
 library(sf) #mapping
 
 # library("sp") # converting to spatial dataframe
@@ -27,15 +27,11 @@ if (!exists("ozone")) load("tmp/ozone_clean.RData")
 ######################
 
 #caaqs
-o3_caaqs <- o3_caaqs(ozone, by = c("ems_id", "station_name")) %>% 
-  select(-mgmt)
+o3_caaqs_all <- o3_caaqs(ozone, by = c("ems_id", "station_name"))
 
-#df with intermediate df objects
-o3_caaqs_intermediates <- o3_caaqs(ozone, 
-                      by = c("ems_id", "station_name"),
-                      return_all = TRUE)
+o3_caaqs <- extract_caaqs(o3_caaqs_all)
 
-#filter for final 2017 caaqs df
+#filter for 2015-2017 caaqs df
 o3_caaqs_df <- o3_caaqs %>% 
   group_by(ems_id) %>% 
   filter(caaqs_year == max(caaqs_year),
