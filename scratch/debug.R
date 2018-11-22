@@ -18,9 +18,21 @@ if (!exists("o3_caaqs_all")) load("tmp/analysed.RData")
 
 issues <- c("E229797", "E206271")
 
-o3_issues <- extract_yearly(o3_caaqs_all) %>% 
+o3_issues_yearly <- extract_yearly(o3_caaqs_all) %>% 
   filter(ems_id %in% issues)
 
+o3_caaqs_yearly <- extract_yearly(o3_caaqs_all)
 
-write.csv(o3_caaqs_df, "tmp/ozone_caaqs_2015-2017.csv", row.names = FALSE)
+write.csv(o3_caaqs_yearly, "tmp/ozone_yearly_caaqs_2015-2017.csv", row.names = FALSE)
+
+ozone_full <- ozone_all %>%
+  rename(site = STATION_NAME) %>% 
+  mutate(date = format_caaqs_dt(DATE_PST)) %>% 
+  rename_all(tolower) %>% 
+  group_by(ems_id, site) %>%
+  do(date_fill(., date_col = "date", fill_cols = c("ems_id", "site"),  interval = "1 hour")) %>%
+  mutate(year = year(floor_date(date, "year")),
+         month = month(floor_date(date, "month")),
+         day = day(floor_date(date, "day"))) %>%
+  ungroup()
 
