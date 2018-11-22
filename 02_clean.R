@@ -17,9 +17,11 @@ library(rcaaqs) #rcaaqs functions, rcaaqs available on GitHub https://github.com
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
+
 ## Set constants for 3-year analysis
 min_year <- 2015
 max_year <- 2017
+
 
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
@@ -57,6 +59,7 @@ ozone_site_summary <- ozone %>%
   arrange(station_name) %>%
   as.data.frame()
 
+
 ## Clean station data (lowercase column names, remove pseudo-duplicates,
 ## subset to those stations analysed):
 ## OLD == closed stns; 
@@ -73,13 +76,5 @@ stations_clean <- rename_all(stations, tolower) %>%
   filter(ems_id %in% unique(ozone_site_summary$ems_id))
 
 
-## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe for determining AQMS Air Zone Management Levels
-## Two days in 2015 were flagged as exceptional events: 
-## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
-## These days are removed -- as a result of suspected wildfire influence -- for determining AQMS Air Zone Management Levels
-
-ee.tf.exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
-                      start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
-
 ## Save Clean Data Objects
-save(ozone, stations_clean, ozone_site_summary, ee.tf.exclusions, min_year, max_year, file = "tmp/ozone_clean.RData")
+save(ozone, stations_clean, ozone_site_summary, min_year, max_year, file = "tmp/ozone_clean.RData")

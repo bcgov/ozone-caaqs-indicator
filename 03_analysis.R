@@ -52,12 +52,28 @@ ozone_az <- airzone_metric(ozone_stn_az)
 
 
 
+## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe for determining AQMS Air Zone Management Levels
+## Two days in 2015 were flagged as exceptional events: 
+## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
+## These days are removed -- as a result of suspected wildfire influence -- for determining AQMS Air Zone Management Levels
+
+exclusion_dates <- c("2015-07-08", "2015-07-09")
+
+exclusions <- extract_daily(ozone_caaqs_all) %>% 
+  filter(ems_id == "E293810",
+         date == exclusion_dates) %>% 
+   select(ems_id, station_name, date)
+
+# exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
+#                                 start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
+
+
 ## Management Ozone CAAQS Analysis 
 
 #caaqs calculations
 mgmt_ozone_caaqs_all <- o3_caaqs(ozone, by = c("ems_id", "station_name"),
-                                 exclude_df = ee.tf.exclusions,
-                                 exclude_df_dt = c("start", "end"))
+                                 exclude_df = exclusions,
+                                 exclude_df_dt = "date")
 
 mgmt_ozone_caaqs_df <- extract_caaqs(mgmt_ozone_caaqs_all)
 
@@ -84,7 +100,7 @@ mgmt_ozone_az <- airzone_metric(mgmt_ozone_stn_az)
 
 
 ## Save Ozone CAAQS & Management CAAQS objects
-save(ozone_caaqs_all, ozone_caaqs_df, ozone_caaqs, ozone_stn_az, ozone_az,
+save(ozone_caaqs_all, ozone_caaqs_df, ozone_caaqs, ozone_stn_az, ozone_az, exclusions,
      mgmt_ozone_caaqs_all, mgmt_ozone_caaqs_df, mgmt_ozone_caaqs, mgmt_ozone_stn_az, mgmt_ozone_az,
      file = "tmp/analysed.RData")
 
