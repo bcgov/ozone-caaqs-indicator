@@ -77,4 +77,5 @@ stations_clean <- rename_all(stations, tolower) %>%
 
 
 ## Save Clean Data Objects
-save(ozone, stations_clean, ozone_site_summary, min_year, max_year, file = "tmp/ozone_clean.RData")
+save(ozone, stations_clean, ozone_site_summary,
+     min_year, max_year, file = "tmp/ozone_clean.RData")

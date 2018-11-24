@@ -69,7 +69,8 @@ head(ozone_inspect, 50)
 tail(ozone_inspect, 50)
 
 ## Look at the raw values 
-ggplot(ozone_inspect, aes(x = RAW_VALUE)) + facet_wrap(~ STATION_NAME) + geom_histogram()
+ggplot(ozone_inspect, aes(x = RAW_VALUE))
++ facet_wrap(~ STATION_NAME) + geom_histogram()
 
 ## Check for duplicates
 duplicates <- ozone_inspect[duplicated(ozone_inspect),]
