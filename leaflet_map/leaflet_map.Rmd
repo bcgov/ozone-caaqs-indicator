@@ -34,21 +34,23 @@ css_caaqs_copy(folder = here("./leaflet_map/"))
 az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
                 "Achieved (&leq;63 ppb)" = "#72a4cd",
                 "Insufficient Data" = "#dbdbdb")
+
 station_colours <- c("&leq; 50ppb" = "#ffffff", 
                      "&gt;50 &amp; &leq;56 ppb" = "#bdbdbd", 
                      "&gt;56 &amp; &leq;63 ppb" = "#737373", 
                      "&gt;63 ppb" = "#000000")
 
 # Load and prep data
-stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE) %>%
+stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE)
   # Rename for consistency with most recent version of rcaaqs
-  rename(n_years = caaq_nYears,
-         metric_value = caaq_metric,
-         caaqs = caaq_status, 
-         caaqs_category_html = caaq_category_html)
+  # rename(n_years = caaq_nYears,
+  #        metric_value = caaq_metric,
+  #        caaqs = caaq_status, 
+  #        caaqs_category_html = caaq_category_html)
 
 # Count stations before removing for insufficient data
 az_n <- stations %>%
+  rename(Airzone = airzone) %>%  
   group_by(Airzone) %>%
   count() %>%
   st_set_geometry(NULL)
@@ -69,9 +71,8 @@ stations <- stations %>%
                                labels = names(station_colours))) 
 
 az <- st_read(here("./out/airzones.geojson"), stringsAsFactors = FALSE) %>%
-  rename(caaqs = caaq_status, 
-         n_years = caaq_nYears,
-         metric_value = caaq_metric) %>%
+  #        n_years = caaq_nYears,
+  #        metric_value = caaq_metric) %>%
   mutate(caaqs = replace(caaqs, is.na(caaqs), "Insufficient Data"),
          caaqs_legend = factor(caaqs, 
                                levels = c("Not Achieved", "Achieved", 
