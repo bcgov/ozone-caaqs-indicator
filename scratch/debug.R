@@ -36,3 +36,40 @@ ozone_full <- ozone_all %>%
          day = day(floor_date(date, "day"))) %>%
   ungroup()
 
+########
+#########
+
+library(rcaaqs)
+library(dplyr)
+library(bcmaps)
+
+ozone <- o3_caaqs(o3_sample_data, 
+                  by = c("ems_id", "site"))
+
+exclusions <- extract_daily(ozone) %>% 
+  filter(max8hr > 55) %>% 
+  select(ems_id, site, date)
+
+ozone_caaqs <- caaqs_management(ozone, exclude_df = exclusions, exclude_df_dt = "date")
+
+o3 <- extract_caaqs(ozone_caaqs)
+
+az <- bcmaps::airzones()
+
+stations_file <- system.file("air_stations_2018-11-07.csv", package = "rcaaqs")
+
+stations <- readr::read_csv(stations_file, na = "N/A") %>%  # Read csv file
+  rename_all(tolower) %>%                         # Rename columns to lower case
+  filter(ems_id %in% unique(o3$ems_id)) %>%       # Filter to ids in our o3 data
+  select(ems_id, latitude, longitude) %>%         # Select only the important columns
+  mutate(latitude = as.numeric(latitude),         # Transform lat and lon to numeric
+         longitude = as.numeric(longitude)) %>%
+  distinct()  
+
+o3_results <- left_join(o3, stations, by = "ems_id")
+
+ozone_stn_az <- assign_airzone(o3_results, airzones = az,
+                               coords = c("longitude", "latitude"))
+
+## Get airzone caaqs metric
+ozone_az <- airzone_metric(ozone_stn_az)
