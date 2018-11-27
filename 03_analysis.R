@@ -19,42 +19,13 @@ library(bcmaps) #airzone map
 if (!exists("ozone")) load("tmp/ozone_clean.RData")
 
 
-## Get airzone map (sf object) from bcmaps package
-az <- bcmaps::airzones()
+## Ambient Ozone CAAQS analysis 
+ozone_caaqs <- o3_caaqs(ozone, by = c("ems_id", "station_name"))
+
+ozone_caaqs_ambient_df <- get_caaqs(ozone_caaqs)
 
 
-## Ambient Ozone CAAQS Analysis 
-
-#caaqs calculations
-ozone_caaqs_all <- o3_caaqs(ozone, by = c("ems_id", "station_name"))
-
-ozone_caaqs_df <- extract_caaqs(ozone_caaqs_all)
-
-#filter for 2017 caaqs (based on 2015-2017)
-ozone_caaqs <- ozone_caaqs_df %>% 
-  group_by(ems_id) %>% 
-  filter(caaqs_year == max(caaqs_year),
-         n_years > 1) 
-
-# write.csv(ozone_caaqs, "tmp/ozone_caaqs_2017.csv", row.names = FALSE)
-
-#add info from stations_clean (created in 02.clean.R) & drop some columns
-ozone_caaqs <- ozone_caaqs %>% 
-  left_join(stations_clean, by = c("ems_id", "station_name")) %>% 
-  select(c(ems_id, station_name, city, longitude, latitude,
-           caaqs_year, min_year,  max_year, n_years, metric_value,
-           caaqs, mgmt, based_on_incomplete = flag_yearly_incomplete)) 
-
-#assign airzone for each station
-ozone_stn_az <- assign_airzone(ozone_caaqs, airzones = az,
-                               coords = c("longitude", "latitude"))
-
-#get airzone caaqs metric
-ozone_az <- airzone_metric(ozone_stn_az)
-
-
-
-## Create Exceptional Evenst (EEs) and Transboundary Flows (TFs) dataframe for 
+## Create Exceptional Events (EEs) and Transboundary Flows (TFs) dataframe for 
 ## determining AQMS Air Zone Management Levels
 ## Two days in 2015 were flagged as exceptional events: 
 ## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
@@ -63,51 +34,55 @@ ozone_az <- airzone_metric(ozone_stn_az)
 
 exclusion_dates <- c("2015-07-08", "2015-07-09")
 
-exclusions <- extract_daily(ozone_caaqs_all) %>% 
+exclusions <- get_daily(ozone_caaqs) %>% 
   filter(ems_id == "E293810",
          date == exclusion_dates) %>% 
-   select(ems_id, station_name, date)
+  select(ems_id, station_name, date)
 
 # exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
 #                                 start = as.Date("2015-07-08"), end = as.Date("2015-07-10"))
 
 
-## Management Ozone CAAQS Analysis 
+## Add management Ozone CAAQS analysis to ambient
+ozone_caaqs_mgmt <- caaqs_management(ozone_caaqs, exclude_df = exclusions, exclude_df_dt = "date")
 
-#caaqs calculations removing exclusions
-mgmt_ozone_caaqs_all <- o3_caaqs(ozone, by = c("ems_id", "station_name"),
-                                 exclude_df = exclusions,
-                                 exclude_df_dt = "date")
+ozone_caaqs_mgmt_df <- get_caaqs(ozone_caaqs_mgmt)
 
-mgmt_ozone_caaqs_df <- extract_caaqs(mgmt_ozone_caaqs_all)
 
-#filter for 2017 management caaqs (based on 2015-2017)
-mgmt_ozone_caaqs <- mgmt_ozone_caaqs_df %>% 
+## Ozone CAAQS results for 2017 (based on 2015-2017)
+ozone_caaqs_df <- ozone_caaqs_mgmt_df %>% 
   group_by(ems_id) %>% 
   filter(caaqs_year == max(caaqs_year),
          n_years > 1) 
 
-# write.csv(mgmt_ozone_caaqs, "tmp/mgmt_ozone_caaqs_2017.csv", row.names = FALSE)
+#write out csv file
+# write.csv(ozone_caaqs_df, "tmp/ozone_caaqs_2016-2017.csv", row.names = FALSE)
 
-#add info from stations_clean to mgmt_ozone_caaqs & drop some columns
-mgmt_ozone_caaqs <- mgmt_ozone_caaqs %>% 
+
+## Add info from stations_clean (created in 02.clean.R) & drop some columns
+ozone_caaqs_results <- ozone_caaqs_df %>% 
   left_join(stations_clean, by = c("ems_id", "station_name")) %>% 
-  select(c(ems_id, station_name, city, longitude, latitude, caaqs_year,
-           min_year,  max_year, n_years, metric_value, caaqs, mgmt,
+  select(c(ems_id, station_name, city, longitude, latitude, metric,
+           caaqs_year, min_year,  max_year, n_years, ambient_metric_value, 
+           ambient_caaqs, excluded, mgmt_metric_value, mgmt_level,
            based_on_incomplete = flag_yearly_incomplete)) 
 
-#assign airzone for each station
-mgmt_ozone_stn_az <- assign_airzone(mgmt_ozone_caaqs, airzones = az,
-                                    coords = c("longitude", "latitude"))
 
-#get airzone management caaqs metric
-mgmt_ozone_az <- airzone_metric(mgmt_ozone_stn_az)
 
+## Assign airzone for each station
+
+#get airzone map (sf object) from bcmaps package
+az <- bcmaps::airzones()
+
+ozone_stn_az <- assign_airzone(ozone_caaqs_results, airzones = az,
+                               coords = c("longitude", "latitude"))
+
+## Get airzone caaqs metric
+ozone_az <- airzone_metric(ozone_stn_az)
 
 
 ## Save Ozone CAAQS & Management CAAQS objects
-save(ozone_caaqs_all, ozone_caaqs_df, ozone_caaqs, ozone_stn_az, ozone_az,
-     exclusions, mgmt_ozone_caaqs_all, mgmt_ozone_caaqs_df, mgmt_ozone_caaqs,
-     mgmt_ozone_stn_az, mgmt_ozone_az, file = "tmp/analysed.RData")
+save(ozone_caaqs, exclusions, ozone_caaqs_mgmt, ozone_caaqs_results,
+     ozone_stn_az, ozone_az, file = "tmp/analysed.RData")
 
 
