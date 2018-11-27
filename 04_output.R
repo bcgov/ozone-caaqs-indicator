@@ -288,31 +288,31 @@ az %>% # st_transform(az, crs = "+proj=longlat")
 ## Output Resources for the B.C. Data Catalogue --------------------------------
 
 ## Output ozone_caaqs ambient caaqs for stations as CSV format for the BC Data Catalogue
-ozone_caaqs_map %>%
-  spTransform(CRSobj = outCRS) %>%
-  as.data.frame() %>%
-  select(ems_id, station_name, longitude, latitude, Airzone,
-         min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nYears,
-         based_on_incomplete, caaq_metric, caaq_status) %>%
-  mutate(caaq_year = rep_yr) %>% 
-  left_join(unique(select(stations_clean, ems_id, city)), by = "ems_id") %>% 
-  write.csv(paste0("out/ozone_site_summary_", rep_yr, ".csv"), row.names = FALSE)
-
-## Output ozone_caaqs ambient caaqs for air zones as CSV format for the BC Data Catalogue
-ambient_airzone_map %>%
-  spTransform(CRSobj = outCRS) %>%
-  as.data.frame() %>%
-  select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
-         caaq_metric, caaq_status) %>%
-  write.csv("out/airzone_ambient_summary.csv", row.names = FALSE)
-
-## Output ml_airzone air zone management levels as CSV format for the BC Data Catalogue
-ml_airzone_map %>%
-  spTransform(CRSobj = outCRS) %>%
-  as.data.frame() %>%
-  select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
-         caaq_mgt_level_metric, caaq_mngt_level) %>%
-  write.csv("out/airzone_management_level_summary.csv", row.names = FALSE)
+# ozone_caaqs_map %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   as.data.frame() %>%
+#   select(ems_id, station_name, longitude, latitude, Airzone,
+#          min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nYears,
+#          based_on_incomplete, caaq_metric, caaq_status) %>%
+#   mutate(caaq_year = rep_yr) %>% 
+#   left_join(unique(select(stations_clean, ems_id, city)), by = "ems_id") %>% 
+#   write.csv(paste0("out/ozone_site_summary_", rep_yr, ".csv"), row.names = FALSE)
+# 
+# ## Output ozone_caaqs ambient caaqs for air zones as CSV format for the BC Data Catalogue
+# ambient_airzone_map %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   as.data.frame() %>%
+#   select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
+#          caaq_metric, caaq_status) %>%
+#   write.csv("out/airzone_ambient_summary.csv", row.names = FALSE)
+# 
+# ## Output ml_airzone air zone management levels as CSV format for the BC Data Catalogue
+# ml_airzone_map %>%
+#   spTransform(CRSobj = outCRS) %>%
+#   as.data.frame() %>%
+#   select(Airzone, rep_station_id, rep_station_name, caaq_nYears,
+#          caaq_mgt_level_metric, caaq_mngt_level) %>%
+#   write.csv("out/airzone_management_level_summary.csv", row.names = FALSE)
 
 
 
