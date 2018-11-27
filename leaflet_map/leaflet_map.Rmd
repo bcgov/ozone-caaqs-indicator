@@ -48,6 +48,8 @@ stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE)
   #        caaqs = caaq_status, 
   #        caaqs_category_html = caaq_category_html)
 
+stations$caaqs_category_html <- rcaaqs:::cut_management(stations$metric_value, "o3", output = "breaks_h")
+
 # Count stations before removing for insufficient data
 az_n <- stations %>%
   rename(Airzone = airzone) %>%  
