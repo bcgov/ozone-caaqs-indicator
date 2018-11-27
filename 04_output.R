@@ -36,14 +36,14 @@ o3_standard <- 63
 
 #make standard annotation
 annotated_text <- data.frame(station_name = "Victoria Topaz",
-                             metric_value = 62.5,
+                             ambient_metric_value = 62.5,
                              airzone = as_factor("Georgia Strait"))
 #plot
 summary_plot <- ozone_stn_az %>% 
   mutate(airzone = as_factor(airzone),
-         airzone = reorder(airzone, metric_value, min, order = TRUE)) %>% 
-  ggplot(aes(x = metric_value, 
-             y = reorder(station_name, metric_value, sum))) + 
+         airzone = reorder(airzone, ambient_metric_value, min, order = TRUE)) %>% 
+  ggplot(aes(x = ambient_metric_value, 
+             y = reorder(station_name, ambient_metric_value, sum))) + 
   facet_grid(airzone ~ ., scales = "free_y", space = "free", drop=TRUE, 
              labeller = label_wrap_gen(width = 15, multi_line = TRUE)) + 
   geom_point(size = 2, colour = "#377eb8") + 
@@ -81,7 +81,7 @@ names(stn_plots) <- ems_ids
 
 for (emsid in ems_ids) {
   
-  lineplot <- plot_ts(ozone_caaqs_all, id = emsid,
+  lineplot <- plot_ts(ozone_caaqs, id = emsid,
                       id_col = "ems_id", rep_yr = 2017)
   
   stn_plots[[emsid]] <- lineplot
@@ -129,12 +129,12 @@ az <- st_intersection(airzones(), st_geometry(bc_bound())) %>%
 
 achievement_map <- az  %>% # st_transform(az, crs = "+proj=longlat")
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs = replace_na(caaqs, "Insufficient Data")) %>% 
+  mutate(ambient_caaqs = replace_na(ambient_caaqs, "Insufficient Data")) %>% 
   ggplot() +
-  geom_sf(aes(fill = caaqs), colour = "white") +
+  geom_sf(aes(fill = ambient_caaqs), colour = "white") +
   geom_sf(data = st_as_sf(ozone_stn_az, coords = c("lon", "lat"),
                           crs = "+proj=longlat"),
-          aes(colour = metric_value), size = 4) +
+          aes(colour = ambient_metric_value), size = 4) +
   geom_sf(data = st_as_sf(ozone_stn_az, coords = c("lon", "lat"),
                           crs = "+proj=longlat"),
           aes(), colour = "grey30", shape = 21, size = 4) +
@@ -177,9 +177,9 @@ dev.off()
 
 management_map <- az %>% # st_transform(az, crs = "+proj=longlat")
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(mgmt = replace_na(mgmt, "Insufficient Data")) %>% 
+  mutate(mgmt_level = replace_na(mgmt_level, "Insufficient Data")) %>% 
   ggplot() +
-  geom_sf(aes(fill = mgmt), colour = "white") +
+  geom_sf(aes(fill = mgmt_level), colour = "white") +
   scale_fill_manual(values = get_colours(type = "management", drop_na = FALSE), 
                     drop = FALSE,
                     name = "Air Zone Management Levels", 
@@ -222,8 +222,8 @@ dev.off()
 
 
 ## AQMS Management Levels by Station Bar Chart ---------------------------------
-management_chart <- ggplot(mgmt_ozone_stn_az,
-                              aes(x = airzone, fill = mgmt)) + 
+management_chart <- ggplot(ozone_stn_az,
+                              aes(x = airzone, fill = mgmt_level)) + 
   geom_bar(stat = "count", alpha = 1) +
   coord_flip() +
   xlab ("") + ylab ("Number of Reporting Stations") +
@@ -280,7 +280,7 @@ ozone_stn_az %>%
 
 az %>% # st_transform(az, crs = "+proj=longlat")
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs = replace_na(caaqs, "Insufficient Data")) %>% 
+  mutate(ambient_caaqs = replace_na(ambient_caaqs, "Insufficient Data")) %>% 
   geojson_write(file = "out/airzones.geojson")
 
 

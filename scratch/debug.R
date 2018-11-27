@@ -46,13 +46,13 @@ library(bcmaps)
 ozone <- o3_caaqs(o3_sample_data, 
                   by = c("ems_id", "site"))
 
-exclusions <- extract_daily(ozone) %>% 
+exclusions <- get_daily(ozone) %>% 
   filter(max8hr > 55) %>% 
   select(ems_id, site, date)
 
 ozone_caaqs <- caaqs_management(ozone, exclude_df = exclusions, exclude_df_dt = "date")
 
-o3 <- extract_caaqs(ozone_caaqs)
+o3 <- get_caaqs(ozone_caaqs)
 
 az <- bcmaps::airzones()
 
@@ -73,3 +73,9 @@ ozone_stn_az <- assign_airzone(o3_results, airzones = az,
 
 ## Get airzone caaqs metric
 ozone_az <- airzone_metric(ozone_stn_az)
+
+
+foo <- ozone_stn_az %>% 
+  rename("station_id" = "ems_id")
+foo_az <- airzone_metric(foo, station_id = "station_id")
+
