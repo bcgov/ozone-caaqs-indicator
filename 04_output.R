@@ -269,7 +269,7 @@ save(summary_plot, stn_plots, achievement_map,
 ozone_stn_az %>%
   geojson_write(file = "out/ozone_sites.geojson")
 
-az %>% # st_transform(az, crs = "+proj=longlat")
+az %>%  st_transform(az, crs = "+proj=longlat") %>% 
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
   mutate(ambient_caaqs = replace_na(ambient_caaqs, "Insufficient Data")) %>% 
   geojson_write(file = "out/airzones.geojson")
