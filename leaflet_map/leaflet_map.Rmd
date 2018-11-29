@@ -31,9 +31,14 @@ library(envreportutils)
 css_caaqs_copy(folder = here("./leaflet_map/"))
 
 # Assign colours
-az_colours <- c("Not Achieved (&gt;63 ppb)" = "#cd7277",
-                "Achieved (&leq;63 ppb)" = "#72a4cd",
+az_colours <- c("Not Achieved" = "#cd7277",
+                "Achieved" = "#72a4cd",
                 "Insufficient Data" = "#dbdbdb")
+
+# station_colours <- c("&lteq; 50ppb" = "#ffffff", 
+#                      "&gt; 50ppb &amp; &lteq; 56ppb" = "#bdbdbd", 
+#                      "&gt; 56ppb &amp; &lteq; 63ppb" = "#737373", 
+#                      "&gt; 63ppb" = "#000000")
 
 station_colours <- c("&leq; 50ppb" = "#ffffff", 
                      "&gt;50 &amp; &leq;56 ppb" = "#bdbdbd", 
@@ -42,13 +47,9 @@ station_colours <- c("&leq; 50ppb" = "#ffffff",
 
 # Load and prep data
 stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE)
-  # Rename for consistency with most recent version of rcaaqs
-  # rename(n_years = caaq_nYears,
-  #        metric_value = caaq_metric,
-  #        caaqs = caaq_status, 
-  #        caaqs_category_html = caaq_category_html)
 
-stations$caaqs_category_html <- rcaaqs:::cut_management(stations$metric_value, "o3", output = "breaks_h")
+# Add html categories for ambient colour station colour scale
+stations$caaqs_category_html <- rcaaqs:::cut_management(stations$ambient_metric_value, "o3", output = "breaks_h")
 
 # Count stations before removing for insufficient data
 az_n <- stations %>%
@@ -59,29 +60,35 @@ az_n <- stations %>%
 
 stations <- stations %>%
   # Catch Insufficient data whether it's NA or a named category
-  mutate(caaqs = replace(caaqs, is.na(caaqs), "Insufficient Data"),
+  mutate(ambient_caaqs = replace(ambient_caaqs, is.na(ambient_caaqs), "Insufficient Data"),
          caaqs_category_html = replace(caaqs_category_html, 
                                        is.na(caaqs_category_html), "Insufficient Data")) %>%
   # Remove stations with insufficient data
-  filter(caaqs != "Insufficient Data") %>%
+  filter(ambient_caaqs != "Insufficient Data") %>%
   # Assign legend values
   mutate(caaqs_legend = factor(caaqs_category_html,
-                               levels = c("&leq; 50ppb",
-                                          "&gt; 50ppb &amp; &leq; 56ppb",
-                                          "&gt; 56ppb &amp; &leq; 63ppb",
+                               levels = c("&lteq; 50ppb",
+                                          "&gt; 50ppb &amp; &lteq; 56ppb",
+                                          "&gt; 56ppb &amp; &lteq; 63ppb",
                                           "&gt; 63ppb"),
                                labels = names(station_colours))) 
 
+
+# Get station name for az
+stn_names <- stations %>% 
+  select(station_name, ems_id) %>% 
+  rename(ambient_rep_stn_id = ems_id) %>% 
+  st_set_geometry(NULL)
+
 az <- st_read(here("./out/airzones.geojson"), stringsAsFactors = FALSE) %>%
-  #        n_years = caaq_nYears,
-  #        metric_value = caaq_metric) %>%
-  mutate(caaqs = replace(caaqs, is.na(caaqs), "Insufficient Data"),
-         caaqs_legend = factor(caaqs, 
+  mutate(ambient_caaqs = replace(ambient_caaqs, is.na(ambient_caaqs), "Insufficient Data"),
+         caaqs_legend = factor(ambient_caaqs, 
                                levels = c("Not Achieved", "Achieved", 
                                           "Insufficient Data"),
                                labels = names(az_colours))) %>%
-  left_join(az_n, by = "Airzone") #Join only data, not by spatial
-
+  left_join(az_n, by = "Airzone") %>% #Join only data, not by spatial
+  left_join(stn_names, by = "ambient_rep_stn_id")
+  
 # Calculate/Create Airzone tooltip
 az <- mutate(az, n = replace(n, is.na(n), 0),
              tooltip = map2(Airzone, n, 
@@ -91,8 +98,8 @@ az <- mutate(az, n = replace(n, is.na(n), 0),
 # Create Airzone Popups
 az <- mutate(az, 
              p_az = Airzone,
-             p_station = rep_station_name,
-             p_station_id = rep_station_id) %>%
+             p_station = station_name,
+             p_station_id = ambient_rep_stn_id) %>%
   mutate(popup = popup_caaqs(., type = "region", 
                              metric_name = "Ozone Metric",
                              units = "ppm",
@@ -101,7 +108,7 @@ az <- mutate(az,
 
 # Create Stations Popups
 stations <- mutate(stations,
-                   p_az = Airzone,
+                   p_az = airzone,
                    p_station = station_name,
                    p_station_id = ems_id) %>%
   mutate(popup = popup_caaqs(., type = "station", 
