@@ -1,5 +1,5 @@
 ---
-title: "CAAQS Indicator: Ozone"
+title: 
 output: 
   html_document:
     css: "assets/caaqs-styles.css"
