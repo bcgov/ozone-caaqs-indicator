@@ -30,38 +30,19 @@ if (!exists("ozone_stn_az")) load("tmp/analysed.RData")
 
 ## Summary Plot of Ambient CAAQ metrics by Station & Airzones (PDF only) -------
 
-#set up constants
-dir.create("out", showWarnings = FALSE)
-o3_standard <- 63
+ambient_summary_plot <- summary_plot(
+  ozone_caaqs_results, 
+  metric_val = "metric_value_ambient", 
+  airzone = "airzone", station = "station_name", 
+  parameter = "metric", pt_size = 2) +
+  theme(strip.text.y = element_text(angle = 0))
+plot(ambient_summary_plot)
 
-#make standard annotation
-annotated_text <- data.frame(station_name = "Victoria Topaz",
-                             ambient_metric_value = 62.5,
-                             airzone = as_factor("Georgia Strait"))
-#plot
-summary_plot <- ozone_stn_az %>% 
-  mutate(airzone = as_factor(airzone),
-         airzone = reorder(airzone, ambient_metric_value, min, order = TRUE)) %>% 
-  ggplot(aes(x = ambient_metric_value, 
-             y = reorder(station_name, ambient_metric_value, sum))) + 
-  facet_grid(airzone ~ ., scales = "free_y", space = "free", drop=TRUE, 
-             labeller = label_wrap_gen(width = 15, multi_line = TRUE)) + 
-  geom_point(size = 2, colour = "#377eb8") + 
-  geom_vline(aes(xintercept = o3_standard), linetype = 2, colour = "#e41a1c") + 
-  geom_text(data = annotated_text, label = "Ozone Standard (63 ppb)", size = 4,
-            hjust = 1, colour = "#e41a1c") +
-  labs(x = "Ozone Metric (ppb)", y = "Monitoring Station") + 
-  theme_soe_facet() + 
-  theme(axis.title.y = element_text(size=rel(1.2)), 
-        axis.text.y = element_text(size = rel(0.8)), 
-        axis.line.x = element_blank(), 
-        strip.text.y = element_text(size = rel(1), angle = 0))
-plot(summary_plot)
 
 #png of ozone CAAQS achievement by station and air zone summary plot 
 png_retina(filename = "out/ozone_station_summary_chart.png",
            width = 836, height = 700)
-plot(summary_plot)
+plot(ambient_summary_plot)
 dev.off()
 
 #svg of ozone CAAQS achievement by station and air zone summary plot 
@@ -75,7 +56,7 @@ dev.off()
 ## Ambient CAAQS Metric (for both PDF & Web) -----------------------------------
 
 #generate lineplots for each station
-ems_ids <- ozone_stn_az$ems_id
+ems_ids <- ozone_caaqs_results$ems_id
 stn_plots <- vector("list", length(ems_ids))
 names(stn_plots) <- ems_ids
 
@@ -129,17 +110,15 @@ az <- st_intersection(airzones(), st_geometry(bc_bound())) %>%
 
 achievement_map <- az  %>% # st_transform(az, crs = "+proj=longlat")
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(ambient_caaqs = replace_na(ambient_caaqs, "Insufficient Data")) %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   ggplot() +
-  geom_sf(aes(fill = ambient_caaqs), colour = "white") +
-  geom_sf(data = st_as_sf(ozone_stn_az, coords = c("lon", "lat"),
+  geom_sf(aes(fill = caaqs_ambient), colour = "white", size = .4) +
+  geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
                           crs = "+proj=longlat"),
-          aes(colour = ambient_metric_value), size = 4) +
-  geom_sf(data = st_as_sf(ozone_stn_az, coords = c("lon", "lat"),
-                          crs = "+proj=longlat"),
-          aes(), colour = "grey30", shape = 21, size = 4) +
-  # geom_point(data = ozone_stn_az, aes(x = lon, y = lat,
-  #                                       colour = metric_value), size = 4) +
+          aes(colour = metric_value_ambient), size = 4) +
+  # geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
+  #                        crs = "+proj=longlat"),
+  #        aes(), colour = "grey20", shape = 21, size = 4) +
   scale_fill_manual(values = get_colours(type = "achievement", drop_na = FALSE), 
                     drop = FALSE, name = "Airzones:\nOzone Air Quality Standard",
                     guide = guide_legend(order = 1, title.position = "top")) +
@@ -222,7 +201,7 @@ dev.off()
 
 
 ## AQMS Management Levels by Station Bar Chart ---------------------------------
-management_chart <- ggplot(ozone_stn_az,
+management_chart <- ggplot(ozone_caaqs_results,
                               aes(x = airzone, fill = mgmt_level)) + 
   geom_bar(stat = "count", alpha = 1) +
   coord_flip() +
@@ -259,19 +238,19 @@ dev.off()
 
 
 ## Save Plot Objects for Use in ozone.Rmd --------------------------------------
-save(summary_plot, stn_plots, achievement_map,
+save(ambient_summary_plot, stn_plots, achievement_map,
      management_map, management_chart, file = "tmp/plots.RData")
 
 
 
 ## Output geojson Files for Web Map --------------------------------------------
 
-ozone_stn_az %>%
+ozone_caaqs_results %>%
   geojson_write(file = "out/ozone_sites.geojson")
 
 az %>%  st_transform(az, crs = "+proj=longlat") %>% 
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(ambient_caaqs = replace_na(ambient_caaqs, "Insufficient Data")) %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   geojson_write(file = "out/airzones.geojson")
 
 
