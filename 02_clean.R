@@ -14,6 +14,7 @@
 library(dplyr) #data munging
 library(lubridate) #wrangling dates
 library(rcaaqs) #rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
+library(bcmaps) #airzone map
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
@@ -40,15 +41,16 @@ ozone_3yrs <- mutate(ozone_all,
 
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
-ozone <- ozone_3yrs %>% 
+ozone_clean_data <- ozone_3yrs %>% 
   group_by(ems_id, station_name) %>% 
   do(., date_fill(., date_col = "date_time",
                   fill_cols = c("ems_id", "station_name"),
                   interval = "1 hour")) %>% 
   ungroup()
 
+
 ## Summarize ozone sites in clean ozone dataframe
-ozone_site_summary <- ozone %>%
+ozone_site_summary <- ozone_clean_data %>%
   group_by(ems_id, station_name) %>%
   summarize(min_date = min(date_time), 
             max_date = max(date_time), 
@@ -73,9 +75,21 @@ stations_clean <- rename_all(stations, tolower) %>%
   group_by(ems_id) %>%
   filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
   filter(n() == 1) %>%
-  filter(ems_id %in% unique(ozone_site_summary$ems_id))
+  filter(ems_id %in% unique(ozone_site_summary$ems_id)) 
+
+
+## Assign airzone for each station
+
+#get airzone map (sf object) from bcmaps package
+az <- bcmaps::airzones()
+
+#assign airzones to stations
+stations_az <- assign_airzone(stations_clean, airzones = az,
+                              coords = c("longitude", "latitude")) %>% 
+  select(ems_id, station_name, city, lat, lon, airzone)
+
 
 
 ## Save Clean Data Objects
-save(ozone, stations_clean, ozone_site_summary,
+save(ozone_clean_data, stations_az, ozone_site_summary,
      min_year, max_year, file = "tmp/ozone_clean.RData")
