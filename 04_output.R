@@ -23,7 +23,7 @@ library(tidyr) # for replace_na
 library(geojsonio) # for geojson outputs
 
 ## Load data
-if (!exists("ozone_stn_az")) load("tmp/analysed.RData")
+if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
 
 
 ## WEB & PDF OUTPUTS ##
@@ -108,17 +108,14 @@ az <- st_intersection(airzones(), st_geometry(bc_bound())) %>%
   group_by(Airzone) %>% 
   summarize()
 
-achievement_map <- az  %>% # st_transform(az, crs = "+proj=longlat")
+achievement_map <- az  %>%
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
   mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   ggplot() +
   geom_sf(aes(fill = caaqs_ambient), colour = "white", size = .4) +
   geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
-                          crs = "+proj=longlat"),
+                          crs = 4326),
           aes(colour = metric_value_ambient), size = 4) +
-  # geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
-  #                        crs = "+proj=longlat"),
-  #        aes(), colour = "grey20", shape = 21, size = 4) +
   scale_fill_manual(values = get_colours(type = "achievement", drop_na = FALSE), 
                     drop = FALSE, name = "Airzones:\nOzone Air Quality Standard",
                     guide = guide_legend(order = 1, title.position = "top")) +
@@ -154,7 +151,7 @@ dev.off()
 #get the starting/center coordinates for text labels
 # points <- sf::st_point_on_surface(az)
 
-management_map <- az %>% # st_transform(az, crs = "+proj=longlat")
+management_map <- az %>%
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
   mutate(mgmt_level = replace_na(mgmt_level, "Insufficient Data")) %>% 
   ggplot() +
@@ -248,12 +245,24 @@ save(ambient_summary_plot, stn_plots, achievement_map,
 ozone_caaqs_results %>%
   geojson_write(file = "out/ozone_sites.geojson")
 
-az %>%  st_transform(az, crs = "+proj=longlat") %>% 
+az %>% 
+  st_transform(az, crs = 4326) %>% 
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
   mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   geojson_write(file = "out/airzones.geojson")
 
 
+## Output Resources for the B.C. Data Catalogue
+
+#output results as CSV format
+ozone_caaqs_results %>% 
+write.csv("tmp/ozone_site_summary_2017.csv", row.names = FALSE)
+
+az %>% 
+  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
+  st_set_geometry(NULL) %>% 
+  write.csv("tmp/ozone_airzone_summary_2017.csv", row.names = FALSE)
 
 
 
