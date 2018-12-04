@@ -63,7 +63,7 @@ ozone_caaqs_df <- ozone_caaqs_mgmt_df %>%
 ## Add info from stations_az (created in 02.clean.R) & drop some columns
 ozone_caaqs_results <- ozone_caaqs_df %>% 
   left_join(stations_az, by = c("ems_id", "station_name")) %>% 
-  select(c(ems_id, station_name, city, airzone, metric,
+  select(c(ems_id, station_name, city, lat, lon, airzone, metric,
            caaqs_year, min_year,  max_year, n_years, metric_value_ambient, 
            caaqs_ambient, excluded, metric_value_mgmt, mgmt_level,
            based_on_incomplete = flag_yearly_incomplete)) 
@@ -76,17 +76,6 @@ ozone_az <- airzone_metric(ozone_caaqs_results)
 ## Save Ozone CAAQS & Management CAAQS objects
 save(ozone_caaqs, exclusions, ozone_caaqs_mgmt, ozone_caaqs_results,
      ozone_az, file = "tmp/analysed.RData")
-
-
-## Output Resources for the B.C. Data Catalogue
-
-#output results as CSV format
-write.csv(ozone_caaqs_results, "tmp/ozone_site_summary_2017.csv", row.names = FALSE)
-
-ozone_az %>% 
-  left_join(az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data"))
-write.csv(ozone_az, "tmp/ozone_airzone_summary_2017.csv", row.names = FALSE)
 
 
 
