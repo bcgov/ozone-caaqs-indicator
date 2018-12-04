@@ -81,10 +81,10 @@ stations_clean <- rename_all(stations, tolower) %>%
 ## Assign airzone for each station
 
 #get airzone map (sf object) from bcmaps package
-az <- bcmaps::airzones()
+azone <- bcmaps::airzones()
 
 #assign airzones to stations
-stations_az <- assign_airzone(stations_clean, airzones = az,
+stations_az <- assign_airzone(stations_clean, airzones = azone,
                               coords = c("longitude", "latitude")) %>% 
   select(ems_id, station_name, city, lat, lon, airzone)
 
@@ -92,4 +92,4 @@ stations_az <- assign_airzone(stations_clean, airzones = az,
 
 ## Save Clean Data Objects
 save(ozone_clean_data, stations_az, ozone_site_summary,
-     min_year, max_year, file = "tmp/ozone_clean.RData")
+     min_year, max_year, azone, file = "tmp/ozone_clean.RData")
