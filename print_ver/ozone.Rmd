@@ -264,19 +264,19 @@ Environmental Reporting BC. 2018. Status of Ground-Level Ozone in B.C. (`r min_y
 
 \newpage
 
-# Appendix: Detailed ground-level ozone Canadian Ambient Air Quality Standard results for each monitoring station within air zones in B.C. (`r min_year`-`r max_year`)
+# Appendix: Detailed Ground-level zone Canadian Ambient Air Quality Standard Results for Monitoring Stations within Air Zones in B.C. (`r min_year`-`r max_year`)
 
 
 ```{r appendix, results='asis', fig.height=3.5}
 
 ## TESTING
-foo <- stn_plots[1:2] #object for testing iwalk()
+# foo <- stn_plots[1:2] #object for testing iwalk()
 ##
 
-iwalk(foo,  ~ {
+iwalk(stn_plots,  ~ {
   
   stn <- ozone_caaqs_results %>% 
-    filter(ems_id == names(foo[1])) 
+    filter(ems_id == .y) 
   
   az <- stn %>% pull(airzone)
   cat("\\textbf{Air Zone:} ", az, " \\newline ")
@@ -285,7 +285,7 @@ iwalk(foo,  ~ {
   site <- knitr_latex_char(stn_name)
   cat("\\textbf{Monitoring Station:} ", site, " \\newline ")
   
-  status <- stn %>% pull(caaqs_ambient) %>% as.character
+  status <- stn %>% pull(caaqs_ambient) %>% as.character()
   cat("\\textbf{Ozone Air Quality Standard:} ",
       status, " \\newline ")
   
