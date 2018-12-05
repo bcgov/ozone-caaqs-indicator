@@ -18,8 +18,6 @@ See the License for the specific language governing permissions and limitations 
 -->
 
 
-
-
 ```{r setup, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
 
 knitr::opts_chunk$set(echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, 
@@ -30,20 +28,20 @@ library(knitr) #for knitting to PDF
 library(english)
 library(ggplot2) # for plotting
 library(envreportutils) # to_titlecase()
-library(purrr)
-library(dplyr)
+library(purrr) #iwalk()
+library(dplyr) #data munging
 
 ## Reading in plot objects
 load("../tmp/plots.RData")
 
-## Reading in results data objects
+## Reading in results data objects for Appendix metadata
 load("../tmp/analysed.RData")
 
 ## Set constants for 3-year reporting period
 min_year <- 2015
 max_year <- 2017
 
-## Label function
+## Label function for Appendix
 knitr_latex_char <- function(x) {
   y <- gsub("\\\\", "\\\\textbackslash{}", x) # back slash has to be first
   y <- gsub("([#$%&_])", "\\\\\\1", y) # Doesn't deal with { or } because of function{}
@@ -264,14 +262,10 @@ Environmental Reporting BC. 2018. Status of Ground-Level Ozone in B.C. (`r min_y
 
 \newpage
 
-# Appendix: Detailed Ground-level zone Canadian Ambient Air Quality Standard Results for Monitoring Stations within Air Zones in B.C. (`r min_year`-`r max_year`)
+# Appendix: Detailed Ground-Level Ozone Canadian Ambient Air Quality Standard Results for Monitoring Stations within Air Zones in B.C. (`r min_year`-`r max_year`)
 
 
 ```{r appendix, results='asis', fig.height=3.5}
-
-## TESTING
-# foo <- stn_plots[1:2] #object for testing iwalk()
-##
 
 iwalk(stn_plots,  ~ {
   
@@ -299,7 +293,6 @@ iwalk(stn_plots,  ~ {
   cat("\\newpage ")
   
 })
-
 
 ```
 

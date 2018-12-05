@@ -53,7 +53,7 @@ dev.off()
 
 
 ## Individual Monitoring Station Line Plots with Daily Maximum Data &
-## Ambient CAAQS Metric (for both PDF & Web) -----------------------------------
+## Ambient CAAQS Metric --------------------------------------------------------
 
 #generate lineplots for each station
 ems_ids <- ozone_caaqs_results$ems_id
