@@ -234,10 +234,67 @@ dev.off()
 # dev.off()
 
 
-## Save Plot Objects for Use in ozone.Rmd --------------------------------------
-save(ambient_summary_plot, stn_plots, achievement_map,
-     management_map, management_chart, file = "tmp/plots.RData")
+## Summary Numbers for Use in ozone.Rmd ----------------------------------------
 
+#number of achieved airzones
+num_az_achieved <- az %>%
+  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
+  st_set_geometry(NULL) %>% 
+  select(caaqs_ambient) %>% 
+  add_count(caaqs_ambient) %>% 
+  unique() %>% 
+  filter(caaqs_ambient == "Achieved") %>% 
+  pull()
+
+
+#number of stations
+num_stns <- ozone_caaqs_results %>% 
+  add_count(ems_id) %>% 
+  pull(n) %>% 
+  sum()
+
+#number stations achieved
+num_stns_achieved <- ozone_caaqs_results %>% 
+  add_count(ems_id) %>% 
+  filter(caaqs_ambient == "Achieved") %>% 
+  pull(n) %>% 
+  sum()
+
+#low metric value
+lowest_value <- ozone_caaqs_results %>%
+  pull(metric_value_ambient) %>% 
+  min()
+
+#high metric value
+highest_value <- ozone_caaqs_results %>%
+  pull(metric_value_ambient) %>% 
+  max()
+
+#number and % stations equal or less than 50ppb
+num_values_50 <- ozone_caaqs_results %>% 
+  select(ems_id, metric_value_ambient) %>% 
+  add_count(ems_id) %>% 
+  filter(metric_value_ambient < 51) %>% 
+  pull(n) %>% 
+  sum()
+
+perc_values_50 <- round(num_values_50/num_stns*100, digits = 0)
+
+num_values_60 <- ozone_caaqs_results %>% 
+  select(ems_id, metric_value_ambient) %>% 
+  add_count(ems_id) %>% 
+  filter(metric_value_ambient > 60) %>% 
+  pull(n) %>% 
+  sum()
+
+## Save Objects for Use in ozone.Rmd --------------------------------------
+save(ambient_summary_plot, stn_plots, achievement_map,
+     management_map, management_chart,
+     num_stns, num_stns_achieved,
+     lowest_value, highest_value, num_values_50,
+     perc_values_50, num_values_60, 
+     num_az_achieved, file = "tmp/plots.RData")
 
 
 ## Output geojson Files for Web Map --------------------------------------------
