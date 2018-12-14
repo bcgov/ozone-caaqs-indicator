@@ -28,20 +28,31 @@ ozone_caaqs_ambient_df
 
 ## Create Exceptional Events (EEs) and Transboundary Flows (TFs) dataframe for 
 ## determining AQMS Air Zone Management Levels
-## Two days in 2015 were flagged as exceptional events: 
-## July 8 and 9, 2015 for Agassiz Municipal Hall (E293810)
+
+## Agassiz Municipal Hall (E293810): Two days in 2015 were flagged as exceptional 
+## events -- July 8 and 9 (2015)
+## Hope Airport (E223756): Three days in 2015 were flagged as exceptional 
+## events -- July 6, 8 and 9 (2015)
+## Hope Airport (E223756): Five days in 2017 were flagged as exceptional 
+## events -- August 3, 7, 10, 11, 29 (2017)
+
 ## These days are removed (as a result of suspected wildfire influence) 
 ## for determining AQMS Air Zone Management Levels
 
-exclusion_dates <- c("2015-07-08", "2015-07-09")
+exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
+exclusion_dates_E223756 <- c("2015-07-06", "2015-07-08", "2015-07-09",
+                             "2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29")
 
-exclusions <- get_daily(ozone_caaqs) %>% 
+exclusions_E293810 <- get_daily(ozone_caaqs) %>% 
   filter(ems_id == "E293810",
-         date %in% as_date(exclusion_dates)) %>% 
+         date %in% as_date(exclusion_dates_E293810)) %>% 
   select(ems_id, station_name, date)
 
-# exclusions  <- data.frame(ems_id = "E293810", station_name = "Agassiz Municipal Hall",
-#                                 start = as_date("2015-07-08"), end = as_date("2015-07-10"))
+exclusions <- get_daily(ozone_caaqs) %>% 
+  filter(ems_id == "E223756",
+         date %in% as_date(exclusion_dates_E223756)) %>% 
+  select(ems_id, station_name, date) %>% 
+  bind_rows(exclusions_E293810)
 
 
 ## Add management Ozone CAAQS analysis to ambient
