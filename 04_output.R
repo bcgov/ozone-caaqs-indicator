@@ -198,15 +198,16 @@ dev.off()
 
 
 ## AQMS Management Levels by Station Bar Chart ---------------------------------
-management_chart <- ggplot(ozone_caaqs_results,
-                              aes(x = airzone, fill = mgmt_level)) + 
+management_chart <- ozone_caaqs_results %>% 
+  mutate(mgmt_level = fct_drop(mgmt_level, only = "Insufficient Data")) %>% 
+  ggplot(aes(x = airzone, fill = mgmt_level)) + 
   geom_bar(stat = "count", alpha = 1) +
   coord_flip() +
   xlab ("") + ylab ("Number of Reporting Stations") +
   scale_y_continuous(limits = c(0,25), breaks=seq(0, 25, 5),
                      expand=c(0,0)) +
   scale_fill_manual(values = get_colours(type = "management", drop_na = FALSE),
-                    drop = TRUE,
+                    drop = FALSE,
                     name = "Air Zone Management Levels",
                     guide = guide_legend(reverse = TRUE)) +
   theme_soe() +
