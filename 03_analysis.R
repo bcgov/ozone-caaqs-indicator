@@ -43,16 +43,10 @@ exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
 exclusion_dates_E223756 <- c("2015-07-06", "2015-07-08", "2015-07-09",
                              "2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29")
 
-exclusions_E293810 <- get_daily(ozone_caaqs) %>% 
-  filter(ems_id == "E293810",
-         date %in% as_date(exclusion_dates_E293810)) %>% 
-  select(ems_id, station_name, date)
-
 exclusions <- get_daily(ozone_caaqs) %>% 
-  filter(ems_id == "E223756",
-         date %in% as_date(exclusion_dates_E223756)) %>% 
-  select(ems_id, station_name, date) %>% 
-  bind_rows(exclusions_E293810)
+  filter((ems_id == "E293810" & date %in% as_date(exclusion_dates_E293810)) | 
+           (ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756))) %>% 
+  select(ems_id, station_name, date)
 
 
 ## Add management Ozone CAAQS analysis to ambient
