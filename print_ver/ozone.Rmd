@@ -174,7 +174,7 @@ The Air Quality Management System is Canada's approach for protecting air qualit
 -   There are seven air zones in British Columbia: Coastal, Georgia Strait, Lower Fraser Valley, Southern Interior, Central Interior, Northeast and Northwest.
 -   The Air Zone Management Framework defines management levels based on the highest ozone level reported from monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality Standard). Actions for each management level are detailed in the [Guidance Document on Air Zone Management
     (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1481_gdazm_e.pdf).
--   The Coastal air zone was assigned to a green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were assigned to a yellow management level, and the Lower Fraser Valley was assigned to a red management level. Currently, there are no [air monitoring     stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
+-   The Coastal air zone was assigned to a green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level. Currently, there are no [air monitoring stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
 
 
 # Management Levels for Ground-Level Ozone in B.C. Air Zones (`r min_year`-`r max_year`)
@@ -205,7 +205,7 @@ management_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"))
     external influences. These arrangements aim to ensure that
     jurisdictions are responsible for managing only the emissions
     sources they can control.
--   Two days were flagged as exceptional events as a result of suspected wildfire influence in B.C. for the `r min_year`-`r max_year` reporting period (July 8-9, 2015 for [Agassiz Municipal Hall](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E293810)). Removal of the data from these days had no impact on the resulting air zone management levels for ground-level ozone.
+-   Eight days were flagged as exceptional events as a result of suspected wildfire influence at two monitoring stations in B.C. for the `r min_year`-`r max_year` reporting period ([Agassiz](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E293810) and [Hope](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E223756)). The daily concentrations for these days were removed from the calculations of management levels, resulting in a change from red to orange for the Lower Fraser Valley management level for ground-level ozone.
 
 # Methods
 
@@ -251,13 +251,13 @@ each file, as indicated in parentheses below.
 -   [B.C. Ground-level Ozone Hourly Data & Air Monitoring Station Locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [B.C. Air Zones](https://catalogue.data.gov.bc.ca/dataset/e8eeefc4-2826-47bc-8430-85703d328516) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-Published and Available On-Line at Environmental Reporting BC (December 2018):
+Published and Available On-Line at Environmental Reporting BC (January 2019):
 <http://www.env.gov.bc.ca/soe/indicators/air/ozone.html>
 
 Email correspondence to: envreportbc@gov.bc.ca
 
 *Suggested Citation*:  
-Environmental Reporting BC. 2018. Status of Ground-Level Ozone in B.C. (`r min_year`-`r max_year`). State of Environment Reporting, Ministry of Environment and Climate Change Strategy, British Columbia, Canada.
+Environmental Reporting BC. 2019. Status of Ground-Level Ozone in B.C. (`r min_year`-`r max_year`). State of Environment Reporting, Ministry of Environment and Climate Change Strategy, British Columbia, Canada.
 
 
 \newpage
