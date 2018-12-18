@@ -13,7 +13,7 @@
 library(rcaaqs) #rcaaqs functions
 library(dplyr) #data munging
 library(lubridate) #wrangling dates
-
+library(readr) #import cvs file
 
 ## Load the tmp file if ozone doesn't exist
 if (!exists("ozone_df")) load("tmp/ozone_clean.RData")
