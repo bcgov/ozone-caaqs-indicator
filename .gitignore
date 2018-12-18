@@ -3,7 +3,6 @@
 .RData
 /tmp
 /out
-/data
 ^Rplots.pdf$
 README.html
 .DS_Store
