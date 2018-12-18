@@ -181,7 +181,7 @@ The Air Quality Management System is Canada's approach for protecting air qualit
 
 ```{r management_map, fig.height = 5} 
 
-management_map
+management_map_pdf
 
 ```
 
@@ -189,7 +189,11 @@ management_map
 
 ```{r management_chart, fig.height=4}
 
-management_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"))
+management_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"),
+                          axis.text = element_text(size = 10),
+                          axis.title = element_text(size = 12),
+                          legend.title = element_text(size = 12),
+                          legend.text = element_text(size = 10))
 
 ```
 

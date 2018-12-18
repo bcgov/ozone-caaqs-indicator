@@ -167,23 +167,43 @@ management_map <- az %>%
         axis.ticks = element_blank(),
         panel.grid = element_blank(),
         legend.position = "none",
-        plot.margin = unit(c(0,0,0,0),"mm")) +
+        plot.margin = unit(c(0,0,0,0),"mm"))
+
+management_map_web <- management_map +
   annotate("text", x = 757938.691028203, y = 755183.494351726,
-           label = "Coastal",colour = "black", size = 4.5) +
+           label = "Coastal",colour = "black", size = 5) +
   annotate("text", x = 1237018.05546828, y = 1353777.8838629,
-           label = "Northeast", colour = "black", size = 4.5) +
+           label = "Northeast", colour = "black", size = 5) +
   annotate("text", x = 825358.624129937, y = 1458245.53295221,
-           label = "Northwest", colour = "black", size = 4.5) +
+           label = "Northwest", colour = "black", size = 5) +
   annotate("text", x = 1136451.95878554, y = 1008862.625,
-           label = "Central\n Interior", colour = "black", size = 4.5) +
+           label = "Central\n Interior", colour = "black", size = 5) +
   annotate("text", x = 1477982.32044802, y = 657920.545686275,
-           label="Southern\n Interior", colour = "black", size = 4.5) +
+           label="Southern\n Interior", colour = "black", size = 5) +
   annotate("text", x = 1191040.32976477, y = 338497.757759471, 
-           label = "Georgia Strait", colour = "black", size = 4.5) +
+           label = "Georgia Strait", colour = "black", size = 5) +
   annotate("text", x = 1442293.56067042, y = 419268.843749995,
-           label= "Lower Fraser Valley", colour = "black", size = 4.5)
+           label= "Lower Fraser Valley", colour = "black", size = 5)
   # geom_sf_text(aes(label = Airzone), colour = "black") # centers not great for many labels
-plot(management_map)
+plot(management_map_web)
+
+management_map_pdf <- management_map +
+  annotate("text", x = 757938.691028203, y = 755183.494351726,
+           label = "Coastal",colour = "black", size = 4) +
+  annotate("text", x = 1237018.05546828, y = 1353777.8838629,
+           label = "Northeast", colour = "black", size = 4) +
+  annotate("text", x = 825358.624129937, y = 1458245.53295221,
+           label = "Northwest", colour = "black", size = 4) +
+  annotate("text", x = 1136451.95878554, y = 1008862.625,
+           label = "Central\n Interior", colour = "black", size = 4) +
+  annotate("text", x = 1477982.32044802, y = 657920.545686275,
+           label="Southern\n Interior", colour = "black", size = 4) +
+  annotate("text", x = 1191040.32976477, y = 338497.757759471, 
+           label = "Georgia Strait", colour = "black", size = 4) +
+  annotate("text", x = 1442293.56067042, y = 419268.843749995,
+           label= "Lower Fraser Valley", colour = "black", size = 4)
+# geom_sf_text(aes(label = Airzone), colour = "black") # centers not great for many labels
+plot(management_map_pdf)
 
 #svg of airzone CAAQS mgmt levels map
 svg_px("out/ozone_caaqs_mgmt_map.svg", width = 500, height = 500)
@@ -212,12 +232,13 @@ management_chart <- ozone_caaqs_results %>%
                     guide = guide_legend(reverse = TRUE)) +
   theme_soe() +
   theme(panel.grid.major.y = (element_blank()),
-        axis.text = element_text(size = 12),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
         legend.position = "bottom",
         legend.direction = "vertical",
         legend.box.just = "left",
-        legend.title = element_text(size = 12),
-        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
    #     legend.margin = unit(15,"mm"),
         plot.margin = unit(c(10,10,0,0),"mm"))
 plot(management_chart)
@@ -291,7 +312,8 @@ num_values_60 <- ozone_caaqs_results %>%
 
 ## Save Objects for Use in ozone.Rmd --------------------------------------
 save(ambient_summary_plot, stn_plots, achievement_map,
-     management_map, management_chart,
+     management_map, management_map_web,
+     management_map_pdf, management_chart,
      num_stns, num_stns_achieved,
      lowest_value, highest_value, num_values_50,
      perc_values_50, num_values_60, 
