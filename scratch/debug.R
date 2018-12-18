@@ -13,16 +13,20 @@
 library(rcaaqs) #rcaaqs functions
 library(dplyr) #data munging
 
-## Load the tmp file if ozone doesn't exist
-if (!exists("o3_caaqs_all")) load("tmp/analysed.RData")
+# ## Load the tmp file if ozone doesn't exist
+# if (!exists("o3_caaqs_all")) load("tmp/analysed.RData")
 
-issues <- c("E229797", "E206271")
+library(dplyr) #data munging
+names1 <- readr::read_csv("~/Downloads/Ozone station names for reporting.csv") %>% 
+  select(ems_id, station_name, reporting_name)
+names2 <- readr::read_csv("~/Downloads/PM25 station names for reporting.csv") %>% 
+  select(ems_id, station_name, reporting_name)
 
-o3_issues_yearly <- extract_yearly(o3_caaqs_all) %>% 
-  filter(ems_id %in% issues)
+reporting_conversion <- names1 %>% 
+  bind_rows(names2) %>% 
+  unique()
 
-o3_caaqs_yearly <- extract_yearly(o3_caaqs_all)
+write.csv(reporting_conversion, "data/stn_names_reporting.csv", row.names = FALSE)
 
-write.csv(o3_caaqs_yearly, "tmp/ozone_yearly_caaqs_2015-2017.csv", row.names = FALSE)
 
 
