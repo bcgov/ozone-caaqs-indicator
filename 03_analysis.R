@@ -74,6 +74,17 @@ ozone_caaqs_results <- ozone_caaqs_df %>%
            based_on_incomplete = flag_yearly_incomplete)) 
 
 
+## Use station reporting names rather than database names
+#reporting names stored in /data folder
+stn_names <- read_csv("data/stn_names_reporting.csv")
+
+ozone_caaqs_results <-  ozone_caaqs_results %>% 
+  left_join(stn_names) %>% 
+  mutate(bcgov_station_name = station_name,
+         station_name = case_when(is.na(reporting_name) ~ station_name,
+                                  TRUE ~ reporting_name))
+
+
 ## Get airzone caaqs metric
 ozone_az <- airzone_metric(ozone_caaqs_results)
 
