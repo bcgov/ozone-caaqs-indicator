@@ -63,7 +63,7 @@ names(stn_plots) <- ems_ids
 for (emsid in ems_ids) {
   
   lineplot <- plot_ts(ozone_caaqs, id = emsid,
-                      id_col = "ems_id", rep_yr = 2017)
+                      id_col = "ems_id", rep_yr = 2017, base_size = 14)
   
   stn_plots[[emsid]] <- lineplot
   cat("creating plot for", emsid, "\n")
