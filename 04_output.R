@@ -24,6 +24,7 @@ library(geojsonio) # for geojson outputs
 
 ## Load data
 if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
+if (!exists("max_year")) load("tmp/ozone_clean.RData")
 
 
 ## WEB & PDF OUTPUTS ##
@@ -207,7 +208,7 @@ plot(management_map_pdf)
 
 #svg of airzone CAAQS mgmt levels map
 svg_px("out/ozone_caaqs_mgmt_map.svg", width = 500, height = 500)
-plot(management_map)
+plot(management_map_web)
 dev.off()
 
 #png of airzone CAAQS mgmt levels map
@@ -334,14 +335,16 @@ az %>%
 
 ## Output Resources for the B.C. Data Catalogue
 
-#output results as CSV format
+#output stations results as CSV format
 ozone_caaqs_results %>% 
 write.csv("tmp/ozone_site_summary_2017.csv", row.names = FALSE)
 
+#output air zone results as CSV format
 az %>% 
   left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
   mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   st_set_geometry(NULL) %>% 
+  mutate(caaqs_year = max_year) %>% 
   write.csv("tmp/ozone_airzone_summary_2017.csv", row.names = FALSE)
 
 
