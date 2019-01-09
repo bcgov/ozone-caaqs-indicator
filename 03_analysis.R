@@ -66,19 +66,22 @@ ozone_caaqs_df <- ozone_caaqs_mgmt_df %>%
 
 
 ## Add info from stations_az (created in 02.clean.R) & drop some columns
-ozone_caaqs_results <- ozone_caaqs_df %>% 
+ozone_caaqs_df_results <- ozone_caaqs_df %>% 
   left_join(stations_az, by = c("ems_id", "station_name")) %>% 
   select(c(ems_id, station_name, city, lat, lon, airzone, metric,
            caaqs_year, min_year,  max_year, n_years, metric_value_ambient, 
            caaqs_ambient, excluded, metric_value_mgmt, mgmt_level,
-           based_on_incomplete = flag_yearly_incomplete)) 
+           based_on_incomplete = flag_yearly_incomplete))  %>% 
+  ungroup()
 
 
 ## Use station reporting names rather than database names
 #reporting names stored in /data folder
 stn_names <- read_csv("data/stn_names_reporting.csv")
 
-ozone_caaqs_results <-  ozone_caaqs_results %>% 
+ozone_caaqs_results <- ozone_caaqs_df_results %>% 
+   mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
+                               TRUE ~ ems_id)) %>% 
   left_join(stn_names) %>% 
   mutate(bcgov_station_name = station_name,
          station_name = case_when(is.na(reporting_name) ~ station_name,
