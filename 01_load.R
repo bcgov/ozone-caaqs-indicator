@@ -29,7 +29,15 @@ download.file(stations, destfile = file.path(path, stn_file))
 
 ## Load stations and data from files
 stations <- read_csv(file.path(path, stn_file), na = c("", "N/A"))
-ozone_all <- read_csv(file.path(path, "O3.csv"))
+ozone_all <- read_csv(file.path(path, ozone_file),
+                      col_types = cols(DATE_PST = col_datetime(), 
+                                       DATE = col_character(), 
+                                       TIME = col_character(), 
+                                       STATION_NAME = col_character(),
+                                       STATION_NAME_FULL = col_character(),
+                                       EMS_ID = col_character(), 
+                                       NAPS_ID = col_character(),
+                                       RAW_VALUE = col_double()))
                   
 ## Store raw data in local repository
 dir.create("tmp", showWarnings = FALSE)
@@ -74,7 +82,7 @@ ggplot(ozone_inspect, aes(x = RAW_VALUE)) +
 
 ## Check for duplicates
 duplicates <- ozone_inspect[duplicated(ozone_inspect),]
-duplicates # two duplicates found
+duplicates # no duplicates found
 
 ## Which sites in ozone dataset don't have a corresponding site in ems locations
 missing_sites <- unique(ozone_inspect$STATION_NAME)[!unique(ozone_inspect$EMS_ID) %in% stations$EMS_ID]
