@@ -27,11 +27,12 @@ max_year <- 2017
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone_3yrs <- mutate(ozone_all, 
-               date_time = format_caaqs_dt(DATE_PST), 
-               year = year(date_time),
-               month = month(date_time),
-               day = day(date_time)) %>% 
+ozone_3yrs <- ozone_all %>% 
+  select(-DATE, -TIME) %>% 
+  mutate(date_time = format_caaqs_dt(DATE_PST), 
+         year = year(date_time),
+         month = month(date_time),
+         day = day(date_time)) %>% 
   filter(year >= min_year, year <= max_year) %>% 
   select(-DATE_PST) %>% 
   rename_all(tolower) %>% 
@@ -93,3 +94,10 @@ stations_az <- assign_airzone(stations_clean, airzones = azone,
 ## Save Clean Data Objects
 save(ozone_clean_data, stations_az, ozone_site_summary,
      min_year, max_year, azone, file = "tmp/ozone_clean.RData")
+
+
+# ## TEMP FIX for Smithers Station EMS_ID
+# library(dplyr)
+# ozone_all <- ozone_all %>% 
+#   mutate(EMS_ID = case_when(EMS_ID == "E206589_1" ~ "E206589",
+#                             TRUE ~ EMS_ID))
