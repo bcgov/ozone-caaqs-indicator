@@ -28,7 +28,6 @@ max_year <- 2017
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone_3yrs <- ozone_all %>% 
-  select(-DATE, -TIME) %>% 
   mutate(date_time = format_caaqs_dt(DATE_PST), 
          year = year(date_time),
          month = month(date_time),
@@ -38,7 +37,7 @@ ozone_3yrs <- ozone_all %>%
   rename_all(tolower) %>% 
   rename(value = raw_value) %>% 
   mutate(value = clean_neg(value, type = "ozone")) %>% 
-  distinct() #remove duplicate records
+  distinct() #remove duplicate records if any
 
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
