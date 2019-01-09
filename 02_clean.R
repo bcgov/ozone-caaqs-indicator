@@ -95,9 +95,3 @@ stations_az <- assign_airzone(stations_clean, airzones = azone,
 save(ozone_clean_data, stations_az, ozone_site_summary,
      min_year, max_year, azone, file = "tmp/ozone_clean.RData")
 
-
-# ## TEMP FIX for Smithers Station EMS_ID
-# library(dplyr)
-# ozone_all <- ozone_all %>% 
-#   mutate(EMS_ID = case_when(EMS_ID == "E206589_1" ~ "E206589",
-#                             TRUE ~ EMS_ID))
