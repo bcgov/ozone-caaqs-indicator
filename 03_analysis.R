@@ -80,9 +80,6 @@ ozone_caaqs_df_results <- ozone_caaqs_df %>%
 stn_names <- read_csv("data/stn_names_reporting.csv")
 
 ozone_caaqs_results <- ozone_caaqs_df_results %>% 
-   #temp fix for ems_id issue with (Smithers St Josephs)
-   mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
-                               TRUE ~ ems_id)) %>% 
   left_join(stn_names) %>% 
   mutate(bcgov_station_name = station_name,
          station_name = case_when(is.na(reporting_name) ~ station_name,

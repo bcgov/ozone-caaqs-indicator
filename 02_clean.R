@@ -28,6 +28,7 @@ max_year <- 2017
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
 ozone_3yrs <- ozone_all %>% 
+  filter(!is.na(RAW_VALUE)) %>% #remove padded NAs
   mutate(date_time = format_caaqs_dt(DATE_PST), 
          year = year(date_time),
          month = month(date_time),
@@ -39,6 +40,10 @@ ozone_3yrs <- ozone_all %>%
   mutate(value = clean_neg(value, type = "ozone")) %>% 
   distinct() #remove duplicate records if any
 
+## Temp fix for ems_id issue with Smithers St Josephs stn
+ozone_3yrs <- ozone_3yrs %>% 
+  mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
+                            TRUE ~ ems_id))
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
 ozone_clean_data <- ozone_3yrs %>% 
@@ -74,8 +79,14 @@ stations_clean <- rename_all(stations, tolower) %>%
   mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
   group_by(ems_id) %>%
   filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
-  filter(n() == 1) %>%
-  filter(ems_id %in% unique(ozone_site_summary$ems_id)) 
+  filter(n() == 1,
+         ems_id != "E206589") %>% # temp fix for ems_id issue w/ Smithers Stn
+  ungroup() %>% 
+  # temp fix for ems_id issue 
+  mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
+                            TRUE ~ ems_id)) %>% 
+  filter(ems_id %in% unique(ozone_site_summary$ems_id))
+  
 
 
 ## Assign airzone for each station
