@@ -84,8 +84,7 @@ stations_clean <- rename_all(stations, tolower) %>%
   ungroup() %>% 
   # temp fix for ems_id issue 
   mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
-                            TRUE ~ ems_id)) %>% 
-  filter(ems_id %in% unique(ozone_site_summary$ems_id))
+                            TRUE ~ ems_id))
   
 
 
@@ -95,13 +94,15 @@ stations_clean <- rename_all(stations, tolower) %>%
 azone <- bcmaps::airzones()
 
 #assign airzones to stations
-stations_az <- assign_airzone(stations_clean, airzones = azone,
-                              coords = c("longitude", "latitude")) %>% 
+stations_az <- stations_clean %>% 
+  filter(ems_id %in% unique(ozone_site_summary$ems_id)) %>% 
+  assign_airzone(airzones = azone,
+                 coords = c("longitude", "latitude")) %>% 
   select(ems_id, station_name, city, lat, lon, airzone)
 
 
 
 ## Save Clean Data Objects
-save(ozone_clean_data, stations_az, ozone_site_summary,
+save(ozone_clean_data, stations_clean, stations_az, ozone_site_summary,
      min_year, max_year, azone, file = "tmp/ozone_clean.RData")
 
