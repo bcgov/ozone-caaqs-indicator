@@ -101,8 +101,6 @@ for (i in seq_along(stn_plots)) {
 }
 graphics.off() #STOP any hanging graphics processes
 
-
-
 ## Ambient CAAQS Achievement Map (PDF only) ------------------------------------
 
 #get airzone map (sf object) from bcmaps package
@@ -257,7 +255,6 @@ dev.off()
 # plot(management_chart)
 # dev.off()
 
-
 ## Summary Numbers for Use in ozone.Rmd ----------------------------------------
 
 #number of achieved airzones
@@ -333,41 +330,8 @@ az %>%
   mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   geojson_write(file = "out/airzones.geojson")
 
-
-## Output Resources for the B.C. Data Catalogue
-
-dir.create("out/databc", showWarnings = FALSE)
-
-#output stations results as CSV format
-ozone_caaqs_results <- ozone_caaqs_results %>% 
-  rename(latitude = lat, longitude = lon) %>% 
-  select(-reporting_name, -bcgov_station_name) %>% 
-  write_csv("out/ozone_site_summary_2017.csv", na = "")
-
-ozone_stations_2013 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2015/ozone_site_summary.csv")) %>% 
-  rename_all(tolower) %>% 
-  select(-regional_district) %>% 
-  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
-         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status, 
-         mgmt_level = caaq_mgmt_level) %>% 
-  mutate(caaqs_year = 2013L) %>% 
-  left_join(select(stations_clean, ems_id, city))
-  
-  
-ozone_stations_2016 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/ozone_site_summary.csv")) %>% 
-  rename_all(tolower) %>% 
-  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
-         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status) %>% 
-  mutate(caaqs_year = 2016L) %>% 
-  left_join(select(stations_clean, ems_id, city))
-  
-bind_rows(ozone_stations_2013, ozone_stations_2016, ozone_caaqs_results) %>% 
-  replace_na(list(metric = "o3")) %>% 
-  select(names(ozone_caaqs_results)) %>% 
-  arrange(caaqs_year) %>% 
-  write_csv("out/databc/ozonesitesummary.csv", na = "")
-
 #output air zone results as CSV format
+
 az_summary <- az %>% 
   rename_all(tolower) %>% 
   left_join(ozone_az, by = "airzone") %>% 
@@ -378,24 +342,8 @@ az_summary <- az %>%
   mutate(caaqs_year = max_year) %>% 
   write_csv("out/ozone_airzone_summary_2017.csv", na = "")
 
-az_2013 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2015/caaq_airzone_metrics.csv")) %>% 
-  select(-FID, -starts_with("caaq_category")) %>% 
-  select(airzone = Airzone, n_years = nyears, metric_value_ambient = caaq_metric, 
-         caaqs_ambient = caaq_status, rep_stn_id_ambient = rep_station_id, 
-         mgmt_level = caaq_level) %>% 
-  mutate(caaqs_year = 2013L)
-
-az_2016_ambient <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/airzone_ambient_summary.csv")) %>% 
-  select(airzone = Airzone, n_years = caaq_nYears, 
-         rep_stn_id_ambient = rep_station_id, metric_value_ambient = caaq_metric, 
-         caaqs_ambient = caaq_status)
-
-az_2016_mgmt <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/airzone_management_level_summary.csv")) %>% 
-  select(airzone = Airzone, rep_stn_id_mgmt = rep_station_id, 
-         metric_value_mgmt = caaq_mgt_level_metric, mgmt_level = caaq_mngt_level)
-
-left_join(az_2016_ambient, az_2016_mgmt, by = "airzone") %>% 
-  mutate(caaqs_year = 2016L) %>% 
-  bind_rows(az_2013, az_summary) %>% 
-  arrange(caaqs_year, airzone) %>% 
-  write_csv("out/databc/ozone_caaqs_airzone_summary.csv", na = "")
+#output stations results as CSV format
+ozone_caaqs_results <- ozone_caaqs_results %>% 
+  rename(latitude = lat, longitude = lon) %>% 
+  select(-reporting_name, -bcgov_station_name) %>% 
+  write_csv("out/ozone_site_summary_2017.csv", na = "")
