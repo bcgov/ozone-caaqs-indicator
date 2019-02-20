@@ -27,6 +27,8 @@ library(readr)
 if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
 if (!exists("max_year")) load("tmp/ozone_clean.RData")
 
+# Create output directory:
+dir.create("out", showWarnings = FALSE)
 
 ## WEB & PDF OUTPUTS ##
 
