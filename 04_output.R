@@ -116,7 +116,7 @@ achievement_map <- az  %>%
   ggplot() +
   geom_sf(aes(fill = caaqs_ambient), colour = "white", size = .4) +
   geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
-                          crs = 4326),
+                          crs = 4326, na.fail = FALSE),
           aes(colour = metric_value_ambient), size = 4) +
   scale_fill_manual(values = get_colours(type = "achievement", drop_na = FALSE), 
                     drop = FALSE, name = "Airzones:\nOzone Air Quality Standard",
