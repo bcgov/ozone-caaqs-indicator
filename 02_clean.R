@@ -40,11 +40,6 @@ ozone_3yrs <- ozone_all %>%
   mutate(value = clean_neg(value, type = "ozone")) %>% 
   distinct() #remove duplicate records if any
 
-## Temp fix for ems_id issue with Smithers St Josephs stn
-ozone_3yrs <- ozone_3yrs %>% 
-  mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
-                            TRUE ~ ems_id))
-
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
 ozone_clean_data <- ozone_3yrs %>% 
   group_by(ems_id, station_name) %>% 
@@ -52,7 +47,6 @@ ozone_clean_data <- ozone_3yrs %>%
                   fill_cols = c("ems_id", "station_name"),
                   interval = "1 hour")) %>% 
   ungroup()
-
 
 ## Summarize ozone sites in clean ozone dataframe
 ozone_site_summary <- ozone_clean_data %>%
@@ -79,12 +73,8 @@ stations_clean <- rename_all(stations, tolower) %>%
   mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
   group_by(ems_id) %>%
   filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
-  filter(n() == 1,
-         ems_id != "E206589") %>% # temp fix for ems_id issue w/ Smithers Stn
-  ungroup() %>% 
-  # temp fix for ems_id issue 
-  mutate(ems_id = case_when(ems_id == "E206589_1" ~ "E206589",
-                            TRUE ~ ems_id))
+  filter(n() == 1) %>%
+  ungroup()
   
 
 
