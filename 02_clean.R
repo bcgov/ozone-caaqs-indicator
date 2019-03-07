@@ -15,14 +15,39 @@ library(dplyr) #data munging
 library(lubridate) #wrangling dates
 library(rcaaqs) #rcaaqs functions, rcaaqs available on GitHub https://github.com/bcgov/rcaaqs
 library(bcmaps) #airzone map
+library(readr)
+library(stringr)
 
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
-
 
 ## Set constants for 3-year analysis
 min_year <- 2015
 max_year <- 2017
 
+stn_names <- read_csv("data/stn_names_reporting.csv") %>% 
+  mutate(ems_id = str_pad(ems_id, 7, "left", "0")) %>% 
+  rename(orig_stn_name = station_name)
+
+## Clean station data (lowercase column names, remove pseudo-duplicates,
+## subset to those stations analysed):
+## OLD == closed stns; 
+## _60 == meteorological stns;
+## Met == meteorological stns using Campbell loggers; 
+## BAM == Beta Attenuation Monitoring for PM measurement.
+## (note: air pollutant stns mostly using Envidas Ultimate loggers)
+## Then join to stn_names to get clean reporting names
+select_pattern <- "_60$|Met$|OLD$|BAM$|Squamish Gov't Bldg"
+stations_clean <- rename_all(stations, tolower) %>% 
+  group_by(ems_id) %>%
+  filter(n() == 1 | 
+           !grepl(select_pattern, station_name) | 
+           all(grepl(select_pattern, station_name))) %>% 
+  filter(!is.na(latitude), !is.na(longitude)) %>% 
+  top_n(1, station_name) %>% 
+  ungroup() %>% 
+  left_join(stn_names, by = "ems_id") %>% 
+  mutate(station_name = case_when(is.na(reporting_name) ~ station_name,
+                                  TRUE ~ reporting_name))
 
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
@@ -34,15 +59,17 @@ ozone_3yrs <- ozone_all %>%
          month = month(date_time),
          day = day(date_time)) %>% 
   filter(year >= min_year, year <= max_year) %>% 
-  select(-DATE_PST) %>% 
+  select(-DATE_PST, -STATION_NAME, -STATION_NAME_FULL) %>% 
   rename_all(tolower) %>% 
   rename(value = raw_value) %>% 
   mutate(value = clean_neg(value, type = "ozone")) %>% 
-  distinct() #remove duplicate records if any
+  distinct() %>% #remove duplicate records if any
+  inner_join(select(stations_clean, ems_id, station_name), 
+            by = "ems_id")
 
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
 ozone_clean_data <- ozone_3yrs %>% 
-  group_by(ems_id, station_name) %>% 
+  group_by(ems_id) %>% 
   do(., date_fill(., date_col = "date_time",
                   fill_cols = c("ems_id", "station_name"),
                   interval = "1 hour")) %>% 
@@ -60,24 +87,6 @@ ozone_site_summary <- ozone_clean_data %>%
   arrange(station_name) %>%
   as.data.frame()
 
-
-## Clean station data (lowercase column names, remove pseudo-duplicates,
-## subset to those stations analysed):
-## OLD == closed stns; 
-## _60 == meteorological stns;
-## Met == meteorological stns using Campbell loggers; 
-## BAM == Beta Attenuation Monitoring for PM measurement.
-## (note: air pollutant stns mostly using Envidas Ultimate loggers)
-
-stations_clean <- rename_all(stations, tolower) %>% 
-  mutate(ems_id = gsub("-[0-9]$", "", ems_id)) %>%
-  group_by(ems_id) %>%
-  filter(!grepl("_60$|Met$|OLD$|_Old$|(Met)|BAM$", station_name)) %>%
-  filter(n() == 1) %>%
-  ungroup()
-  
-
-
 ## Assign airzone for each station
 
 #get airzone map (sf object) from bcmaps package
@@ -85,10 +94,14 @@ azone <- bcmaps::airzones()
 
 #assign airzones to stations
 stations_az <- stations_clean %>% 
-  filter(ems_id %in% unique(ozone_site_summary$ems_id)) %>% 
+  filter(ems_id %in% unique(ozone_site_summary$ems_id), 
+         !is.na(latitude), !is.na(longitude)) %>% 
   assign_airzone(airzones = azone,
                  coords = c("longitude", "latitude")) %>% 
   select(ems_id, station_name, city, lat, lon, airzone)
+
+ozone_clean_data <- ozone_clean_data %>% 
+  semi_join(stations_az, by = "ems_id")
 
 
 
