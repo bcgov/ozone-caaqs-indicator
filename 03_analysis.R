@@ -18,7 +18,6 @@ library(readr) #import cvs file
 ## Load the tmp file if ozone doesn't exist
 if (!exists("ozone_df")) load("tmp/ozone_clean.RData")
 
-
 ## Ambient Ozone CAAQS analysis 
 ozone_caaqs <- o3_caaqs(ozone_clean_data, by = c("ems_id", "station_name"))
 
@@ -55,14 +54,14 @@ ozone_caaqs_mgmt <- caaqs_management(ozone_caaqs, exclude_df = exclusions,
 
 #look at ambient+mgmt caaqs results
 ozone_caaqs_mgmt_df <- get_caaqs(ozone_caaqs_mgmt)
-ozone_caaqs_mgmt_df
 
 
 ## Ozone CAAQS results for 2017 (based on 2015-2017)
 ozone_caaqs_df <- ozone_caaqs_mgmt_df %>% 
-  group_by(ems_id) %>% 
-  filter(caaqs_year == max(caaqs_year),
-         n_years > 1) 
+  group_by(ems_id) %>%
+  # unqoute max_year since it is also a var in the data.frame
+  filter(caaqs_year == !!max_year, n_years > 1) 
+
 
 
 ## Add info from stations_az (created in 02.clean.R) & drop some columns
