@@ -58,7 +58,7 @@ ozone_3yrs <- ozone_all %>%
          year = year(date_time),
          month = month(date_time),
          day = day(date_time)) %>% 
-  filter(year >= min_year, year <= max_year) %>% 
+  filter(year <= max_year) %>% 
   select(-DATE_PST, -STATION_NAME, -STATION_NAME_FULL) %>% 
   rename_all(tolower) %>% 
   rename(value = raw_value) %>% 
