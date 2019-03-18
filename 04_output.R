@@ -115,7 +115,7 @@ achievement_map <- az  %>%
   mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
   ggplot() +
   geom_sf(aes(fill = caaqs_ambient), colour = "white", size = .4) +
-  geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
+  geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("longitude", "latitude"),
                           crs = 4326),
           aes(colour = metric_value_ambient), size = 4) +
   scale_fill_manual(values = get_colours(type = "achievement", drop_na = FALSE), 
@@ -345,6 +345,5 @@ az_summary <- az %>%
   write_csv("out/ozone_airzone_summary_2017.csv", na = "")
 
 #output stations results as CSV format
-ozone_caaqs_results <- ozone_caaqs_results %>% 
-  rename(latitude = lat, longitude = lon) %>% 
+ozone_caaqs_results <- ozone_caaqs_results %>%
   write_csv("out/ozone_site_summary_2017.csv", na = "")
