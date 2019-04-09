@@ -28,6 +28,11 @@ stn_names <- read_csv("data/stn_names_reporting.csv") %>%
   mutate(ems_id = str_pad(ems_id, 7, "left", "0")) %>% 
   rename(orig_stn_name = station_name)
 
+# Combine two squamish stationsone in 2015 and the other in 2016-17)
+# for a complete record
+squamish_ems_ids <- c("0310172", "E304570")
+combo_squamish_id <- paste(squamish_ems_ids, collapse = "-")
+
 ## Clean station data (lowercase column names, remove pseudo-duplicates,
 ## subset to those stations analysed):
 ## OLD == closed stns; 
@@ -38,6 +43,9 @@ stn_names <- read_csv("data/stn_names_reporting.csv") %>%
 ## Then join to stn_names to get clean reporting names
 select_pattern <- "_60$|Met$|OLD$|BAM$|Squamish Gov't Bldg"
 stations_clean <- rename_all(stations, tolower) %>% 
+  mutate(ems_id = ifelse(ems_id %in% squamish_ems_ids, 
+                         combo_squamish_id, 
+                         gsub("_.+$", "", ems_id))) %>% 
   group_by(ems_id) %>%
   filter(n() == 1 | 
            !grepl(select_pattern, station_name) | 
@@ -46,13 +54,15 @@ stations_clean <- rename_all(stations, tolower) %>%
   top_n(1, station_name) %>% 
   ungroup() %>% 
   left_join(stn_names, by = "ems_id") %>% 
-  mutate(station_name = case_when(is.na(reporting_name) ~ station_name,
+  mutate(station_name = case_when(ems_id == combo_squamish_id ~ "Squamish", 
+                                  is.na(reporting_name) ~ station_name,
                                   TRUE ~ reporting_name))
+
 
 ## Change columns to match rcaaqs defaults, change to lowercase, create year column, filter for 3 year analysis,
 ## Subtract 1 second so reading is assigned to previous hour using rcaaqs::format_caaqs_dt()
 ## Deal with negative values using rcaaqs::clean_neg()
-ozone_3yrs <- ozone_all %>% 
+ozone_clean_data <- ozone_all %>% 
   filter(!is.na(RAW_VALUE)) %>% #remove padded NAs
   mutate(date_time = format_caaqs_dt(DATE_PST), 
          year = year(date_time),
@@ -64,16 +74,24 @@ ozone_3yrs <- ozone_all %>%
   rename(value = raw_value) %>% 
   mutate(value = clean_neg(value, type = "ozone")) %>% 
   distinct() %>% #remove duplicate records if any
-  inner_join(select(stations_clean, ems_id, station_name), 
-            by = "ems_id")
-
 ## Fill in missing hourly readings with NA using rcaaqs::date_fill()
-ozone_clean_data <- ozone_3yrs %>% 
   group_by(ems_id) %>% 
   do(., date_fill(., date_col = "date_time",
                   fill_cols = c("ems_id", "station_name"),
                   interval = "1 hour")) %>% 
   ungroup()
+
+squamish <- filter(
+  ozone_clean_data, (ems_id == squamish_ems_ids[1] & year == 2015) | 
+      (ems_id == squamish_ems_ids[2] & year %in% 2016:2017)
+  ) %>%
+  mutate(ems_id = combo_squamish_id)
+
+ozone_clean_data <- ozone_clean_data %>% 
+  filter(!ems_id %in% squamish_ems_ids) %>% 
+  bind_rows(squamish) %>% 
+  inner_join(select(stations_clean, ems_id, station_name), 
+             by = "ems_id")
 
 ## Summarize ozone sites in clean ozone dataframe
 ozone_site_summary <- ozone_clean_data %>%
@@ -84,8 +102,7 @@ ozone_site_summary <- ozone_clean_data %>%
             n_readings = length(na.omit(value)), 
             percent_readings = n_readings / n_hours) %>%
   ungroup() %>%
-  arrange(station_name) %>%
-  as.data.frame()
+  arrange(station_name)
 
 ## Assign airzone for each station
 
