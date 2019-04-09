@@ -35,8 +35,7 @@ az_summary <- st_intersection(airzones(), st_geometry(bc_bound())) %>%
   mutate(caaqs_year = max(ozone_caaqs_results$max_year))
 
 ozone_caaqs_results <- ozone_caaqs_results %>% 
-  rename(latitude = lat, longitude = lon) %>% 
-  select(-reporting_name, -bcgov_station_name)
+  rename(latitude = lat, longitude = lon)
 
 ozone_stations_2013 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2015/ozone_site_summary.csv")) %>% 
   rename_all(tolower) %>% 
