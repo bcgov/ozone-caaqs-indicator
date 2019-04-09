@@ -15,7 +15,7 @@ library(dplyr) #data munging
 library(lubridate) #wrangling dates
 
 ## Load the tmp file if ozone doesn't exist
-if (!exists("ozone_df")) load("tmp/ozone_clean.RData")
+if (!exists("ozone_clean_data")) load("tmp/ozone_clean.RData")
 
 ## Ambient Ozone CAAQS analysis 
 ozone_caaqs <- o3_caaqs(ozone_clean_data, by = c("ems_id", "station_name"))
