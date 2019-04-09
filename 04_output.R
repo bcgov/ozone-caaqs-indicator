@@ -345,6 +345,6 @@ az_summary <- az %>%
   write_csv("out/ozone_airzone_summary_2017.csv", na = "")
 
 #output stations results as CSV format
-ozone_caaqs_results <- ozone_caaqs_results %>% 
+ozone_caaqs_results %>% 
   rename(latitude = lat, longitude = lon) %>% 
   write_csv("out/ozone_site_summary_2017.csv", na = "")
