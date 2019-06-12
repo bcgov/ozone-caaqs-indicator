@@ -74,8 +74,8 @@ Environment](http://www.ccme.ca/index.html).
 -   **Ozone levels met the Canadian Ambient Air Quality Standard at `r num_stns_achieved` of `r num_stns` B.C. 
     ozone monitoring stations.** Ozone levels (see box below) from the `r num_stns` 
     stations ranged from `r lowest_value` to `r highest_value` parts per billion (ppb).
-    Ozone levels were $\leq\!\!$ 50 ppb at `r num_values_50` reporting stations (`r perc_values_50`%). `r to_titlecase(as.character(english(num_values_60)))`
-    station reported ozone levels \>60 ppb.
+    Ozone levels were $\leq\!\!$ 50 ppb at `r num_values_50` reporting stations (`r perc_values_50`%). `r to_titlecase(as.character(english(num_values_63)))`
+    station reported ozone levels \>63 ppb.
 -   **Ozone levels met the Canadian Ambient Air Quality Standard in `r       as.character(english(num_az_achieved))` of B.C.'s seven air zones.** The ozone level     for an air zone is the highest ozone level reported from monitoring stations        within the air zone. Currently, there are no [air monitoring          stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
     in the Northwest Air Zone.
 -   **Ozone levels are used to set management levels for each air

@@ -304,10 +304,10 @@ num_values_50 <- ozone_caaqs_results %>%
 
 perc_values_50 <- round(num_values_50/num_stns*100, digits = 0)
 
-num_values_60 <- ozone_caaqs_results %>% 
+num_values_63 <- ozone_caaqs_results %>% 
   select(ems_id, metric_value_ambient) %>% 
   add_count(ems_id) %>% 
-  filter(metric_value_ambient > 60) %>% 
+  filter(metric_value_ambient > 63) %>% 
   pull(n) %>% 
   sum()
 
@@ -317,7 +317,7 @@ save(ambient_summary_plot, stn_plots, achievement_map,
      management_map_pdf, management_chart,
      num_stns, num_stns_achieved,
      lowest_value, highest_value, num_values_50,
-     perc_values_50, num_values_60, 
+     perc_values_50, num_values_63, 
      num_az_achieved, file = "tmp/plots.RData")
 
 
