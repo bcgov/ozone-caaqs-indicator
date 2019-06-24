@@ -10,176 +10,76 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library("rcaaqs") # rcaaqs functions
-library("sp") # converting to spatial dataframe
-library("bcmaps") #air zone map
-library("dplyr") # for glimpse()
-library("rgdal") # for spTransform of spatial data
+library(rcaaqs) #rcaaqs functions
+library(dplyr) #data munging
+library(lubridate) #wrangling dates
 
-## Load the tmp file if ozone doesn't exist (need inherits = FALSE as "ozone" 
-## exists in 'maps' package on which 'openair' depends)
-if (!exists("ozone", inherits = FALSE)) load("tmp/ozone_clean.RData")
+## Load the tmp file if ozone doesn't exist
+if (!exists("ozone_clean_data")) load("tmp/ozone_clean.RData")
 
-#########################################################################
-## Ambient Station and AirZone CAAQS Metric and Achievement Analysis
-#########################################################################
+## Ambient Ozone CAAQS analysis 
+ozone_caaqs <- o3_caaqs(ozone_clean_data, by = c("ems_id", "station_name"))
 
-## Compute the daily rolling 8 hour average
-rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"))
-glimpse(rolling_avg)
+#look at ambient-only caaqs results
+ozone_caaqs_ambient_df <- get_caaqs(ozone_caaqs)
+ozone_caaqs_ambient_df
 
-## Compute the daily maximum
-daily_max_o3 <- o3_daily_max(rolling_avg, by = c("ems_id", "station_name"))
-glimpse(daily_max_o3)
+## Create Exceptional Events (EEs) and Transboundary Flows (TFs) dataframe for 
+## determining AQMS Air Zone Management Levels
 
-## Compute the 4th highest  daily maximum
-ann_4th_highest <- o3_ann_4th_highest(daily_max_o3, by = c("ems_id", "station_name"))
-glimpse(ann_4th_highest)
+## Agassiz Municipal Hall (E293810): Two days in 2015 were flagged as exceptional 
+## events -- July 8 and 9 (2015)
+## Hope Airport (E223756): Three days in 2015 were flagged as exceptional 
+## events -- July 6, 8 and 9 (2015)
+## Hope Airport (E223756): Five days in 2017 were flagged as exceptional 
+## events -- August 3, 7, 10, 11, 29 (2017)
 
-## Compute the rolling three year average
-three_yr_avg <- o3_three_yr_avg(ann_4th_highest, by = c("ems_id", "station_name"))
-glimpse(three_yr_avg)
+## These days are removed (as a result of suspected wildfire influence) 
+## for determining AQMS Air Zone Management Levels
 
-## Calculate the number of years contributing to rolling 3-year average & max and min years
-ozone_caaqs <- three_yr_avg %>% 
-  group_by(ems_id, station_name) %>%
-  mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
-                      ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
-  mutate(n = n()) %>% 
-  mutate(caaq_year_min = min(year), caaq_year_max = max(year))
+exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
+exclusion_dates_E223756 <- c("2015-07-06", "2015-07-08", "2015-07-09",
+                             "2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29")
 
-## Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig figs
-ozone_caaqs <- ozone_caaqs %>% 
-      filter(nyr != "<2") %>% 
-      filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
-      mutate(caaq_metric = round_caaqs(ozone_metric))
+exclusions <- get_daily(ozone_caaqs) %>% 
+  filter((ems_id == "E293810" & date %in% as_date(exclusion_dates_E293810)) | 
+           (ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756))) %>% 
+  select(ems_id, station_name, date)
 
 
-## Add info from stations_clean to ozone_caaqs dataframe & drop some columns
-ozone_caaqs <- ozone_caaqs %>% 
-  left_join(stations_clean, by = c("ems_id", "station_name")) %>% 
-  select(c(ems_id, station_name, longitude, latitude, caaq_year_min, caaq_year_max, caaq_nYears = nyr,
-           based_on_incomplete = flag_year_based_on_incomplete_data, caaq_metric))
+## Add management Ozone CAAQS analysis to ambient
+ozone_caaqs_mgmt <- caaqs_management(ozone_caaqs, exclude_df = exclusions,
+                                     exclude_df_dt = "date")
 
-## Converting characters to numbers for caaq_nYears
-ozone_caaqs$caaq_nYears <- as.integer(ozone_caaqs$caaq_nYears)
-
-## Determine station achievements with o3_standard <- 63
-ozone_caaqs$caaq_status <- cut_achievement(ozone_caaqs$caaq_metric, "o3", output = "labels")
-ozone_caaqs$caaq_category_html <- cut_management(ozone_caaqs$caaq_metric, "o3", output = "breaks_h")
-ozone_caaqs$caaq_category_u <- cut_management(ozone_caaqs$caaq_metric, "o3", output = "breaks_u")
-
-## Convert ozone_caaqs to SpatialPointsDataFrame and put in the same projection as bcmaps::airzones
-## to add Air Zones to the df
-ozone_caaqs_map <- ozone_caaqs
-
-airzone_map <- bcmaps::airzones(class = "sp")
-
-## Setting projections to match bcmaps::airzones
-coordinates(ozone_caaqs_map) <- c("longitude", "latitude")
-proj4string(ozone_caaqs_map) <- "+init=epsg:4617"
-ozone_caaqs_map <- spTransform(ozone_caaqs_map, CRSobj = proj4string(airzone_map))
-
-## Get airzone information into ozone_caaqs_map
-ozone_caaqs_map$Airzone <- over(ozone_caaqs_map, airzone_map)[["Airzone"]]
-
-## Get air zone CAAQS value and achievement status for each airzone
-az_metric <- airzone_metric(ozone_caaqs_map@data, n_years = "caaq_nYears", 
-                 az = "Airzone", val = "caaq_metric", 
-                 keep = c(rep_station_id = "ems_id", 
-                          rep_station_name = "station_name"))
-
-## Add air zone CAAQS value and achievement status to an airzone map
-ambient_airzone_map <- airzone_map
-ambient_airzone_map <- sp::merge(ambient_airzone_map, as.data.frame(az_metric), by = "Airzone")
-
-## Determine air zone achievements with o3_standard <- 63
-ambient_airzone_map$caaq_status <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "labels")
-ambient_airzone_map$caaq_category_html <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "breaks_h")
-ambient_airzone_map$caaq_category_u <- cut_achievement(ambient_airzone_map$caaq_metric, "o3", output = "breaks_u")
+#look at ambient+mgmt caaqs results
+ozone_caaqs_mgmt_df <- get_caaqs(ozone_caaqs_mgmt)
 
 
-#####################################################################################
-## AQMS AirZone Management Levels Excluding EEs and TFs
-####################################################################################
-
-## Recompute the daily rolling 8 hour average with EEs and TFs removed
-ml_rolling_avg <- o3_rolling_8hr_avg(ozone, by = c("ems_id", "station_name"),
-                                     exclude_df = ee.tf.exclusions,
-                                     exclude_df_dt = c("start", "end"))
-glimpse(ml_rolling_avg)
-
-## Recompute the daily maximum with EEs and TFs removed
-ml_daily_max_o3 <- o3_daily_max(ml_rolling_avg, by = c("ems_id", "station_name"),
-                                exclude_df = ee.tf.exclusions,
-                                exclude_df_dt = c("start", "end"))
-glimpse(ml_daily_max_o3)
-
-## Recompute the 4th highest  daily maximum with EEs and TFs removed
-ml_ann_4th_highest <- o3_ann_4th_highest(ml_daily_max_o3, by = c("ems_id", "station_name"),
-                                         exclude_df = ee.tf.exclusions,
-                                         exclude_df_dt = c("start", "end"))
-glimpse(ml_ann_4th_highest)
-
-## Compute the rolling three year average for Management Level assignment
-ml_three_yr_avg <- o3_three_yr_avg(ml_ann_4th_highest, by = c("ems_id", "station_name"))
-glimpse(ml_three_yr_avg)
-
-## Calculate the number of years contributing to rolling 3-year average & max and min years
-## for Management Level assignment
-ml_ozone_caaqs <- ml_three_yr_avg %>% 
-  group_by(ems_id, station_name) %>%
-  mutate(nyr = ifelse(valid == "FALSE" & flag_two_of_three_years == "FALSE", "<2",
-                      ifelse(valid == "TRUE" & flag_two_of_three_years == "FALSE", 3, 2))) %>% 
-  mutate(n = n()) %>% 
-  mutate(caaq_year_min = min(year), caaq_year_max = max(year))
-
-## Extract 2014-2016 3-year average where nyr = 2 or 3 & round ozone caaqs metric to 0 sig
-## figs for Management Level assignment
-ml_ozone_caaqs <- ml_ozone_caaqs %>% 
-  filter(nyr != "<2") %>% 
-  filter(ozone_metric, nyr == 3 & n == 3 | nyr == 2 & n == 2) %>% 
-  mutate(caaq_mgt_level_metric = round_caaqs(ozone_metric))
-
-## Add info from stations_clean to ml_ozone_caaqs dataframe & drop some columns
-ml_ozone_caaqs <- ml_ozone_caaqs %>% 
-  left_join(stations_clean, by = c("ems_id", "station_name")) %>% 
-  select(c(ems_id, station_name, longitude, latitude, caaq_year_min, caaq_year_max, caaq_nYears = nyr,
-           based_on_incomplete = flag_year_based_on_incomplete_data, caaq_mgt_level_metric))
-
-## Converting characters to numbers for caaq_nYears
-ml_ozone_caaqs$caaq_nYears <- as.integer(ml_ozone_caaqs$caaq_nYears)
-
-## Determine station management level colours for Management Level reporting
-ml_ozone_caaqs$caaq_mgmt_category_html <- cut_management(ml_ozone_caaqs$caaq_mgt_level_metric, "o3", output = "colour")
-ml_ozone_caaqs$caaq_mgmt_cat <- cut_management(ml_ozone_caaqs$caaq_mgt_level_metric, "o3", output = "labels")
-
-## Convert ml_ozone_caaqs to SpatialPointsDataFrame and put in the same projection as bcmaps::airzones
-## to add Air Zones to the df
-ml_ozone_caaqs_map <- ml_ozone_caaqs
-
-## Setting projections to match bcmaps::airzones
-coordinates(ml_ozone_caaqs_map) <- c("longitude", "latitude")
-proj4string(ml_ozone_caaqs_map) <- "+init=epsg:4617"
-ml_ozone_caaqs_map <- spTransform(ml_ozone_caaqs_map, CRSobj = proj4string(airzone_map))
-
-## Get airzone information into ml_ozone_caaqs_map
-ml_ozone_caaqs_map$Airzone <- over(ml_ozone_caaqs_map, airzone_map)[["Airzone"]]
-
-## Get AQMS Management Level status for each airzone
-ml_az_metric <- airzone_metric(ml_ozone_caaqs_map@data, n_years = "caaq_nYears", 
-                            az = "Airzone", val = "caaq_mgt_level_metric", 
-                            keep = c(rep_station_id = "ems_id", 
-                                     rep_station_name = "station_name"))
-
-## Add air zone CAAQS management value and management level to an airzone map
-ml_airzone_map <- airzone_map
-ml_airzone_map <- sp::merge(ml_airzone_map, as.data.frame(ml_az_metric), by = "Airzone")
-
-## Determine air zone management levels
-ml_airzone_map$caaq_mngt_level <- cut_management(ml_airzone_map$caaq_mgt_level_metric, "o3", output = "labels")
-ml_airzone_map$caaq_mngt_colour <- cut_management(ml_airzone_map$caaq_mgt_level_metric, "o3", output = "colour")
+## Ozone CAAQS results for 2017 (based on 2015-2017)
+ozone_caaqs_df <- ozone_caaqs_mgmt_df %>% 
+  group_by(ems_id) %>%
+  # unqoute max_year since it is also a var in the data.frame
+  filter(caaqs_year == !!max_year, n_years > 1) 
 
 
-dir.create("tmp", showWarnings = FALSE)
-save.image("tmp/analysed.RData")
+
+## Add info from stations_az (created in 02.clean.R) & drop some columns
+ozone_caaqs_results <- ozone_caaqs_df %>% 
+  left_join(stations_az, by = c("ems_id", "station_name")) %>% 
+  select(c(ems_id, station_name, city, lat, lon, airzone, metric,
+           caaqs_year, min_year,  max_year, n_years, metric_value_ambient, 
+           caaqs_ambient, excluded, metric_value_mgmt, mgmt_level,
+           based_on_incomplete = flag_yearly_incomplete))  %>% 
+  ungroup()
+
+## Get airzone caaqs metric
+ozone_az <- airzone_metric(ozone_caaqs_results)
+
+
+## Save Ozone CAAQS & Management CAAQS objects
+save(ozone_caaqs, exclusions, ozone_caaqs_mgmt, ozone_caaqs_results,
+     ozone_az, file = "tmp/analysed.RData")
+
+
+
+
