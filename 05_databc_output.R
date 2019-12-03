@@ -23,6 +23,8 @@ if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
 if (!exists("stations_clean")) load("tmp/ozone_clean.RData")
 dir.create("out/databc", showWarnings = FALSE)
 
+max_year <- 2018
+
 az_summary <- st_intersection(airzones(), st_geometry(bc_bound())) %>% 
   group_by(Airzone) %>% 
   summarize() %>% 
@@ -37,24 +39,21 @@ az_summary <- st_intersection(airzones(), st_geometry(bc_bound())) %>%
 ozone_caaqs_results <- ozone_caaqs_results %>% 
   rename(latitude = lat, longitude = lon)
 
-ozone_stations_2013 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2015/ozone_site_summary.csv")) %>% 
-  rename_all(tolower) %>% 
-  select(-regional_district) %>% 
-  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
-         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status, 
-         mgmt_level = caaq_mgmt_level) %>% 
-  mutate(caaqs_year = 2013L) %>% 
-  left_join(select(stations_clean, ems_id, city))
-
-
-ozone_stations_2016 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/ozone_site_summary.csv")) %>% 
+ozone_stations_min <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/ozone_site_summary.csv")) %>% 
   rename_all(tolower) %>% 
   rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
          metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status) %>% 
   mutate(caaqs_year = 2016L) %>% 
   left_join(select(stations_clean, ems_id, city))
 
-bind_rows(ozone_stations_2013, ozone_stations_2016, ozone_caaqs_results) %>% 
+ozone_stations_max <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2019/ozone_site_summary.csv")) %>% 
+  rename_all(tolower) %>% 
+  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
+         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status) %>% 
+  mutate(caaqs_year = 2016L) %>% 
+  left_join(select(stations_clean, ems_id, city))
+
+bind_rows(ozone_stations_min, ozone_stations_max, ozone_caaqs_results) %>% 
   replace_na(list(metric = "o3")) %>% 
   select(names(ozone_caaqs_results)) %>% 
   arrange(caaqs_year) %>% 
