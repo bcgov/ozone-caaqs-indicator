@@ -67,7 +67,7 @@ names(stn_plots) <- ems_ids
 for (emsid in ems_ids) {
   
   lineplot <- plot_ts(ozone_caaqs, id = emsid,
-                      id_col = "ems_id", rep_yr = 2017, base_size = 14)
+                      id_col = "ems_id", rep_yr = max_year, base_size = 14)
   
   stn_plots[[emsid]] <- lineplot
   cat("creating plot for", emsid, "\n")
@@ -342,9 +342,9 @@ az_summary <- az %>%
   select(-n_years_mgmt) %>% 
   st_set_geometry(NULL) %>% 
   mutate(caaqs_year = max_year) %>% 
-  write_csv("out/ozone_airzone_summary_2017.csv", na = "")
+  write_csv(paste0("out/ozone_airzone_summary_", max_year, ".csv", na = ""))
 
 #output stations results as CSV format
 ozone_caaqs_results %>% 
   rename(latitude = lat, longitude = lon) %>% 
-  write_csv("out/ozone_site_summary_2017.csv", na = "")
+  write_csv(paste0("out/ozone_site_summary_", max_year, "2018.csv", na = ""))
