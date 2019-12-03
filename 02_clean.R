@@ -21,8 +21,8 @@ library(stringr)
 if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
 
 ## Set constants for 3-year analysis
-min_year <- 2015
-max_year <- 2017
+min_year <- 2016
+max_year <- 2018
 
 stn_names <- read_csv("data/stn_names_reporting.csv") %>% 
   mutate(ems_id = str_pad(ems_id, 7, "left", "0")) %>% 
@@ -119,7 +119,6 @@ stations_az <- stations_clean %>%
 
 ozone_clean_data <- ozone_clean_data %>% 
   semi_join(stations_az, by = "ems_id")
-
 
 
 ## Save Clean Data Objects
