@@ -45,15 +45,16 @@ plot(ambient_summary_plot)
 
 #png of ozone CAAQS achievement by station and air zone summary plot 
 png_retina(filename = "out/ozone_station_summary_chart.png",
-           width = 836, height = 700)
+           width = 836, height = 700, units ="px",type = "cairo-png", 
+           antialias = "default")
 plot(ambient_summary_plot)
 dev.off()
+
 
 #svg of ozone CAAQS achievement by station and air zone summary plot 
 # svg_px("out/ozone_station_summary_chart.svg", width = 836, height = 700) 
 # plot(summary_plot)
 # dev.off()
-
 
 
 ## Individual Monitoring Station Line Plots with Daily Maximum Data &
@@ -97,7 +98,8 @@ for (i in seq_along(stn_plots)) {
   name <- names(obj)
   cat("saving png plots for", name, "\n")
   png_retina(filename = paste0(png_dir, name, "_lineplot.png"),
-             width = 778, height = 254)
+             width = 778, height = 254, units ="px",type = "cairo-png", 
+              antialias = "default")
   plot(obj[[1]])
   dev.off()
 }
@@ -138,7 +140,8 @@ plot(achievement_map)
 
 #png of airzone CAAQS ambient achievement map
 png_retina(filename = "out/ozone_caaqs_achievement_map.png",
-           width = 836, height = 700)
+           width = 836, height = 700,units ="px",type = "cairo-png", 
+           antialias = "default")
 plot(achievement_map)
 dev.off()
 
