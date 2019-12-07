@@ -1,6 +1,6 @@
 ---
 topic: "air"
-title: Status of Ground-Level Ozone in B.C. (2015-2017)
+title: Status of Ground-Level Ozone in B.C. (2016-2018)
 output: envreportutils.internal::print_ver
 ---
 <!--
@@ -38,8 +38,8 @@ load("../tmp/plots.RData")
 load("../tmp/analysed.RData")
 
 ## Set constants for 3-year reporting period
-min_year <- 2015
-max_year <- 2017
+max_year <- 2018
+min_year <- max_year - 2
 
 ## Label function for Appendix
 knitr_latex_char <- function(x) {
@@ -172,9 +172,8 @@ ambient_summary_plot
 The Air Quality Management System is Canada's approach for protecting air quality. Under the Air Quality Management System, provinces and territories monitor, report and manage local air quality within air zones, with the goal of continuously improving air quality and keeping pollutants below the Canadian Ambient Air Quality Standards.
 
 -   There are seven air zones in British Columbia: Coastal, Georgia Strait, Lower Fraser Valley, Southern Interior, Central Interior, Northeast and Northwest.
--   The Air Zone Management Framework defines management levels based on the highest ozone level reported from monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality Standard). Actions for each management level are detailed in the [Guidance Document on Air Zone Management
-    (2012)](http://www.ccme.ca/files/Resources/air/aqms/pn_1481_gdazm_e.pdf).
--   The Coastal air zone was assigned to a green management level, the Northeast, Central Interior, Southern Interior and Georgia Strait air zones were assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level. Currently, there are no [air monitoring stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
+-   The Air Zone Management Framework defines management levels based on the highest ozone level reported from monitoring stations within the air zone. The four management levels are (1) green (actions for keeping clean areas clean); (2) yellow (actions for preventing air quality deterioration); (3) orange (actions for preventing Canadian Ambient Air Quality Standard exceedance); and (4) red (actions for achieving air zone Canadian Ambient Air Quality Standard). Actions for each management level are detailed in the [Guidance Document on Air Zone Management (2019) (PDF)](https://www.ccme.ca/files/Resources/air/Guidance%20Document%20on%20Air%20Zone%20Management.pdf).
+-   The Coastal and Northeast air zones were assigned to a green management level, the Central Interior, Southern Interior and Georgia Strait air zones were assigned to a yellow management level, and the Lower Fraser Valley was assigned to an orange management level. Currently, there are no [air monitoring stations](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) in the Northwest air zone.
 
 
 # Management Levels for Ground-Level Ozone in B.C. Air Zones (`r min_year`-`r max_year`)
@@ -209,7 +208,7 @@ management_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"),
     external influences. These arrangements aim to ensure that
     jurisdictions are responsible for managing only the emissions
     sources they can control.
--   Eight days were flagged as exceptional events as a result of suspected wildfire influence at two monitoring stations in B.C. for the `r min_year`-`r max_year` reporting period ([Agassiz](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E293810) and [Hope](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E223756)). The daily concentrations for these days were removed from the calculations of management levels, resulting in a change from red to orange for the Lower Fraser Valley management level for ground-level ozone.
+-   Eighteen days were flagged as exceptional events as a result of suspected wildfire influence at two monitoring stations in B.C. for the `r min_year`-`r max_year` reporting period [Hope](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E223756) and [Mission](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E302130)). The daily concentrations for these days were removed from the calculations of management levels, resulting in a change from red to orange for the Lower Fraser Valley management level for ground-level ozone.
 
 # Methods
 
