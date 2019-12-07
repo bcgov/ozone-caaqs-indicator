@@ -42,18 +42,20 @@ ozone_caaqs_ambient_df
 ## These days are removed (as a result of suspected wildfire influence) 
 ## for determining AQMS Air Zone Management Levels
 
-exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
-exclusion_dates_E223756 <- c("2015-07-06", "2015-07-08", "2015-07-09",
-                             "2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29", 
+#exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
+
+exclusion_dates_E223756 <- c("2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29", 
                              "2018-07-27", "2018-07-28", "2018-07-29", "2018-07-30", "2018-08-08",
                              "2018-08-09", "2018-08-22") 
 exclusion_dates_E302130 <- c("2018-07-27", "2018-07-29", "2018-07-30",  "2018-08-08", "2018-08-21", 
                              "2018-08-22")
 
+# check no of exclusion dates for Rmd
+no_exclusion_dates <- length(c(exclusion_dates_E302130, exclusion_dates_E223756))
+
 
 exclusions <- get_daily(ozone_caaqs) %>% 
-  filter((ems_id == "E293810" & date %in% as_date(exclusion_dates_E293810)) | 
-           (ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756)) |
+  filter((ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756)) |
               (ems_id == "E302130" & date %in% as_date(exclusion_dates_E302130))) %>% 
   select(ems_id, station_name, date)
 
