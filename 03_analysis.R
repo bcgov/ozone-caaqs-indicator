@@ -52,7 +52,7 @@ exclusion_dates_E302130 <- c("2018-07-27", "2018-07-29", "2018-07-30",  "2018-08
 
 # check no of exclusion dates for Rmd
 no_exclusion_dates <- length(c(exclusion_dates_E302130, exclusion_dates_E223756))
-
+no_exclusion_dates <- length(unique(c(exclusion_dates_E302130, exclusion_dates_E223756)))
 
 exclusions <- get_daily(ozone_caaqs) %>% 
   filter((ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756)) |
