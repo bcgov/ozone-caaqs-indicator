@@ -57,8 +57,8 @@ library("mapview") #interact with station metadata
 
 
 ## Set constants
-min_year <- 2016
 max_year <- 2018
+min_year <- max_year - 2
 
 ## Subset for 3-year period of focus
 ozone_inspect <- ozone_all %>% 
