@@ -22,7 +22,6 @@ ozone_caaqs <- o3_caaqs(ozone_clean_data, by = c("ems_id", "station_name"))
 
 #look at ambient-only caaqs results
 ozone_caaqs_ambient_df <- get_caaqs(ozone_caaqs)
-ozone_caaqs_ambient_df
 
 ## Create Exceptional Events (EEs) and Transboundary Flows (TFs) dataframe for 
 ## determining AQMS Air Zone Management Levels
@@ -50,9 +49,6 @@ exclusion_dates_E223756 <- c("2017-08-03", "2017-08-07", "2017-08-10", "2017-08-
 exclusion_dates_E302130 <- c("2018-07-27", "2018-07-29", "2018-07-30",  "2018-08-08", "2018-08-21", 
                              "2018-08-22")
 
-# check no of exclusion dates for Rmd
-no_exclusion_dates <- length(c(exclusion_dates_E302130, exclusion_dates_E223756))
-no_exclusion_dates <- length(unique(c(exclusion_dates_E302130, exclusion_dates_E223756)))
 
 exclusions <- get_daily(ozone_caaqs) %>% 
   filter((ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756)) |
