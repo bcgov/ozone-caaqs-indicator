@@ -21,71 +21,45 @@ library(tidyr)
 library(bcdata)
 
 if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
-if (!exists("stations_clean")) load("tmp/ozone_clean.RData")
-if (!exists("ozone_clean_data")) load("tmp/ozone_clean.RData")
 dir.create("out/databc", showWarnings = FALSE)
 
 
-# read in data from data catalogue 
+# update station data 
 
-ozone_caaqs_results_old <- bcdc_get_data("9b7a9e74-9274-4f97-be81-ce4ee475077d")
+ozone_caaqs_results_old <- bcdc_get_data('9b7a9e74-9274-4f97-be81-ce4ee475077d', 
+                                         resource = 'f8923733-6dfe-47b7-bc57-aaa8f176c67c')
 
-az_summary_old <- bcdc_get_data("9b7a9e74-9274-4f97-be81-ce4ee475077d")
-  
-  
+ozone_caaqs_results <- ozone_caaqs_results %>% 
+  mutate(caaqs_ambient = as.character(caaqs_ambient),
+         mgmt_level = as.character(mgmt_level))
+
+bind_rows(ozone_caaqs_results_old, ozone_caaqs_results) %>% 
+  replace_na(list(metric = "o3")) %>% 
+  select(names(ozone_caaqs_results)) %>% 
+  arrange(caaqs_year) %>% 
+  write_csv("out/databc/ozonesitesummary.csv", na = "")
+
+
+# read in old data, match format and merge latest data sets for air zone summaries: 
+
+az_summary_old <- bcdc_get_data('9b7a9e74-9274-4f97-be81-ce4ee475077d', 
+                                resource = '00b1af32-499e-49a4-ba91-6b8b331a6629')
+
 
 az_summary <- st_intersection(airzones(), st_geometry(bc_bound())) %>% 
   group_by(Airzone) %>% 
   summarize() %>% 
   rename_all(tolower) %>% 
   left_join(ozone_az, by = "airzone") %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data"), 
+         caaqs_ambient = as.character(caaqs_ambient),
+         mgmt_level = as.character(mgmt_level)) %>% 
   rename(n_years = n_years_ambient) %>% 
   select(-n_years_mgmt) %>% 
   st_set_geometry(NULL) %>% 
   mutate(caaqs_year = max(ozone_caaqs_results$max_year))
 
-ozone_caaqs_results <- ozone_caaqs_results %>% 
-  rename(latitude = lat, longitude = lon)
 
-ozone_stations_min <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/ozone_site_summary.csv")) %>% 
-  rename_all(tolower) %>% 
-  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
-         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status) %>% 
-  mutate(caaqs_year = 2016L) %>% 
-  left_join(select(stations_clean, ems_id, city))
-
-ozone_stations_max <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2019/ozone_site_summary.csv")) %>% 
-  rename_all(tolower) %>% 
-  rename(min_year = caaq_year_min, max_year = caaq_year_max, n_years = caaq_nyears, 
-         metric_value_ambient = caaq_metric, caaqs_ambient = caaq_status) %>% 
-  mutate(caaqs_year = 2016L) %>% 
-  left_join(select(stations_clean, ems_id, city))
-
-bind_rows(ozone_stations_min, ozone_stations_max, ozone_caaqs_results) %>% 
-  replace_na(list(metric = "o3")) %>% 
-  select(names(ozone_caaqs_results)) %>% 
-  arrange(caaqs_year) %>% 
-  write_csv("out/databc/ozonesitesummary.csv", na = "")
-
-az_2013 <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2015/caaq_airzone_metrics.csv")) %>% 
-  select(-FID, -starts_with("caaq_category")) %>% 
-  select(airzone = Airzone, n_years = nyears, metric_value_ambient = caaq_metric, 
-         caaqs_ambient = caaq_status, rep_stn_id_ambient = rep_station_id, 
-         mgmt_level = caaq_level) %>% 
-  mutate(caaqs_year = 2013L)
-
-az_2016_ambient <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/airzone_ambient_summary.csv")) %>% 
-  select(airzone = Airzone, n_years = caaq_nYears, 
-         rep_stn_id_ambient = rep_station_id, metric_value_ambient = caaq_metric, 
-         caaqs_ambient = caaq_status)
-
-az_2016_mgmt <- read_csv(soe_path("Operations ORCS/Indicators/air/ozone/2017/airzone_management_level_summary.csv")) %>% 
-  select(airzone = Airzone, rep_stn_id_mgmt = rep_station_id, 
-         metric_value_mgmt = caaq_mgt_level_metric, mgmt_level = caaq_mngt_level)
-
-left_join(az_2016_ambient, az_2016_mgmt, by = "airzone") %>% 
-  mutate(caaqs_year = 2016L) %>% 
-  bind_rows(az_2013, az_summary) %>% 
+bind_rows(az_summary_old, az_summary) %>%
   arrange(caaqs_year, airzone) %>% 
   write_csv("out/databc/ozone_caaqs_airzone_summary.csv", na = "")
