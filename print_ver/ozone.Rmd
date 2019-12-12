@@ -209,7 +209,7 @@ management_chart +  theme(plot.margin = unit(c(10,30,0,0),"mm"),
     jurisdictions are responsible for managing only the emissions
     sources they can control.
 -   Wildfire influences were determined for two monitoring sites ([Hope](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E223756) and [Mission](http://www.env.gov.bc.ca/epd/bcairquality/readings/map/station.html#E302130)) in B.C. on a total of thirteen days for the `r min_year`-`r max_year` reporting period. The daily concentrations for these days were removed from the calculations of management levels, resulting in a change from red to orange for the Lower Fraser Valley management level for ground-level ozone.
-- 
+
 
 # Methods
 
