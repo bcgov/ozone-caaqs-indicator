@@ -18,12 +18,21 @@ library(sf)
 library(envreportutils)
 library(bcmaps)
 library(tidyr)
+library(bcdata)
 
 if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
 if (!exists("stations_clean")) load("tmp/ozone_clean.RData")
+if (!exists("ozone_clean_data")) load("tmp/ozone_clean.RData")
 dir.create("out/databc", showWarnings = FALSE)
 
-max_year <- 2018
+
+# read in data from data catalogue 
+
+ozone_caaqs_results_old <- bcdc_get_data("9b7a9e74-9274-4f97-be81-ce4ee475077d")
+
+az_summary_old <- bcdc_get_data("9b7a9e74-9274-4f97-be81-ce4ee475077d")
+  
+  
 
 az_summary <- st_intersection(airzones(), st_geometry(bc_bound())) %>% 
   group_by(Airzone) %>% 
