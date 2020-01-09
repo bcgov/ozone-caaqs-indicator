@@ -255,13 +255,13 @@ each file, as indicated in parentheses below.
 -   [B.C. Ground-level Ozone Hourly Data & Air Monitoring Station Locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [B.C. Air Zones](https://catalogue.data.gov.bc.ca/dataset/e8eeefc4-2826-47bc-8430-85703d328516) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-Published and Available On-Line at Environmental Reporting BC (June 2019):
+Published and Available On-Line at Environmental Reporting BC (January 2020):
 <http://www.env.gov.bc.ca/soe/indicators/air/ozone.html>
 
 Email correspondence to: envreportbc@gov.bc.ca
 
 *Suggested Citation*:  
-Environmental Reporting BC. 2019. Status of Ground-Level Ozone in B.C. (`r min_year`-`r max_year`). State of Environment Reporting, Ministry of Environment and Climate Change Strategy, British Columbia, Canada.
+Environmental Reporting BC. 2020. Status of Ground-Level Ozone in B.C. (`r min_year`-`r max_year`). State of Environment Reporting, Ministry of Environment and Climate Change Strategy, British Columbia, Canada.
 
 
 \newpage
