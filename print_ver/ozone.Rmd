@@ -117,9 +117,9 @@ Environment](http://www.ccme.ca/index.html).
     
     \vspace{1mm}
     
-    \text{British Columbia is divided up into seven air zones, which are areas that typically exhibit similar air}
+    \text{British Columbia is divided up into seven air zones, which are areas that typically}
     
-    \text{quality characteristics, issues, and trends.}
+    \text{exhibit similar air quality characteristics, issues, and trends.}
     
   \end{minipage}
 }
