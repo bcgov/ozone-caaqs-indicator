@@ -18,7 +18,7 @@ library(bcmaps) #airzone map
 library(readr)
 library(stringr)
 
-if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
+if (!exists("ozone_full")) load("tmp/ozone_raw.RData")
 
 ## Set constants for 3-year analysis
 max_year <- 2018
