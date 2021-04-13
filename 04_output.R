@@ -45,15 +45,16 @@ plot(ambient_summary_plot)
 
 #png of ozone CAAQS achievement by station and air zone summary plot 
 png_retina(filename = "out/ozone_station_summary_chart.png",
-           width = 836, height = 700)
+           width = 836, height = 700, units ="px",type = "cairo-png", 
+           antialias = "default")
 plot(ambient_summary_plot)
 dev.off()
+
 
 #svg of ozone CAAQS achievement by station and air zone summary plot 
 # svg_px("out/ozone_station_summary_chart.svg", width = 836, height = 700) 
 # plot(summary_plot)
 # dev.off()
-
 
 
 ## Individual Monitoring Station Line Plots with Daily Maximum Data &
@@ -67,7 +68,7 @@ names(stn_plots) <- ems_ids
 for (emsid in ems_ids) {
   
   lineplot <- plot_ts(ozone_caaqs, id = emsid,
-                      id_col = "ems_id", rep_yr = 2017, base_size = 14)
+                      id_col = "ems_id", rep_yr = max_year, base_size = 14)
   
   stn_plots[[emsid]] <- lineplot
   cat("creating plot for", emsid, "\n")
@@ -97,7 +98,8 @@ for (i in seq_along(stn_plots)) {
   name <- names(obj)
   cat("saving png plots for", name, "\n")
   png_retina(filename = paste0(png_dir, name, "_lineplot.png"),
-             width = 778, height = 254)
+             width = 778, height = 254, units ="px",type = "cairo-png", 
+              antialias = "default")
   plot(obj[[1]])
   dev.off()
 }
@@ -138,7 +140,8 @@ plot(achievement_map)
 
 #png of airzone CAAQS ambient achievement map
 png_retina(filename = "out/ozone_caaqs_achievement_map.png",
-           width = 836, height = 700)
+           width = 836, height = 700,units ="px",type = "cairo-png", 
+           antialias = "default")
 plot(achievement_map)
 dev.off()
 
@@ -342,9 +345,9 @@ az_summary <- az %>%
   select(-n_years_mgmt) %>% 
   st_set_geometry(NULL) %>% 
   mutate(caaqs_year = max_year) %>% 
-  write_csv("out/ozone_airzone_summary_2017.csv", na = "")
+  write_csv(paste0("out/ozone_airzone_summary_", max_year, ".csv", na = ""))
 
 #output stations results as CSV format
 ozone_caaqs_results %>% 
   rename(latitude = lat, longitude = lon) %>% 
-  write_csv("out/ozone_site_summary_2017.csv", na = "")
+  write_csv(paste0("out/ozone_site_summary_", max_year, ".csv", na = ""))

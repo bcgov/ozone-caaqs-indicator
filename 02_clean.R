@@ -18,11 +18,11 @@ library(bcmaps) #airzone map
 library(readr)
 library(stringr)
 
-if (!exists("ozone_raw")) load("tmp/ozone_raw.RData")
+if (!exists("ozone_full")) load("tmp/ozone_raw.RData")
 
 ## Set constants for 3-year analysis
-min_year <- 2015
-max_year <- 2017
+max_year <- 2018
+min_year <- max_year-2
 
 stn_names <- read_csv("data/stn_names_reporting.csv") %>% 
   mutate(ems_id = str_pad(ems_id, 7, "left", "0")) %>% 
@@ -41,6 +41,7 @@ combo_squamish_id <- paste(squamish_ems_ids, collapse = "-")
 ## BAM == Beta Attenuation Monitoring for PM measurement.
 ## (note: air pollutant stns mostly using Envidas Ultimate loggers)
 ## Then join to stn_names to get clean reporting names
+
 select_pattern <- "_60$|Met$|OLD$|BAM$|Squamish Gov't Bldg"
 stations_clean <- rename_all(stations, tolower) %>% 
   mutate(ems_id = ifelse(ems_id %in% squamish_ems_ids, 
@@ -119,7 +120,6 @@ stations_az <- stations_clean %>%
 
 ozone_clean_data <- ozone_clean_data %>% 
   semi_join(stations_az, by = "ems_id")
-
 
 
 ## Save Clean Data Objects

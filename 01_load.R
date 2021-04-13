@@ -45,7 +45,6 @@ save(ozone_all, stations, file = "tmp/ozone_raw.RData")
 
 
 
-
 ############################
 ## Some Basic Data Checks ##
 ############################
@@ -57,10 +56,9 @@ library("sf") #plot lat-longs in stations file
 library("mapview") #interact with station metadata
 
 
-
 ## Set constants
-min_year <- 2015
-max_year <- 2017
+max_year <- 2018
+min_year <- max_year - 2
 
 ## Subset for 3-year period of focus
 ozone_inspect <- ozone_all %>% 

@@ -22,7 +22,6 @@ ozone_caaqs <- o3_caaqs(ozone_clean_data, by = c("ems_id", "station_name"))
 
 #look at ambient-only caaqs results
 ozone_caaqs_ambient_df <- get_caaqs(ozone_caaqs)
-ozone_caaqs_ambient_df
 
 ## Create Exceptional Events (EEs) and Transboundary Flows (TFs) dataframe for 
 ## determining AQMS Air Zone Management Levels
@@ -33,17 +32,27 @@ ozone_caaqs_ambient_df
 ## events -- July 6, 8 and 9 (2015)
 ## Hope Airport (E223756): Five days in 2017 were flagged as exceptional 
 ## events -- August 3, 7, 10, 11, 29 (2017)
+## Hope Airport (E223756) : Seven days in 2018 were flagged as exceptional 
+## events -- July 27, 28, 29, 30 (2018) and August 8, 9, 22 (2018)
+## Mission School Works Yard (E302130) : six days in 2018 were flagges as exceptional 
+## events -- July 27, 29, 30, (2018) and August 8, 21, 22 (2018). 
+
 
 ## These days are removed (as a result of suspected wildfire influence) 
 ## for determining AQMS Air Zone Management Levels
 
-exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
-exclusion_dates_E223756 <- c("2015-07-06", "2015-07-08", "2015-07-09",
-                             "2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29")
+#exclusion_dates_E293810 <- c("2015-07-08", "2015-07-09")
+
+exclusion_dates_E223756 <- c("2017-08-03", "2017-08-07", "2017-08-10", "2017-08-11", "2017-08-29", 
+                             "2018-07-27", "2018-07-28", "2018-07-29", "2018-07-30", "2018-08-08",
+                             "2018-08-09", "2018-08-22") 
+exclusion_dates_E302130 <- c("2018-07-27", "2018-07-29", "2018-07-30",  "2018-08-08", "2018-08-21", 
+                             "2018-08-22")
+
 
 exclusions <- get_daily(ozone_caaqs) %>% 
-  filter((ems_id == "E293810" & date %in% as_date(exclusion_dates_E293810)) | 
-           (ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756))) %>% 
+  filter((ems_id == "E223756" & date %in% as_date(exclusion_dates_E223756)) |
+              (ems_id == "E302130" & date %in% as_date(exclusion_dates_E302130))) %>% 
   select(ems_id, station_name, date)
 
 
@@ -55,12 +64,10 @@ ozone_caaqs_mgmt <- caaqs_management(ozone_caaqs, exclude_df = exclusions,
 ozone_caaqs_mgmt_df <- get_caaqs(ozone_caaqs_mgmt)
 
 
-## Ozone CAAQS results for 2017 (based on 2015-2017)
+## Ozone CAAQS results for reporting year based on three year average
 ozone_caaqs_df <- ozone_caaqs_mgmt_df %>% 
   group_by(ems_id) %>%
-  # unqoute max_year since it is also a var in the data.frame
   filter(caaqs_year == !!max_year, n_years > 1) 
-
 
 
 ## Add info from stations_az (created in 02.clean.R) & drop some columns
