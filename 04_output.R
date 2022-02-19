@@ -1,353 +1,198 @@
 # Copyright 2015 Province of British Columbia
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and limitations under the License.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
 
 
-library(dplyr) #data munging
-library(ggplot2) #for plotting
-library(scales) #for date_breaks()
-library(envreportutils) #for theme_facet_soe() & svg_px
-library(forcats) #wrangling factors
-library(rcaaqs) #rcaaqs functions
-library(sf) #mapping
-library(bcmaps) #airzone map
-library(tidyr) # for replace_na
-library(geojsonio) # for geojson outputs
-library(readr)
+source("00_setup.R")
 
-## Load data
-if (!exists("ozone_caaqs_results")) load("tmp/analysed.RData")
-if (!exists("max_year")) load("tmp/ozone_clean.RData")
+library("readr")
+library("dplyr")
+library("tidyr")
+library("ggplot2")
 
-# Create output directory:
-dir.create("out", showWarnings = FALSE)
+library("sf")
+library("bcmaps")
 
-## WEB & PDF OUTPUTS ##
+library("rcaaqs")
+library("envreportutils")
 
-## Summary Plot of Ambient CAAQ metrics by Station & Airzones (PDF only) -------
+# Load Data --------------------------------------------------
+ozone_results <- read_rds("data/datasets/ozone_results.rds")
+ozone_mgmt <- read_rds("data/datasets/ozone_mgmt.rds")
 
-ambient_summary_plot <- summary_plot(
-  ozone_caaqs_results, 
-  metric_val = "metric_value_ambient", 
-  airzone = "airzone", station = "station_name", 
-  parameter = "metric", pt_size = 2) +
-  theme(strip.text.y = element_text(angle = 0))
-plot(ambient_summary_plot)
+az_ambient <- read_rds("data/datasets/az_ambient.rds")
+az_mgmt <- read_rds("data/datasets/az_mgmt.rds")
 
+# Let's save plots for the print version
+print_plots <- list()
 
-#png of ozone CAAQS achievement by station and air zone summary plot 
-png_retina(filename = "out/ozone_station_summary_chart.png",
-           width = 836, height = 700, units ="px",type = "cairo-png", 
-           antialias = "default")
-plot(ambient_summary_plot)
-dev.off()
-
-
-#svg of ozone CAAQS achievement by station and air zone summary plot 
-# svg_px("out/ozone_station_summary_chart.svg", width = 836, height = 700) 
-# plot(summary_plot)
-# dev.off()
-
-
-## Individual Monitoring Station Line Plots with Daily Maximum Data &
-## Ambient CAAQS Metric --------------------------------------------------------
-
-#generate lineplots for each station
-ems_ids <- ozone_caaqs_results$ems_id
-stn_plots <- vector("list", length(ems_ids))
-names(stn_plots) <- ems_ids
-
-for (emsid in ems_ids) {
-  
-  lineplot <- plot_ts(ozone_caaqs, id = emsid,
-                      id_col = "ems_id", rep_yr = max_year, base_size = 14)
-  
-  stn_plots[[emsid]] <- lineplot
-  cat("creating plot for", emsid, "\n")
-}
-
-
-#save svgs of station line plots for web map
-svg_dir <- "leaflet_map/station_plots/"
-dir.create(svg_dir, showWarnings = FALSE, recursive = TRUE)
-
-for (i in seq_along(stn_plots)) {
-  obj <- stn_plots[i]
-  name <- names(obj)
-  cat("saving svg plots for", name, "\n")
-  svg_px(paste0(svg_dir, name, "_lineplot.svg"), width = 778, height = 254)
-  plot(obj[[1]])
-  dev.off()
-}
-graphics.off() #STOP any hanging graphics processes
-
-#save pngs of station line plots for proofing
-png_dir <- "out/station_plots/"
-dir.create(png_dir, showWarnings = FALSE, recursive = TRUE)
-
-for (i in seq_along(stn_plots)) {
-  obj <- stn_plots[i]
-  name <- names(obj)
-  cat("saving png plots for", name, "\n")
-  png_retina(filename = paste0(png_dir, name, "_lineplot.png"),
-             width = 778, height = 254, units ="px",type = "cairo-png", 
-              antialias = "default")
-  plot(obj[[1]])
-  dev.off()
-}
-graphics.off() #STOP any hanging graphics processes
-
-## Ambient CAAQS Achievement Map (PDF only) ------------------------------------
-
-#get airzone map (sf object) from bcmaps package
-az <- st_intersection(airzones(), st_geometry(bc_bound())) %>% 
-  group_by(Airzone) %>% 
+# Spatial data summaries --------------------------------------------
+az <- airzones() %>%
+  st_make_valid() %>%
+  st_transform(st_crs(bc_bound())) %>%
+  st_intersection(st_geometry(bc_bound())) %>% 
+  group_by(airzone = Airzone) %>% 
   summarize()
 
-achievement_map <- az  %>%
-  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
-  ggplot() +
-  geom_sf(aes(fill = caaqs_ambient), colour = "white", size = .4) +
-  geom_sf(data = st_as_sf(ozone_caaqs_results, coords = c("lon", "lat"),
-                          crs = 4326),
-          aes(colour = metric_value_ambient), size = 4) +
-  scale_fill_manual(values = get_colours(type = "achievement", drop_na = FALSE), 
-                    drop = FALSE, name = "Airzones:\nOzone Air Quality Standard",
-                    guide = guide_legend(order = 1, title.position = "top")) +
-  scale_colour_gradient(high = "#252525", low = "#f0f0f0", 
-                        name = "Monitoring Stations:\nOzone Metric (ppb)", 
-                        guide = guide_colourbar(order = 2,
-                                                title.position = "top",
-                                                barwidth = 10)) + 
-  coord_sf(datum = NA) +
+az_mgmt_sf <- az_mgmt %>%
+  complete(airzone = az$airzone, rep_metric, caaqs_year) %>% # Ensure ALL airzones
+  left_join(az, ., by = "airzone") %>% 
+  mutate(mgmt_level = replace_na(mgmt_level, "Insufficient Data"))
+
+az_ambient_sf <- az_ambient %>% 
+  complete(airzone = az$airzone, metric) %>% # Ensure ALL airzones
+  left_join(az, ., by = "airzone") %>% 
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data"))
+
+stations_sf <- ozone_results %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  transform_bc_albers()
+
+# Numbers for print version
+print_summary <- ozone_results %>%
+  summarise(n = n(), 
+            n_achieved = sum(caaqs_ambient == "Achieved", na.rm = TRUE),
+            n_not_achieved = sum(caaqs_ambient == "Not Achieved", na.rm = TRUE),
+            percent_achieved = round(n_achieved / n * 100),
+            min = min(metric_value_ambient, na.rm = TRUE), 
+            max = max(metric_value_ambient, na.rm = TRUE), 
+            n_lt50 = sum(metric_value_ambient <= 50, na.rm = TRUE),
+            p_lt50 = round(n_lt50 / n * 100)) %>%
+  mutate(az_achieved = sum(az_ambient$caaqs_ambient == "Achieved", na.rm = TRUE))
+            
+            
+# Individual Station Plots ------------------------------------------------
+# - For print version and leaflet_maps
+# - Using management data because contains differences between the non-tfee data
+#   and tfee-adjusted data
+
+sites <- unique(ozone_results$site)
+stn_plots <- list()
+
+for(s in sites) {
+  message("Creating plots for ", s)
+  
+  g <- plot_caaqs(ozone_mgmt, id = s, id_col = "site", year_min = 2013)
+  
+  ggsave(paste0("leaflet_map/station_plots/", s, ".svg"), plot = g,
+         width = 778, height = 254, dpi = 72, units = "px", bg = "white")
+  
+  # Save for print version
+  stn_plots[[s]] <- g
+}
+
+
+# Summary plot ----------------------------------------------------------------------
+# - For print version
+g <- summary_plot(ozone_results, 
+                  metric_val = "metric_value_ambient", 
+                  airzone = "airzone", station = "site", 
+                  parameter = "metric", pt_size = 2, 
+                  az_labeller = label_wrap_gen(10)) + 
+  theme(strip.text.y = element_text(angle = 0))
+print_plots[["ozone_ambient_summary_plot"]]<- g
+
+# Map ----------------------------------------------------------------------
+# - For print version
+
+g <- achievement_map(az_data = az_ambient_sf,
+                     stn_data = stations_sf,
+                     az_labs = "Airzones:\nOzone Air Quality Standard",
+                     stn_labs = "Monitoring Stations:\nOzone (ug/m3)")
+print_plots[["achievement_map"]] <- g
+
+
+# Management figures --------------------------------------------
+# - For print version
+
+## Air Zone Map --------------
+
+colrs <- get_colours("management", drop_na = FALSE)
+
+labels_df <-  data.frame(
+  x = c(680000, 1150000, 780000, 1150000, 1550000, 1150000, 1500000),
+  y = c(950000, 1550000, 1500000, 950000, 600000, 325000, 410000), 
+  airzone_name = c("Coastal", "Northeast", "Northwest", 
+                   "Central\nInterior", "Southern\nInterior", 
+                   "Georgia Strait", "Lower Fraser Valley"))
+
+g <- ggplot(az_mgmt_sf) +   
+  geom_sf(aes(fill = mgmt_level), colour = "white") + 
+  coord_sf(datum = NA) + 
   theme_minimal() + 
-  theme(axis.title = element_blank(),
-        axis.text = element_blank(), 
-        axis.ticks = element_blank(),
-        panel.grid = element_blank(), 
-        legend.position = "bottom",
-        legend.box.just = "left")
-plot(achievement_map)
-
-#png of airzone CAAQS ambient achievement map
-png_retina(filename = "out/ozone_caaqs_achievement_map.png",
-           width = 836, height = 700,units ="px",type = "cairo-png", 
-           antialias = "default")
-plot(achievement_map)
-dev.off()
-
-##svg of airzone CAAQS ambient achievement map
-# svg_px("out/ozone_caaqs_achievement_map.svg", width = 836, height = 700)
-# plot(achievement_map)
-# dev.off()
-
-
-
-##  AQMS Management Levels Map -------------------------------------------------
-#get the starting/center coordinates for text labels
-# points <- sf::st_point_on_surface(az)
-
-management_map <- az %>%
-  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(mgmt_level = replace_na(mgmt_level, "Insufficient Data")) %>% 
-  ggplot() +
-  geom_sf(aes(fill = mgmt_level), colour = "white") +
-  scale_fill_manual(values = get_colours(type = "management", drop_na = FALSE), 
-                    drop = FALSE,
+  scale_fill_manual(values = colrs, 
+                    drop = FALSE, 
                     name = "Air Zone Management Levels", 
-                    guide = guide_legend(reverse = TRUE)) +
-  coord_sf(datum = NA) +
-  theme_minimal() + 
+                    guide = guide_legend(reverse = TRUE)) + 
   theme(axis.title = element_blank(),
         axis.text = element_blank(), 
         axis.ticks = element_blank(),
         panel.grid = element_blank(),
-        legend.position = "none",
-        plot.margin = unit(c(0,0,0,0),"mm"))
+        legend.position = c(0.25, 0.12), legend.direction = "vertical",
+        plot.margin = unit(c(0,0,0,0),"mm")) +
+  geom_text(data = labels_df, aes(x = x, y = y, label = airzone_name), 
+            colour = "black", size = 6)
 
-management_map_web <- management_map +
-  annotate("text", x = 757938.691028203, y = 755183.494351726,
-           label = "Coastal",colour = "black", size = 5) +
-  annotate("text", x = 1237018.05546828, y = 1353777.8838629,
-           label = "Northeast", colour = "black", size = 5) +
-  annotate("text", x = 825358.624129937, y = 1458245.53295221,
-           label = "Northwest", colour = "black", size = 5) +
-  annotate("text", x = 1136451.95878554, y = 1008862.625,
-           label = "Central\n Interior", colour = "black", size = 5) +
-  annotate("text", x = 1477982.32044802, y = 657920.545686275,
-           label="Southern\n Interior", colour = "black", size = 5) +
-  annotate("text", x = 1191040.32976477, y = 338497.757759471, 
-           label = "Georgia Strait", colour = "black", size = 5) +
-  annotate("text", x = 1442293.56067042, y = 419268.843749995,
-           label= "Lower Fraser Valley", colour = "black", size = 5)
-  # geom_sf_text(aes(label = Airzone), colour = "black") # centers not great for many labels
-plot(management_map_web)
+print_plots[["ozone_mgmt_map"]] <- g
 
-management_map_pdf <- management_map +
-  annotate("text", x = 757938.691028203, y = 755183.494351726,
-           label = "Coastal",colour = "black", size = 4) +
-  annotate("text", x = 1237018.05546828, y = 1353777.8838629,
-           label = "Northeast", colour = "black", size = 4) +
-  annotate("text", x = 825358.624129937, y = 1458245.53295221,
-           label = "Northwest", colour = "black", size = 4) +
-  annotate("text", x = 1136451.95878554, y = 1008862.625,
-           label = "Central\n Interior", colour = "black", size = 4) +
-  annotate("text", x = 1477982.32044802, y = 657920.545686275,
-           label="Southern\n Interior", colour = "black", size = 4) +
-  annotate("text", x = 1191040.32976477, y = 338497.757759471, 
-           label = "Georgia Strait", colour = "black", size = 4) +
-  annotate("text", x = 1442293.56067042, y = 419268.843749995,
-           label= "Lower Fraser Valley", colour = "black", size = 4)
-# geom_sf_text(aes(label = Airzone), colour = "black") # centers not great for many labels
-plot(management_map_pdf)
+# SVG of airzone CAAQS mgmt level map
+ggsave("out/ozone_caaqs_mgmt_map.svg", plot = g, dpi = 72,
+       width = 500, height = 450, units = "px", bg = "white")
 
-#svg of airzone CAAQS mgmt levels map
-svg_px("out/ozone_caaqs_mgmt_map.svg", width = 500, height = 500)
-plot(management_map_web)
-dev.off()
+## Bar Chart --------------
 
-#png of airzone CAAQS mgmt levels map
-# png_retina(filename = "out/ozone_caaqs_mgmt_map.png",
-#            width = 500, height = 500)
-# plot(management_map)
-# dev.off()
-
-
-## AQMS Management Levels by Station Bar Chart ---------------------------------
-management_chart <- ozone_caaqs_results %>% 
-  mutate(mgmt_level = fct_drop(mgmt_level, only = "Insufficient Data")) %>% 
-  ggplot(aes(x = airzone, fill = mgmt_level)) + 
-  geom_bar(stat = "count", alpha = 1) +
+g <- ggplot(data = ozone_results, aes(x = airzone, fill = mgmt_level)) + 
+  geom_bar(alpha = 1, width = 0.8) +
+  xlab("") + ylab("Number of Reporting Stations") +
   coord_flip() +
-  xlab ("") + ylab ("Number of Reporting Stations") +
-  scale_y_continuous(limits = c(0,25), breaks=seq(0, 25, 5),
-                     expand=c(0,0)) +
-  scale_fill_manual(values = get_colours(type = "management", drop_na = FALSE),
-                    drop = FALSE,
-                    name = "Air Zone Management Levels",
+  scale_y_continuous(expand = c(0,0)) +
+  scale_fill_manual(values = colrs, 
+                    drop = TRUE, 
+                    name = "Air Zone Management Levels", 
                     guide = guide_legend(reverse = TRUE)) +
-  theme_soe() +
+  theme_soe_facet() +
   theme(panel.grid.major.y = (element_blank()),
         axis.text = element_text(size = 14),
         axis.title = element_text(size = 14),
         legend.position = "bottom",
         legend.direction = "vertical",
         legend.box.just = "left",
-        legend.title = element_text(size = 16),
+        legend.title = element_text(size = 14),
         legend.text = element_text(size = 14),
-   #     legend.margin = unit(15,"mm"),
-        plot.margin = unit(c(10,10,0,0),"mm"))
-plot(management_chart)
+        legend.spacing = unit(5,"mm"),
+        plot.margin = unit(c(10,0,1,0),"mm"),
+        strip.text = element_text(size = 13))
 
-#svg of airzone CAAQS mgmt level bar chart
-svg_px("out/ozone_caaqs_mgmt_chart.svg",
-       width = 500, height = 500)
-plot(management_chart)
-dev.off()
+print_plots[["ozone_mgmt_chart"]] <- g
 
-#png of airzone CAAQS mgmt level bar chart
-# png_retina(filename = "out/ozone_caaqs_mgmt_chart.png",
-#            width = 500, height = 500)
-# plot(management_chart)
-# dev.off()
-
-## Summary Numbers for Use in ozone.Rmd ----------------------------------------
-
-#number of achieved airzones
-num_az_achieved <- az %>%
-  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
-  st_set_geometry(NULL) %>% 
-  select(caaqs_ambient) %>% 
-  add_count(caaqs_ambient) %>% 
-  unique() %>% 
-  filter(caaqs_ambient == "Achieved") %>% 
-  pull()
+# SVG of airzone/station CAAQS mgmt achievement chart
+ggsave("out/ozone_caaqs_mgmt_chart.svg", dpi = 72,
+       width = 500, height = 500, units = "px", bg = "white")
 
 
-#number of stations
-num_stns <- ozone_caaqs_results %>% 
-  add_count(ems_id) %>% 
-  pull(n) %>% 
-  sum()
 
-#number stations achieved
-num_stns_achieved <- ozone_caaqs_results %>% 
-  add_count(ems_id) %>% 
-  filter(caaqs_ambient == "Achieved") %>% 
-  pull(n) %>% 
-  sum()
+# Output data ------------------------------------------------
 
-#low metric value
-lowest_value <- ozone_caaqs_results %>%
-  pull(metric_value_ambient) %>% 
-  min()
+# For print version
+write_rds(print_plots, "data/datasets/print_plots.rds")
+write_rds(stn_plots, "data/datasets/print_stn_plots.rds")
+write_rds(print_summary, "data/datasets/print_summary.rds")
 
-#high metric value
-highest_value <- ozone_caaqs_results %>%
-  pull(metric_value_ambient) %>% 
-  max()
+# For leaflet maps
+filter(stations_sf) %>%
+  st_transform(4326) %>% 
+  st_write("out/ozone_caaqs.geojson", delete_dsn = TRUE)
 
-#number and % stations equal or less than 50ppb
-num_values_50 <- ozone_caaqs_results %>% 
-  select(ems_id, metric_value_ambient) %>% 
-  add_count(ems_id) %>% 
-  filter(metric_value_ambient < 51) %>% 
-  pull(n) %>% 
-  sum()
-
-perc_values_50 <- round(num_values_50/num_stns*100, digits = 0)
-
-num_values_63 <- ozone_caaqs_results %>% 
-  select(ems_id, metric_value_ambient) %>% 
-  add_count(ems_id) %>% 
-  filter(metric_value_ambient > 63) %>% 
-  pull(n) %>% 
-  sum()
-
-## Save Objects for Use in ozone.Rmd --------------------------------------
-save(ambient_summary_plot, stn_plots, achievement_map,
-     management_map, management_map_web,
-     management_map_pdf, management_chart,
-     num_stns, num_stns_achieved,
-     lowest_value, highest_value, num_values_50,
-     perc_values_50, num_values_63, 
-     num_az_achieved, file = "tmp/plots.RData")
-
-
-## Output geojson Files for Web Map --------------------------------------------
-
-ozone_caaqs_results %>%
-  geojson_write(file = "out/ozone_sites.geojson")
-
-az %>% 
-  st_transform(az, crs = 4326) %>% 
-  left_join(ozone_az, by = c("Airzone" = "airzone")) %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
-  geojson_write(file = "out/airzones.geojson")
-
-#output air zone results as CSV format
-
-az_summary <- az %>% 
-  rename_all(tolower) %>% 
-  left_join(ozone_az, by = "airzone") %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>% 
-  rename(n_years = n_years_ambient) %>% 
-  select(-n_years_mgmt) %>% 
-  st_set_geometry(NULL) %>% 
-  mutate(caaqs_year = max_year) %>% 
-  write_csv(paste0("out/ozone_airzone_summary_", max_year, ".csv", na = ""))
-
-#output stations results as CSV format
-ozone_caaqs_results %>% 
-  rename(latitude = lat, longitude = lon) %>% 
-  write_csv(paste0("out/ozone_site_summary_", max_year, ".csv", na = ""))
+filter(az_ambient_sf) %>%
+  st_transform(4326) %>% 
+  st_write("out/ozone_airzone.geojson", delete_dsn = TRUE)
