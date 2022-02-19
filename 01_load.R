@@ -16,6 +16,7 @@ source("00_setup.R")
 
 library("readr")
 library("curl")
+library("bcmaps")
 
 # Download data -------------------------------
 
