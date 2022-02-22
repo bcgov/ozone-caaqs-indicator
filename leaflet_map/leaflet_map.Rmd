@@ -1,5 +1,5 @@
 ---
-title: 
+title: "Air Quality Maps - Ozone"
 output: 
   html_document:
     css: "assets/caaqs-styles.css"
@@ -10,132 +10,154 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Allows Rmd file to be run interactively and knit 
 # without having to change the relative file locations all the time
-library(here) 
+library("here") 
 
 # Tidyverse
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(stringr)
+library("dplyr")
+library("tidyr")
+library("purrr")
+library("stringr")
 
 # Mapping
-library(leaflet)
-library(sf)
-library(geojsonio)
-library(htmltools) # For HTML() function
+library("leaflet")
+library("sf")
+library("geojsonio")
+library("htmltools") # For HTML() function
 
 # Functions to create popups and center map
-library(envreportutils)
+library("envreportutils")
+library("rcaaqs")
 
 # Get css
-css_caaqs_copy(folder = here("./leaflet_map/"))
+css_caaqs_copy(folder = here("./leaflet_map/"), overwrite = TRUE)
 
-# Assign colours
-az_colours <- c("Not Achieved" = "#cd7277",
-                "Achieved" = "#72a4cd",
-                "Insufficient Data" = "#dbdbdb")
+# Assign labels, colours, and cutoffs using rcaaqs ----------------------------
+#
+# - This is a big messy block of code, but means that the units and labels
+#   are automatically gathered from rcaaqs via achivement_levels and management_levels.
+#   This means that changes only need to be made in rcaaqs.
+# - All formating, colours, and markers are specified here
+# - Factor levels are determined here as well, so that custom orders don't need
+#  to be specified directly in the legends
 
-# station_colours <- c("&lteq; 50ppb" = "#ffffff", 
-#                      "&gt; 50ppb &amp; &lteq; 56ppb" = "#bdbdbd", 
-#                      "&gt; 56ppb &amp; &lteq; 63ppb" = "#737373", 
-#                      "&gt; 63ppb" = "#000000")
-
-station_colours <- c("&leq; 50ppb" = "#ffffff", 
-                     "&gt;50 &amp; &leq;56 ppb" = "#bdbdbd", 
-                     "&gt;56 &amp; &leq;63 ppb" = "#737373", 
-                     "&gt;63 ppb" = "#000000")
-
-# Load and prep data
-stations <- st_read(here("./out/ozone_sites.geojson"), stringsAsFactors = FALSE)
-
-# Add html categories for ambient colour station colour scale
-stations$caaqs_category_html <- rcaaqs:::cut_management(stations$metric_value_ambient, "o3", output = "breaks_h")
-
-# Count stations before removing for insufficient data
-az_n <- stations %>%
-  rename(Airzone = airzone) %>%  
-  group_by(Airzone) %>%
-  count() %>%
-  st_set_geometry(NULL)
-
-stations <- stations %>%
-  # Catch Insufficient data whether it's NA or a named category
-  mutate(caaqs_ambient = replace(caaqs_ambient, is.na(caaqs_ambient), "Insufficient Data"),
-         caaqs_category_html = replace(caaqs_category_html, 
-                                       is.na(caaqs_category_html), "Insufficient Data")) %>%
-  # Remove stations with insufficient data
-  filter(caaqs_ambient != "Insufficient Data") %>%
-  # Assign legend values
-  mutate(caaqs_legend = factor(caaqs_category_html,
-                               levels = c("&lteq; 50ppb",
-                                          "&gt; 50ppb &amp; &lteq; 56ppb",
-                                          "&gt; 56ppb &amp; &lteq; 63ppb",
-                                          "&gt; 63ppb"),
-                               labels = names(station_colours))) 
-
-
-# Get station name for az
-stn_names <- stations %>% 
-  select(station_name, ems_id) %>% 
-  rename(rep_stn_id_ambient = ems_id) %>% 
-  st_set_geometry(NULL)
-
-az <- st_read(here("./out/airzones.geojson"), stringsAsFactors = FALSE) %>%
-  mutate(caaqs_ambient = replace(caaqs_ambient, is.na(caaqs_ambient), "Insufficient Data"),
-         caaqs_legend = factor(caaqs_ambient, 
-                               levels = c("Not Achieved", "Achieved", 
-                                          "Insufficient Data"),
-                               labels = names(az_colours))) %>%
-  left_join(az_n, by = "Airzone") %>% #Join only data, not by spatial
-  left_join(stn_names, by = "rep_stn_id_ambient")
+# Ambient labels
+labels_ambient <- achievement_levels %>%
+  filter(str_detect(parameter, "o3")) %>%
+  add_row(labels = "Insufficient Data", units = c(unique(.$units_html))) %>%
+  mutate(colour = case_when(labels == "Achieved" ~ "#72a4cd",
+                            labels == "Not Achieved" ~ "#cd7277",
+                            labels == "Insufficient Data" ~ "#dbdbdb"),
+         labels_full = if_else(!is.na(val_labels_html), 
+                               paste0(labels, " (", val_labels_html, ")"),
+                               labels),
+         # Format the labels - add space before units
+         labels_full = str_replace_all(labels_full, "(\\d+)(\\&mu)", "\\1 \\2"),
+         labels = factor(labels, levels = c("Not Achieved", 
+                                            "Achieved", "Insufficient Data"))) %>%
+  arrange(labels) %>%
+  mutate(labels_full = factor(labels_full, levels = unique(labels_full))) %>%
+  select(labels, colour, labels_full, units_html)
   
-# Calculate/Create Airzone tooltip
-az <- mutate(az, n = replace(n, is.na(n), 0),
-             tooltip = map2(Airzone, n, 
-                            ~HTML(paste0(.x, "<br>", .y, 
-                                         " Monitoring Station", 
-                                         if_else(.y == 1, "", "s")))))
-# Create Airzone Popups
-az <- mutate(az, 
-             p_az = Airzone,
-             p_station = station_name,
-             p_station_id = rep_stn_id_ambient,
-             n_years = n_years_ambient) %>%
-  mutate(popup = popup_caaqs(., type = "region", 
-                             metric_name = "Ozone Metric",
-                             units = "ppm",
-                             standard_name =" Ozone Air Quality Standard"),
-         popup = replace(popup, n == 0, NA))
+# Management labels
+labels_mgmt <- management_levels %>%
+  filter(str_detect(parameter, "o3")) %>%
+  mutate(colour = case_when(str_detect(labels, "Keeping") ~ "#ffffff",
+                            str_detect(labels, "Deterioration") ~ "#bdbdbd",
+                            str_detect(labels, "Exceedance") ~ "#737373",
+                            str_detect(labels, "Achieving") ~ "#000000"),
+         labels = val_labels_html,
+         # Format the labels - add space before units, remove duplicate units
+         labels = factor(labels, levels = labels),
+         labels_full = labels,
+         labels_full = str_replace_all(labels_full, "(\\d+)(\\&)", "\\1 \\2"),
+         labels_full = str_remove(labels_full, units_html)) %>%
+  arrange(labels) %>%
+  select(labels, colour, labels_full, units_html) %>%
+  mutate(icons = c("assets/marker_white.svg", "assets/marker_lightgrey.svg", 
+                   "assets/marker_grey.svg", "assets/marker_black.svg"))
 
-# Create Stations Popups
-stations <- mutate(stations,
-                   p_az = airzone,
-                   p_station = station_name,
-                   p_station_id = ems_id) %>%
-  mutate(popup = popup_caaqs(., type = "station", 
-                             metric_name = "Ozone Metric",
-                             units = "ppm",
-                             standard_name = "Ozone Air Quality Standard"))
+# Load and prep data ------------------------------------
+
+## Stations - Get CAAQs and popups ---------------------------------------
+stations <- read_sf(here("out/ozone_caaqs.geojson")) %>%
+  # Count total stations, then omit those with insufficient data
+  add_count(airzone) %>%
+  filter(!is.na(caaqs_ambient)) %>%
+  
+  # Get management levels
+  mutate(caaqs_mgmt = map2_chr(metric_value_ambient, metric,
+                                 ~ as.character(rcaaqs:::cut_management(.x, .y,"breaks_h")))) %>%
+  left_join(labels_mgmt, by = c("caaqs_mgmt" = "labels")) %>%
+  rename(caaqs_legend = labels_full) %>%
+  
+  # Create popups
+  mutate(p_az = airzone,
+         p_station = site,
+         p_station_id = site) %>%
+  mutate(popup = popup_caaqs(
+    ., type = "station", 
+    units = units_html,
+    metric_name = "Ozone Metric",
+    standard_name = "Ozone Air Quality Standard"))
+
+## Count stations
+stns_n <- stations %>%
+  st_set_geometry(NULL) %>%
+  select(airzone, n) %>%
+  distinct()
+
+## Airzones - Get CAAQs and popups -----------------------------------
+az <- st_read(here("./out/ozone_airzone.geojson")) %>%
+  # Clarify names and add data
+  rename(rep_station_id = rep_stn_id_ambient, n_years = n_years_ambient) %>%
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>%
+  left_join(stns_n, by = "airzone") %>%
+  
+  # Get CAAQS labels
+  left_join(labels_ambient, by = c("caaqs_ambient" = "labels")) %>%
+  mutate(metric_value_ambient = as.numeric(metric_value_ambient)) %>%
+  rename(caaqs_legend = labels_full) %>%
+  
+  # Create Airzone tooltips
+  mutate(n = replace_na(n, 0),
+         tooltip = map2(airzone, n, 
+                        ~HTML(paste0(.x, "<br>", .y, 
+                                     " Monitoring Station", 
+                                     if_else(.y == 1, "", "s"))))) %>%
+  # Create Airzone Popups
+  mutate(p_az = airzone,
+         p_station = rep_station_id,
+         p_station_id = rep_station_id) %>%
+  mutate(popup = popup_caaqs(
+    ., type = "region", 
+    units = units_html,
+    metric_name = "Ozone Metric",
+    standard_name = "Ozone Air Quality Standard"))
 
 
-# Verify popup formating
-#cat(az$popup[1])
 
-# Create palette
-pal_az <- colorFactor(palette = az_colours,
-                      levels = names(az_colours))
+# Formatting ----------------------
+
+# Create palettes
+
+pal_az <- labels_ambient %>%
+  colorFactor(palette = .$colour, levels = .$labels_full)
 
 # Create icons
 icon_size <- 30
 markers <- icons( # file locations have to be relative (can't use here())
-  iconUrl = c("assets/marker_white.svg", "assets/marker_lightgrey.svg", 
-              "assets/marker_grey.svg", "assets/marker_black.svg"
-  )[as.numeric(stations$caaqs_legend)],
+  iconUrl = stations$icons,
   iconWidth = icon_size, iconHeight = icon_size,
   iconAnchorX = icon_size/2, iconAnchorY = icon_size,
   shadowUrl = "assets/marker_shadow.svg",
   shadowWidth = icon_size * 0.75, shadowHeight = icon_size * 0.75,
   shadowAnchorX = 1, shadowAnchorY = icon_size * 0.75)
+
+# Popup Options
+ppo <- popupOptions(autoPanPaddingTopLeft = c(10, 10),
+                    autoPanPaddingBottomRight = c(10, 400),
+                    closeOnEscapeKey = TRUE, 
+                    keepInView = TRUE)
 ```
 
 
@@ -145,31 +167,37 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
   add_bc_home_button() %>%
   # Re-centre map on popup close
   set_bc_view_on_close() %>%
-  addPolygons(data = az,
+  
+  # Add Airzone polygons
+  addPolygons(data = az, 
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
               popup = ~popup,
-              popupOptions = popupOptions(autoPanPaddingTopLeft = c(10, 10),
-                                          autoPanPaddingBottomRight = c(10, 400),
-                                          closeOnEscapeKey = TRUE, keepInView = TRUE)) %>% 
-              # highlightOptions = highlightOptions(bringToFront = TRUE, 
-              #                                     fillOpacity = 0.7)) %>%
+              popupOptions = ppo) %>%
+  
+  # Add station markers
   addMarkers(data = stations,
-             icon = markers, label = ~station_name, 
-             popup = ~popup, #options = markerOptions(riseOnHover = TRUE),
+             icon = markers, label = ~site, 
+             popup = ~popup,
              # Stick to marker, not mouse
              labelOptions = labelOptions(sticky = FALSE, 
                                          offset = c(0, -icon_size/2))) %>%
-  # Custom legends to override order
-  addLegend("bottomleft", colors = rev(station_colours),
-            className = "info legend solid",
-            labels = rev(names(station_colours)),
-            opacity = 1,
-            title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>")) %>%
-  addLegend("bottomright", colors = pal_az(names(az_colours)), 
-            labels = names(az_colours), 
+  
+  # Legend for polygons
+  addLegend("bottomright",
+            data = az,
+            colors = labels_ambient$colour, 
+            labels = labels_ambient$labels_full,
             opacity = 1, 
-            title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>"))
+            title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>")) %>%
+  
+   # Custom legends for markers
+  addLegend("bottomleft",
+            colors = rev(labels_mgmt$colour),
+            className = "info legend solid",
+            labels = rev(labels_mgmt$labels_full),
+            opacity = 1,
+            title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>"))
 
 ```
