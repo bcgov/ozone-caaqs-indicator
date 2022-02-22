@@ -357,7 +357,7 @@ iwalk(stn_plots,  ~ {
   
   # CAAQS
   cat("\\textbf{Ozone Air Quality Standard:} ",
-      stn$caaqs_ambient, " \\newline ")
+      as.character(stn$caaqs_ambient), " \\newline ")
   
   # Value
   cat("\\textbf{Ozone Metric:} ", stn$metric_value_ambient, " ppb (", 
