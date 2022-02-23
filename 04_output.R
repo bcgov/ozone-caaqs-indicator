@@ -76,7 +76,11 @@ print_summary <- ozone_results %>%
 # - Using management data because contains differences between the non-tfee data
 #   and tfee-adjusted data
 
-sites <- unique(ozone_results$site)
+sites <- ozone_results %>%
+  arrange(airzone, site, metric) %>%
+  pull(site) %>%
+  unique()
+
 stn_plots <- list()
 
 for(s in sites) {

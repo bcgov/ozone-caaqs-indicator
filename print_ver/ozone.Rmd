@@ -22,7 +22,7 @@ See the License for the specific language governing permissions and limitations 
 
 renv::restore()
 
-knitr::opts_chunk$set(echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, 
+knitr::opts_chunk$set(echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, 
                       error=FALSE)
 
 library("readr")
