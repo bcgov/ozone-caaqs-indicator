@@ -3,30 +3,27 @@
 
 # Status of Ground-Level Ozone in B.C.
 
-A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) for  Ground-Level Ozone for British Columbia. These scripts reproduce the analysis and data visualizations supporting the Status of Ground-Level Ozone in B.C. indicator presented on [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
+A set of R scripts to calculate the Canadian Ambient Air Quality Standards (CAAQS) 
+for Ground-Level Ozone in British Columbia. 
+These scripts reproduce the analysis and data visualizations presented on 
+[Environmental Reporting BC](http://www.env.gov.bc.ca/soe/indicators/air/ozone.html).
 
 This analysis makes use of the [rcaaqs](https://github.com/bcgov/rcaaqs) package, and [verified air quality monitoring data](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) from the B.C. Ministry of Environment.
 
 ## Usage
 
-There are four core scripts that are required for the analysis, they need to be run in order:
+There are five scripts that are required for the analysis, they need to be run in order:
 
 - `01_load.R` - downloads the data from DataBC
 - `02_clean.R` - cleans and prepares data for analysis
 - `03_analysis.R` - performs the analysis
 - `04_output.R` - creates maps and graphs and saves outputs
+- `05_databc_output.R` - creates maps and graphs and saves outputs
 
 The `run_all.R` script can be `source`ed to run it all at once.
 
-Most packages used in the analysis can be installed from CRAN using `install.packages()`, but you will need to install [envreportutils](https://github.com/bcgov/envreportutils) and [rcaaqs](https://github.com/bcgov/rcaaqs) using remotes:
-
-```r
-install.packages("remotes") # If you don't already have it installed
-
-library(remotes)
-install_github("bcgov/rcaaqs")
-install_github("bcgov/envreportutils")
-```
+This repository uses `renv` to ensure all required packages and the correct
+versions of said packages are installed. 
 
 ## Getting Help or Reporting an Issue
 
