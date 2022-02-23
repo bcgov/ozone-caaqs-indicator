@@ -82,7 +82,7 @@ labels_mgmt <- management_levels %>%
 stations <- read_sf(here("out/ozone_caaqs.geojson")) %>%
   # Count total stations, then omit those with insufficient data
   add_count(airzone) %>%
-  filter(!is.na(caaqs_ambient)) %>%
+  filter(!is.na(metric_value_ambient)) %>%
   
   # Get management levels
   mutate(caaqs_mgmt = map2_chr(metric_value_ambient, metric,
@@ -132,7 +132,10 @@ az <- st_read(here("./out/ozone_airzone.geojson")) %>%
     ., type = "region", 
     units = units_html,
     metric_name = "Ozone Metric",
-    standard_name = "Ozone Air Quality Standard"))
+    standard_name = "Ozone Air Quality Standard"), 
+    # Where insufficient data, keep the tool tip but omit the popup
+    popup = if_else(caaqs_ambient == "Insufficient Data", 
+                    list(NA_character_), popup))
 
 
 
