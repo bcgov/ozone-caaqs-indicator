@@ -19,6 +19,7 @@ library("readr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
+library("ggtext")
 
 library("sf")
 library("bcmaps")
@@ -111,8 +112,8 @@ print_plots[["ozone_ambient_summary_plot"]]<- g
 
 g <- achievement_map(az_data = az_ambient_sf,
                      stn_data = stations_sf,
-                     az_labs = "Airzones:\nOzone Air Quality Standard",
-                     stn_labs = "Monitoring Stations:\nOzone (ug/m3)")
+                     az_labs = "**Airzones:**<br>Ozone Air Quality Standard",
+                     stn_labs = "**Monitoring Stations:**<br>Ozone (ppb)")
 print_plots[["achievement_map"]] <- g
 
 
