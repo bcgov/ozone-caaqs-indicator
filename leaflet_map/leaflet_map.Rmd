@@ -42,63 +42,44 @@ css_caaqs_copy(folder = here("./leaflet_map/"), overwrite = TRUE)
 
 # Ambient labels
 labels_ambient <- achievement_levels %>%
-  filter(str_detect(parameter, "o3")) %>%
-  add_row(labels = "Insufficient Data", units = c(unique(.$units_html))) %>%
-  mutate(colour = case_when(labels == "Achieved" ~ "#72a4cd",
-                            labels == "Not Achieved" ~ "#cd7277",
-                            labels == "Insufficient Data" ~ "#dbdbdb"),
-         labels_full = if_else(!is.na(val_labels_html), 
-                               paste0(labels, " (", val_labels_html, ")"),
-                               labels),
-         # Format the labels - add space before units
-         labels_full = str_replace_all(labels_full, "(\\d+)(\\&mu)", "\\1 \\2"),
-         labels = factor(labels, levels = c("Not Achieved", 
-                                            "Achieved", "Insufficient Data"))) %>%
-  arrange(labels) %>%
-  mutate(labels_full = factor(labels_full, levels = unique(labels_full))) %>%
-  select(labels, colour, labels_full, units_html)
+  filter(parameter == "o3") %>%
+  select(labels, colour, units_html) %>%
+  mutate(text_colour = "white")
   
 # Management labels
 labels_mgmt <- management_levels %>%
-  filter(str_detect(parameter, "o3")) %>%
-  mutate(colour = case_when(str_detect(labels, "Keeping") ~ "#ffffff",
-                            str_detect(labels, "Deterioration") ~ "#bdbdbd",
-                            str_detect(labels, "Exceedance") ~ "#737373",
-                            str_detect(labels, "Achieving") ~ "#000000"),
-         labels = val_labels_html,
-         # Format the labels - add space before units, remove duplicate units
-         labels = factor(labels, levels = labels),
-         labels_full = labels,
-         labels_full = str_replace_all(labels_full, "(\\d+)(\\&)", "\\1 \\2"),
-         labels_full = str_remove(labels_full, units_html)) %>%
-  arrange(labels) %>%
-  select(labels, colour, labels_full, units_html) %>%
-  mutate(icons = c("assets/marker_white.svg", "assets/marker_lightgrey.svg", 
-                   "assets/marker_grey.svg", "assets/marker_black.svg"))
+  filter(parameter == "o3") %>%
+  select(labels, colour, colour_text, units_html) %>%
+  distinct() %>%
+  mutate(icons = paste0("assets/marker_", colour_text, ".svg"),
+         text_colour = c("white", "black", "black", "white", "white"))
 
 # Load and prep data ------------------------------------
 
+# - Stations show Management levels and have management metric data on popups
+# - Airzones show Management levels and have management metric values on popups,
+#   but ambient achievement levels in boxes (two if they differ do to TFEEs)
+# - Both popups show one value box per metric
+
 ## Stations - Get CAAQs and popups ---------------------------------------
 stations <- read_sf(here("out/ozone_caaqs.geojson")) %>%
-  # Count total stations, then omit those with insufficient data
+  # Count total stations
   add_count(airzone) %>%
-  filter(!is.na(metric_value_ambient)) %>%
-  
-  # Get management levels
-  mutate(caaqs_mgmt = map2_chr(metric_value_ambient, metric,
-                                 ~ as.character(rcaaqs:::cut_management(.x, .y,"breaks_h")))) %>%
-  left_join(labels_mgmt, by = c("caaqs_mgmt" = "labels")) %>%
-  rename(caaqs_legend = labels_full) %>%
+  filter(mgmt_level != "Insufficient Data") %>%
+  left_join(labels_mgmt, by = c("mgmt_level" = "labels")) %>%
+  mutate(caaqs_legend = mgmt_level) %>%
   
   # Create popups
-  mutate(p_az = airzone,
-         p_station = site,
-         p_station_id = site) %>%
   mutate(popup = popup_caaqs(
     ., type = "station", 
-    units = units_html,
-    metric_name = "Ozone Metric",
-    standard_name = "Ozone Air Quality Standard"))
+    metric_type = "Ozone", 
+    metrics = "o3", 
+    units = units_html[1],
+    airzone = "airzone", 
+    station_name = "site", 
+    station_id = "site", 
+    value1 = "metric_value_mgmt", 
+    level1 = "mgmt_level"))
 
 ## Count stations
 stns_n <- stations %>%
@@ -107,16 +88,17 @@ stns_n <- stations %>%
   distinct()
 
 ## Airzones - Get CAAQs and popups -----------------------------------
-az <- st_read(here("./out/ozone_airzone.geojson")) %>%
-  # Clarify names and add data
-  rename(rep_station_id = rep_stn_id_ambient, n_years = n_years_ambient) %>%
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data")) %>%
+az <- st_read(here("./out/ozone_airzones_mgmt.geojson")) %>%
   left_join(stns_n, by = "airzone") %>%
   
-  # Get CAAQS labels
-  left_join(labels_ambient, by = c("caaqs_ambient" = "labels")) %>%
-  mutate(metric_value_ambient = as.numeric(metric_value_ambient)) %>%
-  rename(caaqs_legend = labels_full) %>%
+  left_join(select(labels_mgmt, labels, legend_colour = colour, icons, units_html),
+            by = c("mgmt_level" = "labels")) %>%
+  left_join(select(labels_ambient, labels, colour, text_colour),
+            by = c("caaqs_ambient" = "labels")) %>%
+  left_join(select(labels_ambient, labels, colour, text_colour),
+            by = c("caaqs_ambient_no_tfees" = "labels"), suffix = c("", 2)) %>%
+  
+  mutate(caaqs_legend = mgmt_level) %>%
   
   # Create Airzone tooltips
   mutate(n = replace_na(n, 0),
@@ -124,28 +106,29 @@ az <- st_read(here("./out/ozone_airzone.geojson")) %>%
                         ~HTML(paste0(.x, "<br>", .y, 
                                      " Monitoring Station", 
                                      if_else(.y == 1, "", "s"))))) %>%
-  # Create Airzone Popups
-  mutate(p_az = airzone,
-         p_station = rep_station_id,
-         p_station_id = rep_station_id) %>%
+  # Create popups
   mutate(popup = popup_caaqs(
-    ., type = "region", 
-    units = units_html,
-    metric_name = "Ozone Metric",
-    standard_name = "Ozone Air Quality Standard"), 
+    ., type = "airzone", 
+    metric_type = "Ozone", 
+    metrics = "o3", 
+    units = units_html[1],
+    airzone = "airzone", 
+    station_name = "rep_stn_id", 
+    station_id = "rep_stn_id", 
+    value1 = "metric_value_mgmt", 
+    level1 = "caaqs_ambient", 
+    level2 = "caaqs_ambient_no_tfees"),
     # Where insufficient data, keep the tool tip but omit the popup
     popup = if_else(caaqs_ambient == "Insufficient Data", 
                     list(NA_character_), popup))
-
 
 
 # Formatting ----------------------
 
 # Create palettes
 
-pal_az <- labels_ambient %>%
-  colorFactor(palette = .$colour, levels = .$labels_full)
-
+pal_az <- colorFactor(palette = labels_mgmt$colour, 
+                      levels = labels_mgmt$labels)
 # Create icons
 icon_size <- 30
 markers <- icons( # file locations have to be relative (can't use here())
@@ -187,20 +170,13 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
              labelOptions = labelOptions(sticky = FALSE, 
                                          offset = c(0, -icon_size/2))) %>%
   
-  # Legend for polygons
-  addLegend("bottomright",
-            data = az,
-            colors = labels_ambient$colour, 
-            labels = labels_ambient$labels_full,
-            opacity = 1, 
-            title = htmltools::HTML("<h3>Air Zones</h3><h4>Ozone Air Quality Standard</h4>")) %>%
-  
-   # Custom legends for markers
+  # Legend
   addLegend("bottomleft",
-            colors = rev(labels_mgmt$colour),
-            className = "info legend solid",
-            labels = rev(labels_mgmt$labels_full),
-            opacity = 1,
-            title = htmltools::HTML("<h3>Ozone Monitoring Stations</h3><h4>Ozone Metric</h4>"))
-
+            data = az,
+            # Ensure we get all levels
+            colors = rev(labels_mgmt$colour), 
+            labels = rev(labels_mgmt$labels),
+            opacity = 1, 
+            title = htmltools::HTML(
+              "<h3>Ozone</sub> Management Levels</h3>"))
 ```

@@ -45,15 +45,18 @@ az <- airzones() %>%
   group_by(airzone = Airzone) %>% 
   summarize()
 
-az_mgmt_sf <- az_mgmt %>%
-  complete(airzone = az$airzone, rep_metric, caaqs_year) %>% # Ensure ALL airzones
-  left_join(az, ., by = "airzone") %>% 
-  mutate(mgmt_level = replace_na(mgmt_level, "Insufficient Data"))
-
 az_ambient_sf <- az_ambient %>% 
   complete(airzone = az$airzone, metric) %>% # Ensure ALL airzones
   left_join(az, ., by = "airzone") %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, "Insufficient Data"))
+  mutate(caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]))
+
+az_mgmt_sf <- az_mgmt %>%
+  complete(airzone = az$airzone, metric, caaqs_year) %>% # Ensure ALL airzones
+  left_join(az, ., by = "airzone") %>% 
+  mutate(mgmt_level = replace_na(mgmt_level, levels(mgmt_level)[1]),
+         caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]),
+         caaqs_ambient_no_tfees = replace_na(caaqs_ambient_no_tfees, 
+                                             levels(caaqs_ambient)[1])) 
 
 stations_sf <- ozone_results %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
@@ -71,6 +74,11 @@ print_summary <- ozone_results %>%
             p_lt50 = round(n_lt50 / n * 100)) %>%
   mutate(az_achieved = sum(az_ambient$caaqs_ambient == "Achieved", na.rm = TRUE))
             
+# Spatial files for leaflet maps ---------------------------------------
+leaf_az_mgmt <- az_mgmt_sf
+leaf_stations_mgmt <- select(stations_sf, airzone, site, mgmt_level, 
+                             n_years, metric_value_mgmt)
+
             
 # Individual Station Plots ------------------------------------------------
 # - For print version and leaflet_maps
@@ -196,10 +204,10 @@ write_rds(stn_plots, "data/datasets/print_stn_plots.rds")
 write_rds(print_summary, "data/datasets/print_summary.rds")
 
 # For leaflet maps
-filter(stations_sf) %>%
+filter(leaf_stations_mgmt) %>%
   st_transform(4326) %>% 
-  st_write("out/ozone_caaqs.geojson", delete_dsn = TRUE)
+  st_write("out/ozone_stations_mgmt.geojson", delete_dsn = TRUE)
 
-filter(az_ambient_sf) %>%
+filter(leaf_az_mgmt) %>%
   st_transform(4326) %>% 
-  st_write("out/ozone_airzone.geojson", delete_dsn = TRUE)
+  st_write("out/ozone_airzones_mgmt.geojson", delete_dsn = TRUE)

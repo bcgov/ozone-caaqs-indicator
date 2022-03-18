@@ -53,17 +53,30 @@ ozone_results <- get_caaqs(ozone_mgmt) %>%
   select(airzone, site, region, lat, lon, everything())
 
 # Airzone results ---------------------------------------------------------
-az_ambient <- airzone_metric(ozone_results, keep = c("site", "metric"), station_id = "site") %>%
-  select(-metric_mgmt, metric = metric_ambient, everything())
+az_ambient <- ozone_results %>%
+  airzone_metric(keep = c("site", "metric"), station_id = "site") %>%
+  select(-metric_mgmt) %>%
+  rename(metric = metric_ambient)
 
 az_mgmt <- az_ambient %>% 
   group_by(airzone) %>%
   slice(which.max(mgmt_level)) %>% 
   mutate(caaqs_year = .env$rep_year) %>% 
   ungroup() %>%
-  select(caaqs_year, airzone, mgmt_level, rep_metric = metric, 
-         metric_value = metric_value_mgmt, 
-         rep_stn_id = rep_stn_id_mgmt)
+  select(caaqs_year, airzone, mgmt_level, metric, 
+         metric_value_mgmt, 
+         rep_stn_id = rep_stn_id_mgmt, n_years = n_years_mgmt,
+         caaqs_ambient) %>%
+  # Mgmt level reflects the WORST station with TFEE adjustment, 
+  # That should reflect a CAAQS Achievement (had there been no TFEEs)
+  mutate(caaqs_ambient_no_tfees = map_int(mgmt_level, max),
+         caaqs_ambient_no_tfees = case_when(
+           caaqs_ambient_no_tfees == 5 ~ unique(achievement_levels$labels)[3],
+           caaqs_ambient_no_tfees == 1 ~ unique(achievement_levels$labels)[1],
+           TRUE ~ unique(achievement_levels$labels)[2]),
+         caaqs_ambient_no_tfees = factor(
+           caaqs_ambient_no_tfees, ordered = TRUE,
+           levels = levels(caaqs_ambient)))
 
 # For print version --------------------------------------------------------
 # Get reporting period tfee numbers for print version
