@@ -87,9 +87,11 @@ stn_plots <- list()
 for(s in sites) {
   message("Creating plots for ", s)
   
-  g <- plot_caaqs(ozone_mgmt, id = s, id_col = "site", year_min = 2013)
+  g <- plot_caaqs(ozone_mgmt, id = s, id_col = "site", year_min = 2013,
+                  plot_std = FALSE, plot_mgmt = FALSE)
+  g <- add_caaqs_historic(g, metric = "o3")
   
-  ggsave(paste0("leaflet_map/station_plots/", s, ".svg"), plot = g,
+  ggsave(paste0("leaflet_map/station_plots/", s, "_o3.svg"), plot = g,
          width = 778, height = 254, dpi = 72, units = "px", bg = "white")
   
   # Save for print version
