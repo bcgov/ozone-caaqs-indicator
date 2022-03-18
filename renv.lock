@@ -479,9 +479,9 @@
       "RemoteUsername": "steffilazerte",
       "RemoteRepo": "envreportutils",
       "RemoteRef": "master",
-      "RemoteSha": "ea45256ffdedf494e1a7c3269b7bde3e8f076a97",
+      "RemoteSha": "2c410e8ee2a96cb8732681f8d070a3c1c19561b6",
       "RemoteHost": "api.github.com",
-      "Hash": "c72d1a7d8140d859dd9c150bdaed09a3",
+      "Hash": "cdd78c58e6e96cecadcd262bdd17a15a",
       "Requirements": [
         "dplyr",
         "extrafont",
