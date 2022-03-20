@@ -32,13 +32,6 @@ library("rcaaqs")
 css_caaqs_copy(folder = here("./leaflet_map/"), overwrite = TRUE)
 
 # Assign labels, colours, and cutoffs using rcaaqs ----------------------------
-#
-# - This is a big messy block of code, but means that the units and labels
-#   are automatically gathered from rcaaqs via achivement_levels and management_levels.
-#   This means that changes only need to be made in rcaaqs.
-# - All formating, colours, and markers are specified here
-# - Factor levels are determined here as well, so that custom orders don't need
-#  to be specified directly in the legends
 
 # Ambient labels
 labels_ambient <- achievement_levels %>%
