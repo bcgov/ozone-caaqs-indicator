@@ -41,7 +41,8 @@ stations <- read_csv("data/raw/caaqs_stationlist.csv", show_col_types = FALSE) %
 ozone <- read_rds("data/raw/ozone_caaqs.Rds") %>%
   as_tibble()
 
-az <- airzones()
+az <- airzones() %>% 
+  st_make_valid()
 
 
 # Clean Stations -------------------------------------------------------------

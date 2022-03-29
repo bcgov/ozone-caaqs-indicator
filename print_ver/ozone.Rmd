@@ -181,7 +181,6 @@ period.
 plots[["achievement_map"]]
 ```
 
-\newpage
 
 # Ozone Metrics for Air Monitoring Stations within B.C. Air Zones (`r year_range`)
 
