@@ -38,11 +38,28 @@ tfee_dates <- ozone_clean %>%
   distinct()
 
 # Calculate CAAQs --------------------------------------
-
+# - update: 2023
+#     - added tfee, so that data capture requirements apply after tfee adjustment
 ozone_caaqs <- o3_caaqs(ozone_clean, by = "site")
-ozone_mgmt <- caaqs_management(ozone_caaqs, 
+ozone_caaqs_tfee <- o3_caaqs(filter(ozone_clean,!flag_tfee) , by = "site")
+
+ozone_mgmt <- caaqs_management(ozone_caaqs_tfee, 
                                exclude_df = tfee_dates, 
                                exclude_df_dt = "date")
+
+# - update: 2023
+# - use caaqs_ambient column from ozone_caaqs
+
+colnames(ozone_mgmt$caaqs)
+colnames(ozone_caaqs$caaqs)
+
+df_fill_o3 <- ozone_caaqs$caaqs %>%
+  select(site,caaqs_year,metric, metric_value) %>%
+  rename(caaqs_ambient = metric_value)
+
+ozone_mgmt$caaqs <- ozone_mgmt$caaqs %>%
+  select(-caaqs_ambient) %>%
+  left_join(df_fill_o3)
 
 
 # Station results -----------------------------------------
@@ -107,3 +124,4 @@ write_rds(print_tfee, "data/datasets/print_tfee.rds")
 write_csv(ozone_results, "out/ozone_caaqs_results.csv", na = "")
 write_csv(az_ambient, "out/ozone_airzone_results.csv" , na = "")
 write_csv(az_mgmt, "out/ozone_airzone_management_levels.csv", na = "")
+

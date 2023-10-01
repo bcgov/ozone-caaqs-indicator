@@ -52,6 +52,7 @@ az <- airzones() %>%
 
 stations_clean <- stations %>%
   
+  
   # Look for problems
   assert(within_bounds(-90, 90), lat) %>%
   assert(within_bounds(-180, 180), lon) %>%
@@ -61,10 +62,11 @@ stations_clean <- stations %>%
   assign_airzone(airzones = az, 
                  station_id = "site", 
                  coords = c("lon", "lat")) %>%
+  filter(!is.na(airzone)) %>%
   assert(not_na, airzone) %>%
   
   # Only keep stations for ozone
-  filter(ozone) %>%
+  # filter(ozone) %>%
   select(site, region, airzone, lat, lon)
 
 
