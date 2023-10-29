@@ -36,10 +36,12 @@ options("rcaaqs.timezone" = "Etc/GMT+8")
 # Load Data ---------------------------------
 stations <- read_csv("data/raw/caaqs_stationlist.csv", show_col_types = FALSE) %>%
   clean_names() %>%
+  mutate(site = gsub('#','',site)) %>%
   rename(lon = long)
 
 ozone <- read_rds("data/raw/ozone_caaqs.Rds") %>%
-  as_tibble()
+  as_tibble()%>%
+  mutate(site = gsub('#','',site))
 
 az <- airzones() %>% 
   st_make_valid()

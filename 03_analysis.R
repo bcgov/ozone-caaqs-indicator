@@ -43,23 +43,24 @@ tfee_dates <- ozone_clean %>%
 ozone_caaqs <- o3_caaqs(ozone_clean, by = "site")
 ozone_caaqs_tfee <- o3_caaqs(filter(ozone_clean,!flag_tfee) , by = "site")
 
-ozone_mgmt <- caaqs_management(ozone_caaqs_tfee, 
+ozone_mgmt <- caaqs_management(ozone_caaqs, 
                                exclude_df = tfee_dates, 
                                exclude_df_dt = "date")
-
+ozone_mgmt_tfee <- caaqs_management(ozone_caaqs_tfee, 
+                               exclude_df = tfee_dates, 
+                               exclude_df_dt = "date")
 # - update: 2023
-# - use caaqs_ambient column from ozone_caaqs
 
-colnames(ozone_mgmt$caaqs)
+# -merge data for tfee and non-tfee calculations 
+# -to correct for data capture requirements after TFEE adjustment
+# -use data capture requirements from tfee-derived data
 colnames(ozone_caaqs$caaqs)
-
-df_fill_o3 <- ozone_caaqs$caaqs %>%
-  select(site,caaqs_year,metric, metric_value) %>%
-  rename(caaqs_ambient = metric_value)
+df_fill_o3 <- ozone_mgmt_tfee$caaqs %>%
+  select(site,caaqs_year,metric, metric_value_mgmt,mgmt_level) 
 
 ozone_mgmt$caaqs <- ozone_mgmt$caaqs %>%
-  select(-caaqs_ambient) %>%
-  left_join(df_fill_o3)
+  select(-metric_value_mgmt,-mgmt_level) %>%
+  left_join(df_fill_o3, by = c('site','caaqs_year','metric'))
 
 
 # Station results -----------------------------------------
