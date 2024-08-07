@@ -37,7 +37,8 @@ options("rcaaqs.timezone" = "Etc/GMT+8")
 stations <- read_csv("data/raw/caaqs_stationlist.csv", show_col_types = FALSE) %>%
   clean_names() %>%
   mutate(site = gsub('#','',site)) %>%
-  rename(lon = long)
+  rename(lon = long) |> 
+  unique()
 
 ozone <- read_rds("data/raw/ozone_caaqs.Rds") %>%
   as_tibble()%>%

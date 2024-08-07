@@ -74,6 +74,7 @@ stations <- read_sf(here("out/ozone_stations_mgmt.geojson")) %>%
     metric_type = "Ozone", 
     metrics = "o3", 
     units = units_html[1],
+    plot_loc = "./leaflet_map/station_plots",
     airzone = "airzone", 
     station_name = "site", 
     station_id = "site", 
@@ -92,8 +93,7 @@ az <- st_read(here("./out/ozone_airzones_mgmt.geojson")) %>%
   
   left_join(select(labels_mgmt, labels, legend_colour = colour, icons, units_html),
             by = c("mgmt_level" = "labels")) %>%
-
-left_join(select(labels_ambient, labels, colour, text_colour),
+  left_join(select(labels_ambient, labels, colour, text_colour),
           by = c("caaqs_ambient_no_tfees" = "labels"), suffix = c("", 2)) %>%
   
   mutate(caaqs_legend = mgmt_level) %>%
@@ -103,21 +103,21 @@ left_join(select(labels_ambient, labels, colour, text_colour),
          tooltip = map2(airzone, n, 
                         ~HTML(paste0(.x, "<br>", .y, 
                                      " Monitoring Station", 
-                                     if_else(.y == 1, "", "s")))))
+                                     if_else(.y == 1, "", "s"))))) #|> 
   # # Create popups
-  # mutate(popup = popup_caaqs(
-  #   ., type = "airzone", 
-  #   metric_type = "Ozone", 
-  #   metrics = "o3", 
+  # mutate(popup = popup_caaqs(., type = "airzone",
+  #   metric_type = "Ozone",
+  #   metrics = "o3",
   #   units = units_html[1],
-  #   airzone = "airzone", 
-  #   station_name = "rep_stn_id", 
-  #   station_id = "rep_stn_id", 
-  #   value1 = "metric_value_mgmt", 
-  #   level1 = "caaqs_ambient", 
+  #   plot_loc = "./leaflet_map/station_plots",
+  #   airzone = "airzone",
+  #   station_name = "rep_stn_id",
+  #   station_id = "rep_stn_id",
+  #   value1 = "metric_value_mgmt",
+  #   level1 = "caaqs_ambient",
   #   level2 = "caaqs_ambient_no_tfees"),
   #   # Where insufficient data, keep the tool tip but omit the popup
-  #   popup = if_else(caaqs_ambient == "Insufficient Data", 
+  #   popup = if_else(caaqs_ambient == "Insufficient Data",
   #                   list(NA_character_), popup))
 
 
@@ -157,7 +157,7 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
-              # popup = ~popup,
+              #popup = ~popup,
               popupOptions = ppo) %>%
   
   # Add station markers

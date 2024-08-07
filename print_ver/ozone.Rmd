@@ -1,7 +1,8 @@
 ---
 topic: "air"
-title: Status of Ground-Level Ozone in B.C. (2018-2020)
-output: pdf_document
+title: Status of Ground-Level Ozone in B.C. (2019-2021)
+output: 
+  pdf_document: envreportutils.internal::print_ver
 ---
 <!--
 Copyright 2018 Province of British Columbia
@@ -20,7 +21,7 @@ See the License for the specific language governing permissions and limitations 
 
 ```{r setup, include = FALSE, cache=FALSE}
 
-renv::restore()
+#renv::restore()
 
 knitr::opts_chunk$set(echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE, 
                       error=FALSE)
@@ -47,14 +48,15 @@ knitr_latex_char <- function(x) {
   return(y)
 }
 
-year_range <- "2018-2020"
+year_range <- "2019-2021"
 
 # Data from 04_outputs.R
 tfee <- read_rds(here("data/datasets/print_tfee.rds"))
 plots <- read_rds(here("data/datasets/print_plots.rds"))
 stn_plots <- read_rds(here("data/datasets/print_stn_plots.rds"))
 print_summary <- read_rds(here("data/datasets/print_summary.rds"))
-ozone_results <- read_rds(here("data/datasets/ozone_results.rds")) # from 03_analysis.R
+ozone_results <- read_rds(here("data/datasets/ozone_results.rds")) |> 
+  unique()# from 03_analysis.R
 
 # Specify cutoffs from rcaaqs
 ozone_lvls <- achievement_levels %>%
@@ -231,8 +233,7 @@ Ambient Air Quality Standards.
     [Guidance Document on Air Zone Management (2019) (PDF)](https://ccme.ca/en/res/guidancedocumentonairzonemanagement_secured.pdf). 
     Air zone management levels are preferentially based on stations with 3 
     complete years of data.
--   The Coastal air zone was assigned to a green management level, 
-    the Central Interior, Southern Interior, Georgia Strait, and Northeast air 
+-   The Coastal and Central Interior air zones were assigned to a green management level. The Southern Interior, Georgia Strait, and Northeast air 
     zones were assigned to a yellow management level, 
     and the Lower Fraser Valley was assigned to an orange management level. 
     Currently, there are no 
@@ -326,13 +327,13 @@ each file, as indicated in parentheses below.
 -   [B.C. Ground-level Ozone Hourly Data & Air Monitoring Station Locations](https://catalogue.data.gov.bc.ca/dataset/77eeadf4-0c19-48bf-a47a-fa9eef01f409) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [B.C. Air Zones](https://catalogue.data.gov.bc.ca/dataset/e8eeefc4-2826-47bc-8430-85703d328516) (Licence: [Open Government Licence - British Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-Published and Available On-Line at Environmental Reporting BC (April 2021):
+Published and Available On-Line at Environmental Reporting BC:
 <http://www.env.gov.bc.ca/soe/indicators/air/ozone.html>
 
 Email correspondence to: envreportbc@gov.bc.ca
 
 *Suggested Citation*:  
-Environmental Reporting BC. 2021. Status of Ground-Level Ozone in B.C. 
+Environmental Reporting BC. 2024. Status of Ground-Level Ozone in B.C. 
 (`r year_range`). State of Environment Reporting, Ministry of 
 Environment and Climate Change Strategy, British Columbia, Canada.
 
