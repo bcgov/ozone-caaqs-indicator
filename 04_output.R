@@ -147,7 +147,7 @@ labels_df <-  data.frame(
                    "Georgia Strait", "Lower Fraser Valley"))
 
 g <- ggplot(az_mgmt_sf) +   
-  geom_sf(aes(fill = mgmt_level), colour = "white") + 
+  geom_sf(aes(fill = mgmt_level), colour = "white", show.legend = TRUE) + 
   coord_sf(datum = NA) + 
   theme_minimal() + 
   scale_fill_manual(values = colrs, 
