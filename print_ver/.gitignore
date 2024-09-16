@@ -3,3 +3,4 @@
 envreportbc_ozone*
 *.pdf
 /out
+*ozone.log
