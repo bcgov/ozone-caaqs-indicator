@@ -8,6 +8,8 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
+# install.packages('here',  repos='http://cran.us.r-project.org')
+
 # Allows Rmd file to be run interactively and knit 
 # without having to change the relative file locations all the time
 library("here") 
@@ -39,6 +41,10 @@ labels_ambient <- achievement_levels %>%
   select(labels, colour, units_html) %>%
   mutate(text_colour = "white")
   
+# - fix Sep 2023
+# - added caaqs_ambient values
+
+
 # Management labels
 labels_mgmt <- management_levels %>%
   filter(parameter == "o3") %>%
@@ -68,6 +74,7 @@ stations <- read_sf(here("out/ozone_stations_mgmt.geojson")) %>%
     metric_type = "Ozone", 
     metrics = "o3", 
     units = units_html[1],
+    plot_loc = "./leaflet_map/station_plots",
     airzone = "airzone", 
     station_name = "site", 
     station_id = "site", 
@@ -87,9 +94,7 @@ az <- st_read(here("./out/ozone_airzones_mgmt.geojson")) %>%
   left_join(select(labels_mgmt, labels, legend_colour = colour, icons, units_html),
             by = c("mgmt_level" = "labels")) %>%
   left_join(select(labels_ambient, labels, colour, text_colour),
-            by = c("caaqs_ambient" = "labels")) %>%
-  left_join(select(labels_ambient, labels, colour, text_colour),
-            by = c("caaqs_ambient_no_tfees" = "labels"), suffix = c("", 2)) %>%
+          by = c("caaqs_ambient_no_tfees" = "labels"), suffix = c("", 2)) %>%
   
   mutate(caaqs_legend = mgmt_level) %>%
   
@@ -98,22 +103,22 @@ az <- st_read(here("./out/ozone_airzones_mgmt.geojson")) %>%
          tooltip = map2(airzone, n, 
                         ~HTML(paste0(.x, "<br>", .y, 
                                      " Monitoring Station", 
-                                     if_else(.y == 1, "", "s"))))) %>%
-  # Create popups
-  mutate(popup = popup_caaqs(
-    ., type = "airzone", 
-    metric_type = "Ozone", 
-    metrics = "o3", 
-    units = units_html[1],
-    airzone = "airzone", 
-    station_name = "rep_stn_id", 
-    station_id = "rep_stn_id", 
-    value1 = "metric_value_mgmt", 
-    level1 = "caaqs_ambient", 
-    level2 = "caaqs_ambient_no_tfees"),
-    # Where insufficient data, keep the tool tip but omit the popup
-    popup = if_else(caaqs_ambient == "Insufficient Data", 
-                    list(NA_character_), popup))
+                                     if_else(.y == 1, "", "s"))))) #|> 
+  # # Create popups
+  # mutate(popup = popup_caaqs(., type = "airzone",
+  #   metric_type = "Ozone",
+  #   metrics = "o3",
+  #   units = units_html[1],
+  #   plot_loc = "./leaflet_map/station_plots",
+  #   airzone = "airzone",
+  #   station_name = "rep_stn_id",
+  #   station_id = "rep_stn_id",
+  #   value1 = "metric_value_mgmt",
+  #   level1 = "caaqs_ambient",
+  #   level2 = "caaqs_ambient_no_tfees"),
+  #   # Where insufficient data, keep the tool tip but omit the popup
+  #   popup = if_else(caaqs_ambient == "Insufficient Data",
+  #                   list(NA_character_), popup))
 
 
 # Formatting ----------------------
@@ -152,7 +157,7 @@ leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)
               color = "white", weight = 2, opacity = 1, fillOpacity = 0.7,
               fillColor = ~pal_az(caaqs_legend),
               label = ~tooltip, 
-              popup = ~popup,
+              #popup = ~popup,
               popupOptions = ppo) %>%
   
   # Add station markers

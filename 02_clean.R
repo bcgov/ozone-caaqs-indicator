@@ -36,10 +36,13 @@ options("rcaaqs.timezone" = "Etc/GMT+8")
 # Load Data ---------------------------------
 stations <- read_csv("data/raw/caaqs_stationlist.csv", show_col_types = FALSE) %>%
   clean_names() %>%
-  rename(lon = long)
+  mutate(site = gsub('#','',site)) %>%
+  rename(lon = long) |> 
+  unique()
 
 ozone <- read_rds("data/raw/ozone_caaqs.Rds") %>%
-  as_tibble()
+  as_tibble()%>%
+  mutate(site = gsub('#','',site))
 
 az <- airzones() %>% 
   st_make_valid()
@@ -52,6 +55,7 @@ az <- airzones() %>%
 
 stations_clean <- stations %>%
   
+  
   # Look for problems
   assert(within_bounds(-90, 90), lat) %>%
   assert(within_bounds(-180, 180), lon) %>%
@@ -61,10 +65,11 @@ stations_clean <- stations %>%
   assign_airzone(airzones = az, 
                  station_id = "site", 
                  coords = c("lon", "lat")) %>%
+  filter(!is.na(airzone)) %>%
   assert(not_na, airzone) %>%
   
   # Only keep stations for ozone
-  filter(ozone) %>%
+  # filter(ozone) %>%
   select(site, region, airzone, lat, lon)
 
 

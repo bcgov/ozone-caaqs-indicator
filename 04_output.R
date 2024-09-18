@@ -46,17 +46,22 @@ az <- airzones() %>%
   summarize()
 
 az_ambient_sf <- az_ambient %>% 
-  complete(airzone = az$airzone, metric) %>% # Ensure ALL airzones
-  left_join(az, ., by = "airzone") %>% 
-  mutate(caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]))
+  complete(airzone = az$airzone, metric) %>%   # Ensure ALL airzones
+  left_join(az, ., by = "airzone") 
+ 
+# the replace_na parts seems to run into bug of data must be length 1 not 0
+  # dplyr::mutate(caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]))
 
 az_mgmt_sf <- az_mgmt %>%
   complete(airzone = az$airzone, metric, caaqs_year) %>% # Ensure ALL airzones
-  left_join(az, ., by = "airzone") %>% 
-  mutate(mgmt_level = replace_na(mgmt_level, levels(mgmt_level)[1]),
-         caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]),
-         caaqs_ambient_no_tfees = replace_na(caaqs_ambient_no_tfees, 
-                                             levels(caaqs_ambient)[1])) 
+  left_join(az, ., by = "airzone") 
+
+#bug below..., removed 2023-Sep
+# 
+#   mutate(mgmt_level = replace_na(mgmt_level, levels(mgmt_level)[1]),
+#          caaqs_ambient = replace_na(caaqs_ambient, levels(caaqs_ambient)[1]),
+#          caaqs_ambient_no_tfees = replace_na(caaqs_ambient_no_tfees, 
+#                                              levels(caaqs_ambient)[1])) 
 
 stations_sf <- ozone_results %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
@@ -142,7 +147,7 @@ labels_df <-  data.frame(
                    "Georgia Strait", "Lower Fraser Valley"))
 
 g <- ggplot(az_mgmt_sf) +   
-  geom_sf(aes(fill = mgmt_level), colour = "white") + 
+  geom_sf(aes(fill = mgmt_level), colour = "white", show.legend = TRUE) + 
   coord_sf(datum = NA) + 
   theme_minimal() + 
   scale_fill_manual(values = colrs, 

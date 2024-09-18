@@ -24,6 +24,7 @@ outfile <- paste0("envreportbc_ozone_", mon_year, ".pdf")
 rmarkdown::render("print_ver/ozone.Rmd", output_file = outfile)
 # extrafont::embed_fonts(file.path("print_ver/", outfile))
 
+
 ###############################################################################################
 ## copy files to web dev folder
 air_indicators_path <- "~/soe_wwwd/indicators/air"
