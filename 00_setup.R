@@ -19,7 +19,7 @@
 # renv::update()   # - Update renv packages - best done at the start of an analysis update
 # renv::snapshot() # - As needed to keep renv packages up-to-date
 
-renv::restore()   # - When updating from GitHub etc. restore to packages in lockfile
+# renv::restore()   # - When updating from GitHub etc. restore to packages in lockfile
 
 library("magrittr")
 
@@ -30,7 +30,7 @@ dir.create("out", showWarnings = FALSE)
 dir.create("leaflet_map/station_plots/", showWarnings = FALSE, recursive = TRUE)
 dir.create("out/databc", showWarnings = FALSE)
 
-rep_year <- 2021
+rep_year <- 2022
 
 
 # Functions ----------------------------
