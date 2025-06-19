@@ -5,7 +5,7 @@ output:
   pdf_document: envreportutils.internal::print_ver
 ---
 <!--
-Copyright 2018 Province of British Columbia
+Copyright 2025 Province of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -333,7 +333,7 @@ Published and Available On-Line at Environmental Reporting BC:
 Email correspondence to: envreportbc@gov.bc.ca
 
 *Suggested Citation*:  
-Environmental Reporting BC. `r format(Sys.Date(), "%Y")`. Status of Ground-Level Ozone in B.C. (`r year_range`). State of Environment Reporting, Ministry of Environment and Climate Change Strategy, British Columbia, Canada.
+Environmental Reporting BC. `r format(Sys.Date(), "%Y")`. Status of Ground-Level Ozone in B.C. (`r year_range`). State of Environment Reporting, Ministry of Environment and Parks, British Columbia, Canada.
 
 
 \newpage
