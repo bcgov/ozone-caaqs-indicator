@@ -146,6 +146,8 @@ labels_df <-  data.frame(
                    "Central\nInterior", "Southern\nInterior", 
                    "Georgia Strait", "Lower Fraser Valley"))
 
+az_mgmt_sf[is.na(az_mgmt_sf$mgmt_level),"mgmt_level"] <- "Insufficient Data" # Remove NA from legend
+
 g <- ggplot(az_mgmt_sf) +   
   geom_sf(aes(fill = mgmt_level), colour = "white", show.legend = TRUE) + 
   coord_sf(datum = NA) + 
