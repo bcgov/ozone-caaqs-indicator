@@ -1,11 +1,11 @@
 ---
 topic: "air"
-title: Status of Ground-Level Ozone in B.C. (2019-2021)
+title: Status of Ground-Level Ozone in B.C. (2020-2022)
 output: 
   pdf_document: envreportutils.internal::print_ver
 ---
 <!--
-Copyright 2018 Province of British Columbia
+Copyright 2025 Province of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ knitr_latex_char <- function(x) {
   return(y)
 }
 
-year_range <- "2019-2021"
+year_range <- "2020-2022"
 
 # Data from 04_outputs.R
 tfee <- read_rds(here("data/datasets/print_tfee.rds"))
@@ -333,9 +333,7 @@ Published and Available On-Line at Environmental Reporting BC:
 Email correspondence to: envreportbc@gov.bc.ca
 
 *Suggested Citation*:  
-Environmental Reporting BC. 2024. Status of Ground-Level Ozone in B.C. 
-(`r year_range`). State of Environment Reporting, Ministry of 
-Environment and Climate Change Strategy, British Columbia, Canada.
+Environmental Reporting BC. `r format(Sys.Date(), "%Y")`. Status of Ground-Level Ozone in B.C. (`r year_range`). State of Environment Reporting, Ministry of Environment and Parks, British Columbia, Canada.
 
 
 \newpage

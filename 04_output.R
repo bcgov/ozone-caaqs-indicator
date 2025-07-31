@@ -1,4 +1,4 @@
-# Copyright 2015 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -145,6 +145,8 @@ labels_df <-  data.frame(
   airzone_name = c("Coastal", "Northeast", "Northwest", 
                    "Central\nInterior", "Southern\nInterior", 
                    "Georgia Strait", "Lower Fraser Valley"))
+
+az_mgmt_sf[is.na(az_mgmt_sf$mgmt_level),"mgmt_level"] <- "Insufficient Data" # Remove NA from legend
 
 g <- ggplot(az_mgmt_sf) +   
   geom_sf(aes(fill = mgmt_level), colour = "white", show.legend = TRUE) + 
