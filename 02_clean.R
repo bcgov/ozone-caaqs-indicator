@@ -79,8 +79,9 @@ stations_clean <- stations %>%
 ozone_clean <- ozone %>% 
   
   # Format dates, only keep dates in range
-  mutate(date_time = format_caaqs_dt(date_time), 
-         year = year(date_time)) %>% 
+  # mutate(date_time = format_caaqs_dt(date_time), 
+  #        year = year(date_time)) %>% 
+  mutate(year = year(date_time)) %>% 
   filter(year <= rep_year) %>% 
   
   # Clean negative values
