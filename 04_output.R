@@ -1,4 +1,4 @@
-# Copyright 2025 Province of British Columbia
+# Copyright 2026 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -28,11 +28,11 @@ library("rcaaqs")
 library("envreportutils")
 
 # Load Data --------------------------------------------------
-ozone_results <- read_rds("data/datasets/ozone_results.rds")
-ozone_mgmt <- read_rds("data/datasets/ozone_mgmt.rds")
+ozone_results <- read_rds(file.path(rep_dir_data,"ozone_results.rds"))
+ozone_mgmt <- read_rds(file.path(rep_dir_data,"ozone_mgmt.rds"))
 
-az_ambient <- read_rds("data/datasets/az_ambient.rds")
-az_mgmt <- read_rds("data/datasets/az_mgmt.rds")
+az_ambient <- read_rds(file.path(rep_dir_data,"az_ambient.rds"))
+az_mgmt <- read_rds(file.path(rep_dir_data,"az_mgmt.rds"))
 
 # Let's save plots for the print version
 print_plots <- list()
@@ -104,8 +104,19 @@ for(s in sites) {
                   plot_std = FALSE, plot_mgmt = FALSE)
   g <- add_caaqs_historic(g, metric = "o3")
   
-  ggsave(paste0("leaflet_map/station_plots/", s, "_o3.svg"), plot = g,
-         width = 778, height = 254, dpi = 72, units = "px", bg = "white")
+  g <- g + theme(
+    axis.text.x = element_text(
+      angle = 45,       # Rotate text by 45 degrees
+      hjust = 1,        # Adjust horizontal justification
+      vjust = 1         # Adjust vertical justification
+    )
+  )
+  
+  ggsave(
+    file.path(rep_dir_station_plots, paste0(s, "_o3.svg")),
+    g,
+    width = 778, height = 254, dpi = 72, units = "px", bg = "white"
+  )
   
   # Save for print version
   stn_plots[[s]] <- g
@@ -168,8 +179,8 @@ g <- ggplot(az_mgmt_sf) +
 print_plots[["ozone_mgmt_map"]] <- g
 
 # SVG of airzone CAAQS mgmt level map
-ggsave("out/ozone_caaqs_mgmt_map.svg", plot = g, dpi = 72,
-       width = 500, height = 450, units = "px", bg = "white")
+ggsave(file.path(rep_dir_out, "ozone_caaqs_mgmt_map.svg"), 
+       plot = g, dpi = 72, width = 500, height = 450, units = "px", bg = "white")
 
 ## Bar Chart --------------
 
@@ -198,7 +209,7 @@ g <- ggplot(data = ozone_results, aes(x = airzone, fill = mgmt_level)) +
 print_plots[["ozone_mgmt_chart"]] <- g
 
 # SVG of airzone/station CAAQS mgmt achievement chart
-ggsave("out/ozone_caaqs_mgmt_chart.svg", dpi = 72,
+ggsave(file.path(rep_dir_out, "ozone_caaqs_mgmt_chart.svg"), dpi = 72,
        width = 500, height = 500, units = "px", bg = "white")
 
 
@@ -206,15 +217,52 @@ ggsave("out/ozone_caaqs_mgmt_chart.svg", dpi = 72,
 # Output data ------------------------------------------------
 
 # For print version
-write_rds(print_plots, "data/datasets/print_plots.rds")
-write_rds(stn_plots, "data/datasets/print_stn_plots.rds")
-write_rds(print_summary, "data/datasets/print_summary.rds")
+write_rds(print_plots, file.path(rep_dir_data,"print_plots.rds"))
+write_rds(stn_plots, file.path(rep_dir_data, "print_stn_plots.rds"))
+write_rds(print_summary, file.path(rep_dir_data, "print_summary.rds"))
 
 # For leaflet maps
 filter(leaf_stations_mgmt) %>%
   st_transform(4326) %>% 
-  st_write("out/ozone_stations_mgmt.geojson", delete_dsn = TRUE)
+  st_write(file.path(rep_dir_out, "ozone_stations_mgmt.geojson"), delete_dsn = TRUE)
 
 filter(leaf_az_mgmt) %>%
   st_transform(4326) %>% 
-  st_write("out/ozone_airzones_mgmt.geojson", delete_dsn = TRUE)
+  st_write(file.path(rep_dir_out, "ozone_airzones_mgmt.geojson"), delete_dsn = TRUE)
+
+# Copy station SVGs to leaflet_map only for rep_year 2024
+if (rep_year == 2024) {
+  
+  message("Copying station plots to leaflet_map for rep_year = 2024")
+  
+  leaflet_stn_dir <- file.path("leaflet_map", "station_plots")
+  dir.create(leaflet_stn_dir, showWarnings = FALSE, recursive = TRUE)
+  
+  source_dir <- rep_dir_station_plots
+  
+  svgs <- list.files(
+    source_dir,
+    pattern = "\\.svg$",
+    full.names = TRUE
+  )
+  
+  if (length(svgs) == 0) {
+    warning(
+      "No station SVGs found in ",
+      source_dir,
+      " for rep_year = 2024"
+    )
+  } else {
+    file.copy(
+      from = svgs,
+      to   = leaflet_stn_dir,
+      overwrite = TRUE
+    )
+  }
+  
+} else {
+  message(
+    "Skipping leaflet_map station SVG copy (rep_year = ",
+    rep_year, ")"
+  )
+}

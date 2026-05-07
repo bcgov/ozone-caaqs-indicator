@@ -63,7 +63,7 @@ labels_mgmt <- management_levels %>%
 # - Both popups show one value box per metric
 
 ## Stations - Get CAAQs and popups ---------------------------------------
-stations <- read_sf(here("out/ozone_stations_mgmt.geojson")) %>%
+stations <- read_sf(here("out/rep_year_2024/ozone_stations_mgmt.geojson")) %>%
   # Count total stations
   add_count(airzone) %>%
   filter(mgmt_level != "Insufficient Data") %>%
@@ -90,7 +90,7 @@ stns_n <- stations %>%
   distinct()
 
 ## Airzones - Get CAAQs and popups -----------------------------------
-az <- st_read(here("./out/ozone_airzones_mgmt.geojson")) %>%
+az <- st_read(here("./out/rep_year_2024/ozone_airzones_mgmt.geojson")) %>%
   left_join(stns_n, by = "airzone") %>%
   
   left_join(select(labels_mgmt, labels, legend_colour = colour, icons, units_html),
