@@ -135,17 +135,14 @@ summary_prev <- summarise_year(ozone_results_combined, year_prev)
 ```
 
 
-British Columbia operates a network of air monitoring stations that
-measure ground-level ozone and other air pollutants. This iteration of the indicator reports on the concentration of ground-level ozone from two time periods, `r year_range_previous` and `r year_range`. The data is reported in three-year averages to compare to the 
-[Canadian Ambient Air Quality Standard](https://www.ccme.ca/en/air-quality-report#slide-7)
-established by the 
-[Canadian Council of Ministers of the Environment](http://www.ccme.ca).
+British Columbia has a network of air monitoring stations that
+measure ground-level ozone and other air contaminants. This indicator reports on the concentration of ground-level ozone from two reporting periods, `r year_range_previous` and `r year_range`. The data are reported as a metric based on three consecutive years of data. These metrics are compared against the 
+[Canadian Ambient Air Quality Standards](https://www.ccme.ca/en/air-quality-report#slide-7) to determine achievement and to define colour-based management levels. CAAQS were established by the 
+[Canadian Council of Ministers of the Environment](http://www.ccme.ca) in 2012 as a key element of the Air Quality Management System that collaboratively and comprehensively manages air quality in Canada.
 
--   **Ground-level ozone is an air pollutant.** While ozone in the
-    Earth's atmosphere occurs naturally, additional ozone at the
-    ground level is a pollutant. It forms through chemical reactions
-    involving nitrogen oxides and volatile organic compounds in the
-    presence of sunlight.
+-   **Ground-level ozone is a type of air contaminant.** While ozone high up in the
+    Earth's atmosphere occurs naturally and helps protect us from the sun's ultraviolet rays, ozone at 
+    ground level is a harmful pollutant. It forms when pollution from vehicles, industry, and other sources reacts in sunlight.
 -   **Ground-level ozone can be harmful to humans.** Exposure to
     ground-level ozone (hereafter ozone) can reduce lung function and
     cause inflammation of airways, which can increase respiratory
@@ -153,7 +150,7 @@ established by the
     to more emergency room visits, hospitalizations, and absenteeism, and
     higher health care costs^[2](#fn2)^.
 -   **2021-2023: ozone levels met the Canadian Ambient Air Quality Standard at 
-    `r summary_prev$n_achieved` of `r summary_prev$n_stations` 
+    `r summary_prev$n_achieved` of the `r summary_prev$n_stations` 
     B.C. ozone monitoring stations.**
     Ozone levels from the `r summary_prev$n_stations` stations ranged 
     from `r summary_prev$min` to `r summary_prev$max` 
@@ -163,15 +160,15 @@ established by the
     `r to_titlecase(as.character(english(summary_prev$n_not_achieved)))`
     stations reported ozone levels \>`r ozone_lvls` ppb.
 -   **2022-2024: ozone levels met the Canadian Ambient Air Quality Standard at 
-    `r print_summary$n_achieved` of `r print_summary$n` 
+    `r print_summary$n_achieved` of the `r print_summary$n` 
     B.C. ozone monitoring stations.** 
     Ozone levels (see box below) from the `r print_summary$n` stations ranged 
     from `r print_summary$min` to `r print_summary$max` 
     parts per billion (ppb).
     Ozone levels were $\leq\!\!$ 50 ppb at 
     `r print_summary$n_lt50` reporting stations (`r print_summary$p_lt50`%). 
-    `r to_titlecase(as.character(english(print_summary$n_not_achieved)))`
-    stations reported ozone levels \>`r ozone_lvls` ppb.
+    There were `r if (print_summary$n_not_achieved == 0) {"no"} else {to_titlecase(as.character(english(print_summary$n_not_achieved)))}`
+    stations reporting ozone levels \>`r ozone_lvls` ppb.
 -   **Ozone levels met the Canadian Ambient Air Quality Standard in 
     `r as.character(english(summary_prev$az_achieved))` of B.C.'s  seven air zones for `r year_range_previous` reporting period and in
     `r as.character(english(print_summary$az_achieved))` air zones for `r year_range`.** 
@@ -196,12 +193,14 @@ established by the
     
     \vspace{1mm}
     
-    \text{Ozone levels are calculated using a statistical form called the ozone metric.}
+    Ozone levels are calculated using a statistical form called the 8-hour metric.
     
-    \text{The Canadian Ambient Air Quality Standard value for ozone is 
-          \textbf{`r ozone_lvls` parts per billion (ppb)}.} 
+    The Canadian Ambient Air Quality Standard value for ozone applied in the 2021-2023 and 2022-2024 reporting periods is 
+          \textbf{`r ozone_lvls` parts per billion (ppb)}. 
     
-    \text{The ozone standard is achieved when ozone levels are $\leq$`r ozone_lvls` ppb.}
+    \vspace{2mm}
+    
+    The ozone standard is achieved when ozone metrics are $\leq$`r ozone_lvls` ppb. The next reporting period (2023-2025) will apply the more stringent 2025 CAAQS for ground-level ozone of 60 ppb.
     
     
   \end{minipage}
@@ -219,9 +218,7 @@ established by the
     
     \vspace{1mm}
     
-    \text{British Columbia is divided up into seven air zones, which are areas that typically}
-    
-    \text{exhibit similar air quality characteristics, issues, and trends.}
+    British Columbia is divided up into seven air zones, which are areas that typically exhibit similar air quality characteristics, issues, and trends.
     
   \end{minipage}
 }
@@ -234,7 +231,7 @@ established by the
 The map and chart below summarise Canadian Ambient Air Quality Standard
 achievement status for ozone in B.C. air zones, as well as ozone levels at
 individual monitoring stations. Summaries are given for each monitoring station
-where sufficient data was available for the `r year_range` and `r year_range_previous` reporting
+where sufficient data were available for the `r year_range` and `r year_range_previous` reporting
 periods.
 
 # Status of Ground-Level Ozone Levels in B.C. Air Zones (`r year_range`)
@@ -263,25 +260,17 @@ plots_2023[["achievement_map"]]
 plots_2023[["ozone_ambient_summary_plot"]]
 ```
 
-### More about the Canadian Ambient Air Quality Standard ozone metric:
+### More about the Canadian Ambient Air Quality Standard for Ozone:
 
 -   The statistical form of the Canadian Ambient Air Quality Standard ozone 
     metric is the 3-year average of the annual 4th-highest daily maximum 8-hour 
     rolling average concentration.
 -   The ozone metric for an air zone is the highest ozone metric reported from 
-    monitoring stations within the air zone. Air zone metrics are only taken 
-    from stations reporting on two years of data when there are no available 
-    three year reporting stations in the air zone.
--   Only air monitoring stations with sufficient data on ozone
-    concentrations for the `r year_range` and `r year_range_previous` reporting periods were 
-    included in this indicator. Visit 
+    monitoring stations within the air zone. 
+-   Criteria for data completeness and sufficiency of the ozone metric are described in the [Guidance Document on Achievement Determination: Canadian Ambient Air Quality Standards for Ozone (2021)](https://ccme.ca/en/res/gdadforozonecaaqsen.pdf).
+-   Air quality monitoring stations with at least two years of valid data from `r year_range` and `r year_range_previous` reporting periods were included in this indicator. Visit 
     [Current Air Quality Data](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E) 
-    for a complete list of air monitoring stations across B.C.
--   Data completeness and sufficiency criteria for the ozone
-    metric value are described in the [Guidance Document on Achievement
-    Determination: Canadian Ambient Air Quality Standards for Fine
-    Particulate Matter and Ozone
-    (2012)](http://publications.gc.ca/pub?id=9.697756&sl=0).
+    for a complete list of currently active air quality monitoring stations across B.C.
 
 ## Canada-wide Air Quality Management System
 
@@ -377,29 +366,18 @@ available on [GitHub](https://github.com/bcgov/ozone_caaqs_analysis).
 
 # References and Other Useful Links
 
-Read individual [Air Zone reports](http://www2.gov.bc.ca/gov/search?id=04D14E7F7EE043889E1AC20E205CA3F8&tab=1&sourceId=267EE7E2432B4DE89BF1905EF80F505E&q=%22air+zone+report%22) on the 
-achievement of the Canadian Ambient Air Quality Standards for ground-level ozone
-and fine particulate matter in B.C.
-
-[Learn more about the implementation of the Air Quality Management System in British Columbia](http://www2.gov.bc.ca/gov/content?id=8FA84ADC845A49AB93E525A58D9D4A97)
-
-[Access B.C.'s real-time data on air pollutants and find locations of all provincial air monitoring stations in B.C.](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
-
-[BC Lung Asssociation's BC State of the Air Reports](http://www.bc.lung.ca/airquality/stateoftheair-report.html)
-
-[Canadian Ambient Air Quality Standards](https://www.ccme.ca/en/air-quality-report#slide-7)
-
-[Canadian Council of Ministers of the Environment](https://www.ccme.ca/en)
-
-[Canadian Environmental Sustainability Indicators: Air Indicators](https://www.canada.ca/en/environment-climate-change/services/environmental-indicators/air.html)
-
-[Guidance Document on Achievement Determination: Canadian Ambient Air Quality Standards for Fine Particulate Matter and Ozone (2012)](http://publications.gc.ca/pub?id=9.697756&sl=0)
-
-[Guidance Document on Air Zone Management](https://ccme.ca/en/res/guidancedocumentonairzonemanagement_secured.pdf)
-
-[United States Environmental Protection Agency. February 2013.Integrated Science Assessment of Ozone and Related Photochemical Oxidants (600/R-10/076F)](http://cfpub.epa.gov/ncea/isa/recordisplay.cfm?deid=247492#Download)
-
-Willey, J., N. Gilbert, and N. Lyrette. 2004. Human health effects of ozone: Update in support of the Canada-wide standards for particulate matter and ozone. Revised version. Working paper prepared for Canadian Council of Ministers of the Environment. Health Canada. Ottawa, Ontario: Health Canada
+-   [Access B.C.'s real-time data on air pollutants and find locations of all provincial air monitoring stations in B.C.](http://www2.gov.bc.ca/gov/content?id=292EC5BD62A149A192B7DD2CE155E33E)
+-   [BC Lung Asssociation's BC State of the Air Reports](https://bclung.ca/lung-health/air-quality/state-of-the-air-report-archives/)
+-   [Canadian Ambient Air Quality Standards](https://www.ccme.ca/en/air-quality-report#slide-7)
+-   [Canadian Council of Ministers of the Environment](https://www.ccme.ca/en)
+-   [Canadian Environmental Sustainability Indicators: Air Indicators](https://www.canada.ca/en/environment-climate-change/services/environmental-indicators/air.html)
+-   [Guidance Document on Achievement Determination: Canadian Ambient Air Quality Standards for Ozone (2021)](https://ccme.ca/en/res/gdadforozonecaaqsen.pdf)
+-   [Guidance Document on Air Zone Management](https://ccme.ca/en/res/guidancedocumentonairzonemanagement_secured.pdf)
+-   [Learn more about the implementation of the Air Quality Management System in British Columbia](http://www2.gov.bc.ca/gov/content?id=8FA84ADC845A49AB93E525A58D9D4A97)
+-   Read individual [Air Zone reports](http://www2.gov.bc.ca/gov/content?id=C62C0F15A6E3494399B86437D705A866) on the 
+achievement of the Canadian Ambient Air Quality Standards in B.C.
+-   [United States Environmental Protection Agency. February 2013.Integrated Science Assessment of Ozone and Related Photochemical Oxidants (600/R-10/076F)](http://cfpub.epa.gov/ncea/isa/recordisplay.cfm?deid=247492#Download)
+-   Willey, J., N. Gilbert, and N. Lyrette. 2004. Human health effects of ozone: Update in support of the Canada-wide standards for particulate matter and ozone. Revised version. Working paper prepared for Canadian Council of Ministers of the Environment. Health Canada. Ottawa, Ontario: Health Canada
 
 # Data
 
