@@ -1,4 +1,4 @@
-# Copyright 2025 Province of British Columbia
+# Copyright 2026 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,7 @@ options("rcaaqs.timezone" = "Etc/GMT+8")
 stations <- read_csv("data/raw/caaqs_stationlist.csv", show_col_types = FALSE) %>%
   clean_names() %>%
   mutate(site = gsub('#','',site)) %>%
-  rename(lon = long) |> 
+  #rename(lon = long) |> 
   unique()
 
 ozone <- read_rds("data/raw/ozone_caaqs.Rds") %>%
@@ -54,7 +54,7 @@ az <- airzones() %>%
 # - subset to those stations analysed
 
 stations_clean <- stations %>%
-  
+  filter(!is.na(lat)) %>%
   
   # Look for problems
   assert(within_bounds(-90, 90), lat) %>%
@@ -116,5 +116,15 @@ t <- ozone_clean %>%
 stations_clean <- semi_join(stations_clean, ozone_clean, by = "site")
 
 # Write data ------------------------------
-write_rds(stations_clean, "data/datasets/stations_clean.rds")
-write_rds(ozone_clean, "data/datasets/ozone_clean.rds", compress = "gz")
+
+write_rds(
+  stations_clean,
+  file.path(rep_dir_data, "stations_clean.rds")
+)
+
+
+write_rds(
+  ozone_clean,
+  file.path(rep_dir_data, "ozone_clean.rds"), 
+  compress = "gz"
+)

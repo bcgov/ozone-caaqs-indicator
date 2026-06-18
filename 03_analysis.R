@@ -1,4 +1,4 @@
-# Copyright 2025 Province of British Columbia
+# Copyright 2026 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -25,8 +25,8 @@ library("rcaaqs")
 
 
 # Load Data ----------------------
-ozone_clean <- read_rds("data/datasets/ozone_clean.rds")
-stations_clean <- read_rds("data/datasets/stations_clean.rds")
+ozone_clean <- read_rds(file.path(rep_dir_data, "ozone_clean.rds"))
+stations_clean <- read_rds(file.path(rep_dir_data, "stations_clean.rds"))
 
 # Transboundary Flows and Exceptional Events ------------------------------
 tfee_dates <- ozone_clean %>%
@@ -115,14 +115,25 @@ print_tfee <- get_daily(ozone_caaqs) %>%
 
 
 # Save next steps ----------------------------------------
-write_rds(ozone_results, "data/datasets/ozone_results.rds")
-write_rds(az_ambient, "data/datasets/az_ambient.rds")
-write_rds(az_mgmt, "data/datasets/az_mgmt.rds")
-write_rds(ozone_mgmt, "data/datasets/ozone_mgmt.rds")
-write_rds(print_tfee, "data/datasets/print_tfee.rds")
+write_rds(ozone_results, file.path(rep_dir_data, "ozone_results.rds"))
+write_rds(ozone_mgmt, file.path(rep_dir_data, "ozone_mgmt.rds"))
+write_rds(az_ambient, file.path(rep_dir_data, "az_ambient.rds"))
+write_rds(az_mgmt, file.path(rep_dir_data, "az_mgmt.rds"))
+write_rds(print_tfee, file.path(rep_dir_data, "print_tfee.rds"))
+
 
 # Save csvs --------------------------------------------------------
-write_csv(ozone_results, "out/ozone_caaqs_results.csv", na = "")
-write_csv(az_ambient, "out/ozone_airzone_results.csv" , na = "")
-write_csv(az_mgmt, "out/ozone_airzone_management_levels.csv", na = "")
+write_csv(
+  ozone_results,
+  file.path(rep_dir_out, "ozone_caaqs_results.csv")
+)
 
+write_csv(
+  az_ambient,
+  file.path(rep_dir_out, "ozone_airzone_results.csv")
+)
+
+write_csv(
+  az_mgmt,
+  file.path(rep_dir_out, "ozone_airzone_management_levels.csv")
+)

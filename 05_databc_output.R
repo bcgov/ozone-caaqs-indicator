@@ -1,4 +1,4 @@
-# Copyright 2025 Province of British Columbia
+# Copyright 2026 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -30,8 +30,8 @@ library('rcaaqs')
 
 # Join old and new ------------------------
 
-ozone_mgmt <- read_rds("data/datasets/ozone_mgmt.rds")
-stations_clean <- read_rds("data/datasets/stations_clean.rds")
+ozone_mgmt <- read_rds(file.path(rep_dir_data, "ozone_mgmt.rds"))
+stations_clean <- read_rds(file.path(rep_dir_data, "stations_clean.rds"))
 
 ozone_results <- get_caaqs(ozone_mgmt) %>%
   left_join(stations_clean, by = "site") %>% 
@@ -49,7 +49,10 @@ ozone_results <- get_caaqs(ozone_mgmt) %>%
          metric_value_mgmt,	mgmt_level, everything(), -flag_daily_incomplete, -flag_yearly_incomplete) %>% 
   arrange(airzone, caaqs_year)
 
-write_csv(ozone_results, "out/databc/ozone_stations_summary.csv", na = "")
+databc_dir <- file.path(rep_dir_out, "databc")
+dir.create(databc_dir, showWarnings = FALSE, recursive = TRUE)
+
+write_csv(ozone_results, file.path(databc_dir, "ozone_stations_summary.csv"), na = "")
 
 # Airzone results ---------------------------------------------------------
 az_ambient_year <- ozone_results %>%
@@ -86,7 +89,7 @@ az_mgmt_year <- az_ambient_year %>%
            levels = levels(caaqs_ambient))) %>%
   arrange(caaqs_year, airzone)
 
-write_csv(az_mgmt_year, "out/databc/ozone_airzones_summary.csv", na = "")
+write_csv(az_mgmt_year, file.path(databc_dir, "ozone_airzones_summary.csv"), na = "")
 
 ## Stations ----------------------------------
 
@@ -148,4 +151,3 @@ write_csv(az_mgmt_year, "out/databc/ozone_airzones_summary.csv", na = "")
 #         rep_stn_name_mgmt, rep_stn_id_mgmt) %>%
 #  arrange(caaqs_year, airzone) %>% 
 #  write_csv("out/databc/ozone_airzones_summary.csv", na = "")
-
