@@ -149,7 +149,7 @@ ppo <- popupOptions(autoPanPaddingTopLeft = c(10, 10),
 
 ```{r, warning=FALSE}
 leaflet(width = "900px", height = "700px", options = leafletOptions(minZoom = 5)) %>% 
-  addProviderTiles(providers$CartoDB) %>%
+  addProviderTiles("Esri.WorldGrayCanvas") %>%
   add_bc_home_button() %>%
   # Re-centre map on popup close
   set_bc_view_on_close() %>%
